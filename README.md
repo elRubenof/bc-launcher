@@ -1,16 +1,80 @@
-# launcher
+# Launcher
 
-A new Flutter project.
+![GitHub repo size](https://img.shields.io/github/repo-size/elRubenof/Launcher?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/count/elRubenof/Launcher?style=for-the-badge)
 
-## Getting Started
+<img src="assets/preview.png" alt="exemplo imagem">
 
-This project is a starting point for a Flutter application.
+### Objetivos
 
-A few resources to get you started if this is your first Flutter project:
+Fases del proyecto por realizar:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- [ ] Diseño Inicial
+- [ ] Funcionalidad Básica
+- [ ] Sincronización y verificación de archivos
+- [ ] Interacción con Microsoft y Mojang
+- [ ] Revisado y Puesta a Punto
+<br>
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 💻 Pre-Requisitos
+
+Antes de ejecutar el programa asegúrate de lo siguiente:
+* Dispones Java instalado en el ordenador
+* Dispones de al menos `5GB` de espacio libre.
+<br>
+
+## 🚀 Instalación del Launcher
+
+Para instalar el Launcher, aigue los siguientes pasos:
+
+1. Descarga la versión que corresponda a tu sistema operativo entre las opciones `<Windows / Linux / Mac>` de la parte inferior.
+2. Ejecute el instalador y espere a completar todos los pasos.
+3. Asegúrese de formar parte de los miembros del servidor.
+4. Ejecute el juego desde el Launcher.
+<br>
+
+## ☕ Uso del Launcher
+
+Con el Launcher podrás realizar las siguiente acciones:
+
+* Ejecutar el juego abriéndose en la pantalla de menú principal.
+* Ejecutar el juego abriéndose directamente dentro del servidor.
+* Ver las novedades y avisos del servidor.
+* Comprobar el estado del servidor y los jugadores en línea.
+* Actualizar automáticamente nuevos Mods, ResourcePacks o Configuraciones.
+* Reinstalar de manera sencilla el juego.
+* Ajustar la cantidad de RAM asugnada.
+* Cambiar entre múltiples cuentas
+* Seleccionar skin y visualizar el historial de skins de tu jugador.
+<br>
+
+## 📎 Descargas
+
+Escoge el archivo que corresponda a tu sistema operativo:
+
+* [Windows]()
+* [MacOS]()
+* [Linux]()
+<br>
+
+## 🤝 Colaboradores
+
+Colaboradores del proyecto:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="#">
+        <img src="https://avatars.githubusercontent.com/elRubenof" width="100px;" alt="Foto de elRubenof en GitHub"/><br>
+        <sub>
+          <b>elRubenof</b>
+        </sub>
+      </a>
+    </td>
+  </tr>
+</table>
+<br>
+
+## 📝 Licencia
+
+Este proyecto existe bajo la licena General Public License (GPL). Cualquier uso comercial de este se prohíbe.
