@@ -7,13 +7,13 @@
 
 ### Objetivos
 
-Fases del proyecto por realizar:
+Fases del proyecto a realizar:
 
-- [ ] Diseño Inicial
-- [ ] Funcionalidad Básica
+- [ ] Diseño inicial
+- [ ] Funcionalidad básica
 - [ ] Sincronización y verificación de archivos
 - [ ] Interacción con Microsoft y Mojang
-- [ ] Revisado y Puesta a Punto
+- [ ] Revisado y puesta a punto
 <br>
 
 ## 💻 Pre-Requisitos
@@ -25,9 +25,9 @@ Antes de ejecutar el programa asegúrate de lo siguiente:
 
 ## 🚀 Instalación del Launcher
 
-Para instalar el Launcher, aigue los siguientes pasos:
+Para instalar el Launcher, sigue los siguientes pasos:
 
-1. Descarga la versión que corresponda a tu sistema operativo entre las opciones `<Windows / Linux / Mac>` de la parte inferior.
+1. Descarga la versión que corresponda a tu sistema operativo entre las opciones `<Windows / MacOS / Linux>` de la parte inferior.
 2. Ejecute el instalador y espere a completar todos los pasos.
 3. Asegúrese de formar parte de los miembros del servidor.
 4. Ejecute el juego desde el Launcher.
@@ -43,8 +43,8 @@ Con el Launcher podrás realizar las siguiente acciones:
 * Comprobar el estado del servidor y los jugadores en línea.
 * Actualizar automáticamente nuevos Mods, ResourcePacks o Configuraciones.
 * Reinstalar de manera sencilla el juego.
-* Ajustar la cantidad de RAM asugnada.
-* Cambiar entre múltiples cuentas
+* Ajustar la cantidad de RAM asignada y parámetros variados del juego.
+* Cambiar entre múltiples cuentas.
 * Seleccionar skin y visualizar el historial de skins de tu jugador.
 <br>
 
@@ -52,9 +52,9 @@ Con el Launcher podrás realizar las siguiente acciones:
 
 Escoge el archivo que corresponda a tu sistema operativo:
 
-* [Windows]()
-* [MacOS]()
-* [Linux]()
+* [Windows](https://github.com/elRubenof/launcher)
+* [MacOS](https://github.com/elRubenof/launcher)
+* [Linux](https://github.com/elRubenof/launcher)
 <br>
 
 ## 🤝 Colaboradores
