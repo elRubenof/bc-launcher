@@ -79,14 +79,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
   final List<Widget> pages = [
-    const Text(
-      "INICIO",
-      style: const TextStyle(color: Colors.white),
-    ),
+    Column(children: const [
+      Expanded(
+        child: Text(
+          "INICIO",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+      BottomBar(),
+    ]),
     ExampleBrowser(),
     const Text(
       "SETTINGS",
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Colors.white),
     )
   ];
 
@@ -105,7 +110,6 @@ class _MainScreenState extends State<MainScreen> {
         Expanded(
           child: pages[currentIndex],
         ),
-        const BottomBar(),
       ],
     );
   }

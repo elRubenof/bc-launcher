@@ -76,13 +76,14 @@ class _NavBarState extends State<NavBar> {
             selected: widget.currentIndex == 0,
             selectedLine: true,
           ),
-          MouseButton(
-            label: "MAPA",
-            icon: Icons.map_sharp,
-            onTap: () => setState(() => widget.changeIndex[1]()),
-            selected: widget.currentIndex == 1,
-            selectedLine: true,
-          ),
+          if (Platform.isWindows)
+            MouseButton(
+              label: "MAPA",
+              icon: Icons.map_sharp,
+              onTap: () => setState(() => widget.changeIndex[1]()),
+              selected: widget.currentIndex == 1,
+              selectedLine: true,
+            ),
           MouseButton(
             label: "AJUSTES",
             icon: Icons.settings,

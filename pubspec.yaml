@@ -38,6 +38,7 @@ dependencies:
   flutter_svg: ^1.1.4
   simple_git: ^0.1.6
   webview_windows: ^0.2.2
+  device_info_plus: ^8.1.0
 
 dev_dependencies:
   flutter_test:

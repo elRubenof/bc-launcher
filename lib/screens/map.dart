@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -14,7 +17,6 @@ class ExampleBrowser extends StatefulWidget {
 class _ExampleBrowser extends State<ExampleBrowser> {
   final _controller = WebviewController();
   final _textController = TextEditingController();
-  bool _isWebviewSuspended = false;
 
   @override
   void initState() {
@@ -23,13 +25,6 @@ class _ExampleBrowser extends State<ExampleBrowser> {
   }
 
   Future<void> initPlatformState() async {
-    // Optionally initialize the webview environment using
-    // a custom user data directory
-    // and/or a custom browser executable directory
-    // and/or custom chromium command line flags
-    //await WebviewController.initializeEnvironment(
-    //    additionalArguments: '--show-fps-counter');
-
     try {
       await _controller.initialize();
       _controller.url.listen((url) {
@@ -43,135 +38,73 @@ class _ExampleBrowser extends State<ExampleBrowser> {
       if (!mounted) return;
       setState(() {});
     } on PlatformException catch (e) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          showDialog(
             context: context,
             builder: (_) => AlertDialog(
-                  title: Text('Error'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Code: ${e.code}'),
-                      Text('Message: ${e.message}'),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      child: Text('Continue'),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                ));
-      });
-    }
-  }
-
-  Widget compositeView() {
-    if (!_controller.value.isInitialized) {
-      return const Text(
-        'Not Initialized',
-        style: TextStyle(
-          fontSize: 24.0,
-          fontWeight: FontWeight.w900,
-        ),
-      );
-    } else {
-      return Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Card(
-              elevation: 0,
-              child: Row(children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'URL',
-                      contentPadding: EdgeInsets.all(10.0),
-                    ),
-                    textAlignVertical: TextAlignVertical.center,
-                    controller: _textController,
-                    onSubmitted: (val) {
-                      _controller.loadUrl(val);
-                    },
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.refresh),
-                  splashRadius: 20,
+              title: const Text('Error'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Code: ${e.code}'),
+                  Text('Message: ${e.message}'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Continue'),
                   onPressed: () {
-                    _controller.reload();
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.developer_mode),
-                  tooltip: 'Open DevTools',
-                  splashRadius: 20,
-                  onPressed: () {
-                    _controller.openDevTools();
+                    Navigator.of(context).pop();
                   },
                 )
-              ]),
+              ],
             ),
-            Expanded(
-                child: Card(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    child: Stack(
-                      children: [
-                        Webview(
-                          _controller,
-                          permissionRequested: _onPermissionRequested,
-                        ),
-                        StreamBuilder<LoadingState>(
-                            stream: _controller.loadingState,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData &&
-                                  snapshot.data == LoadingState.loading) {
-                                return LinearProgressIndicator();
-                              } else {
-                                return SizedBox();
-                              }
-                            }),
-                      ],
-                    ))),
-          ],
-        ),
+          );
+        },
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return compositeView();
+    return FutureBuilder(
+      future: outdatedVersion(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return Container();
+
+        if (snapshot.data as bool) {
+          return const Center(
+            child: Text(
+              "Actualiza windows para usar esta función",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          );
+        }
+
+        if (!_controller.value.isInitialized) {
+          return Container();
+        } else {
+          return Webview(
+            _controller,
+            permissionRequested: _onPermissionRequested,
+          );
+        }
+      },
+    );
+  }
+
+  Future<bool> outdatedVersion() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
+
+    return windowsInfo.buildNumber < 1809;
   }
 
   Future<WebviewPermissionDecision> _onPermissionRequested(
       String url, WebviewPermissionKind kind, bool isUserInitiated) async {
-    final decision = await showDialog<WebviewPermissionDecision>(
-      context: navigatorKey.currentContext!,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('WebView permission requested'),
-        content: Text('WebView has requested permission \'$kind\''),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(context, WebviewPermissionDecision.deny),
-            child: const Text('Deny'),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(context, WebviewPermissionDecision.allow),
-            child: const Text('Allow'),
-          ),
-        ],
-      ),
-    );
-
-    return decision ?? WebviewPermissionDecision.none;
+    return WebviewPermissionDecision.allow;
   }
 }
