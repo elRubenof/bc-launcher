@@ -28,7 +28,7 @@ class _NavBarState extends State<NavBar> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    double horizontalPadding = Platform.isMacOS ? 90 : width * 0.065;
+    double horizontalPadding = width * 0.065;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -43,7 +43,7 @@ class _NavBarState extends State<NavBar> {
               logo(),
               pages(),
               account(),
-              if (!Platform.isMacOS) windowButtons(),
+              windowButtons(),
             ],
           ),
         ],
@@ -57,7 +57,7 @@ class _NavBarState extends State<NavBar> {
       width: 105,
       color: Theme.of(context).primaryColor,
       child: SvgPicture.asset(
-        "assets/logo.svg",
+        "assets/spartaland.svg",
         color: Colors.white,
       ),
     );
@@ -76,14 +76,15 @@ class _NavBarState extends State<NavBar> {
             selected: widget.currentIndex == 0,
             selectedLine: true,
           ),
-          if (Platform.isWindows)
-            MouseButton(
-              label: "MAPA",
-              icon: Icons.map_sharp,
-              onTap: () => setState(() => widget.changeIndex[1]()),
-              selected: widget.currentIndex == 1,
-              selectedLine: true,
-            ),
+          MouseButton(
+            label: "MAPA",
+            icon: Icons.map_sharp,
+            onTap: () => Platform.isWindows
+                ? setState(() => widget.changeIndex[1]())
+                : null,
+            selected: widget.currentIndex == 1,
+            selectedLine: true,
+          ),
           MouseButton(
             label: "AJUSTES",
             icon: Icons.settings,

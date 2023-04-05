@@ -1,25 +1,23 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:launcher/utils/constants.dart';
 import 'package:simple_git/simple_git.dart';
 
 class Git {
-  static const String _gitPath =
-      "C:/Users/Tony/Documents/Development/.minecraft/mods";
-
-  static SimpleGit _gitSync = SimpleGit(
+  static final SimpleGit _gitSync = SimpleGit(
     options: SimpleGitOptions(
       showOutput: true,
       binary: 'git',
-      baseDir: _gitPath,
+      baseDir: "$minecraftPath/mods",
     ),
   );
 
-  static SimpleGitAsync _gitAsync = SimpleGitAsync(
+  static final SimpleGitAsync _gitAsync = SimpleGitAsync(
     options: SimpleGitOptions(
       showOutput: true,
       binary: 'git',
-      baseDir: _gitPath,
+      baseDir: "$minecraftPath/mods",
     ),
   );
 
@@ -40,6 +38,8 @@ class Git {
     if (!Platform.isWindows) return "Success";
 
     try {
+      await Directory("$minecraftPath/mods").create();
+
       if (_hasChanges()) {
         await _gitAsync.raw(['restore', '.'], showOutput: true);
         await _gitAsync.raw(['clean', '-f', '-x'], showOutput: true);

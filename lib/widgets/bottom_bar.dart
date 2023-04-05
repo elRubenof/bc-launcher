@@ -41,8 +41,8 @@ class _BottomBarState extends State<BottomBar> {
                     width: 40,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     margin: const EdgeInsets.only(right: 10),
-                    child: SvgPicture.asset("assets/gato_silueta.svg",
-                        color: textColor),
+                    child:
+                        SvgPicture.asset("assets/amper.svg", color: textColor),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,28 +118,31 @@ class _BottomBarState extends State<BottomBar> {
             ],
           ),
           Center(
-            child: Container(
-              height: double.infinity,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withAlpha(75),
-                      blurRadius: 50.0,
-                      spreadRadius: 50.0,
-                      offset: const Offset(
-                        0.0,
-                        20.0,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Container(
+                height: double.infinity,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withAlpha(75),
+                        blurRadius: 50.0,
+                        spreadRadius: 50.0,
+                        offset: const Offset(
+                          0.0,
+                          20.0,
+                        ),
                       ),
-                    ),
-                  ]),
-              child: CupertinoButton.filled(
-                borderRadius: BorderRadius.zero,
-                child: const Text(
-                  "PLAY",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                    ]),
+                child: CupertinoButton.filled(
+                  borderRadius: BorderRadius.zero,
+                  child: const Text(
+                    "PLAY",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () => print("PLAY"),
                 ),
-                onPressed: () => print("PLAY"),
               ),
             ),
           ),

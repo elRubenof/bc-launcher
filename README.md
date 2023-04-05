@@ -3,15 +3,15 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/elRubenof/Launcher?style=for-the-badge)
 ![GitHub language count](https://img.shields.io/github/languages/count/elRubenof/Launcher?style=for-the-badge)
 
-<img src="assets/preview.png" alt="exemplo imagem">
+<img src="assets/preview.png">
 
 ### Objetivos
 
 Fases del proyecto a realizar:
 
-- [ ] Diseño inicial
+- [x] Diseño inicial
 - [ ] Funcionalidad básica
-- [ ] Sincronización y verificación de archivos
+- [x] Sincronización y verificación de archivos
 - [ ] Interacción con Microsoft y Mojang
 - [ ] Revisado y puesta a punto
 <br>

@@ -86,7 +86,6 @@ class _MainScreenState extends State<MainScreen> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      BottomBar(),
     ]),
     ExampleBrowser(),
     const Text(
@@ -97,20 +96,32 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        NavBar(
-          currentIndex: currentIndex,
-          changeIndex: [
-            () => setState(() => currentIndex = 0),
-            () => setState(() => currentIndex = 1),
-            () => setState(() => currentIndex = 2),
-          ],
+    final width = MediaQuery.of(context).size.width;
+
+    return Stack(children: [
+      Column(
+        children: [
+          NavBar(
+            currentIndex: currentIndex,
+            changeIndex: [
+              () => setState(() => currentIndex = 0),
+              () => setState(() => currentIndex = 1),
+              () => setState(() => currentIndex = 2),
+            ],
+          ),
+          Expanded(
+            child: pages[currentIndex],
+          ),
+        ],
+      ),
+      AnimatedPositioned(
+        duration: const Duration(milliseconds: 230),
+        bottom: currentIndex == 0 ? 0 : -130,
+        child: SizedBox(
+          width: width,
+          child: const BottomBar(),
         ),
-        Expanded(
-          child: pages[currentIndex],
-        ),
-      ],
-    );
+      ),
+    ]);
   }
 }
