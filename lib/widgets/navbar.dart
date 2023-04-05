@@ -8,14 +8,20 @@ import 'package:launcher/widgets/mouseButton.dart';
 import 'package:launcher/widgets/mouseIconButton.dart';
 
 class NavBar extends StatefulWidget {
-  const NavBar({Key? key}) : super(key: key);
+  int currentIndex;
+  final List<Function> changeIndex;
+
+  NavBar({
+    Key? key,
+    required this.currentIndex,
+    required this.changeIndex,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _NavBarState();
 }
 
 class _NavBarState extends State<NavBar> {
-  int _currentIndex = 0;
   List<String> accounts = ['XxFLOYxX', 'elRubenof_YT', 'Añadir Cuenta'];
   String dropdownValue = 'XxFLOYxX';
 
@@ -37,7 +43,7 @@ class _NavBarState extends State<NavBar> {
               logo(),
               pages(),
               account(),
-              if (Platform.isMacOS) windowButtons(),
+              if (!Platform.isMacOS) windowButtons(),
             ],
           ),
         ],
@@ -49,7 +55,7 @@ class _NavBarState extends State<NavBar> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       width: 105,
-      color: const Color(0xffA83CBB),
+      color: Theme.of(context).primaryColor,
       child: SvgPicture.asset(
         "assets/logo.svg",
         color: Colors.white,
@@ -66,22 +72,22 @@ class _NavBarState extends State<NavBar> {
           MouseButton(
             label: "INICIO",
             icon: Icons.home,
-            onTap: () => setState(() => _currentIndex = 0),
-            selected: _currentIndex == 0,
+            onTap: () => setState(() => widget.changeIndex[0]()),
+            selected: widget.currentIndex == 0,
             selectedLine: true,
           ),
           MouseButton(
             label: "MODS",
             icon: Icons.list,
-            onTap: () => setState(() => _currentIndex = 1),
-            selected: _currentIndex == 1,
+            onTap: () => setState(() => widget.changeIndex[1]()),
+            selected: widget.currentIndex == 1,
             selectedLine: true,
           ),
           MouseButton(
             label: "AJUSTES",
             icon: Icons.settings,
-            onTap: () => setState(() => _currentIndex = 2),
-            selected: _currentIndex == 2,
+            onTap: () => setState(() => widget.changeIndex[2]()),
+            selected: widget.currentIndex == 2,
             selectedLine: true,
           ),
         ],
@@ -174,7 +180,7 @@ class _NavBarState extends State<NavBar> {
             icon: Icons.settings,
             size: 14.0,
             backgroundColor: Colors.white.withOpacity(0.12),
-            onTap: () => log("SETTINGS"),
+            onTap: () => widget.changeIndex[2](),
           ),
           MouseIconButton(
             icon: Icons.minimize,

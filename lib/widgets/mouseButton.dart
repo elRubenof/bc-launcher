@@ -36,7 +36,7 @@ class _MouseButtonState extends State<MouseButton> {
                   borderRadius: BorderRadius.circular(50),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xffA83CBB).withAlpha(75),
+                      color: Theme.of(context).primaryColor.withAlpha(75),
                       blurRadius: 50.0,
                       spreadRadius: 50.0,
                       offset: const Offset(
@@ -47,7 +47,7 @@ class _MouseButtonState extends State<MouseButton> {
                   ]),
               child: Container(
                 margin: const EdgeInsets.only(top: 1),
-                color: const Color(0xffA83CBB),
+                color: Theme.of(context).primaryColor,
                 height: 1,
               ),
             ),
@@ -63,7 +63,7 @@ class _MouseButtonState extends State<MouseButton> {
               children: [
                 Icon(
                   widget.icon,
-                  color: const Color(0xffA83CBB),
+                  color: Theme.of(context).primaryColor,
                   size: 25,
                 ),
                 const SizedBox(

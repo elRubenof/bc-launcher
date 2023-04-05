@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:launcher/utils/git.dart';
+import 'package:launcher/utils/palette.dart';
 import 'package:launcher/widgets/navbar.dart';
 
 void main() {
@@ -9,7 +12,7 @@ void main() {
 
   doWhenWindowReady(() {
     const initialSize = Size(1400, 800);
-    appWindow.minSize = Size(1150, 0);
+    appWindow.minSize = const Size(1150, 0);
     //appWindow.maxSize = initialSize;
     appWindow.size = initialSize;
     appWindow.show();
@@ -21,8 +24,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyHomePage(),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Palette.kPurple,
+      ),
+      home: const MyHomePage(),
     );
   }
 }
@@ -39,17 +45,61 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff1b0a20),
-      body: Column(
-        children: [
-          const NavBar(),
-          CupertinoButton.filled(
-            child: const Text("BUTTON"),
-            onPressed: () {
-              Git.test();
-            },
-          ),
-        ],
+      body: FutureBuilder(
+        future: Git.init(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.data as String != "Success") {
+            Scaffold.of(context)
+                .showBottomSheet((context) => Text(snapshot.data as String));
+
+            return Container();
+          }
+
+          return const MainScreen();
+        },
       ),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _MainScreenState();
+  }
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int currentIndex = 0;
+  final pages = ["INICIO", "MODS", "SETTINGS"];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        NavBar(
+          currentIndex: currentIndex,
+          changeIndex: [
+            () => setState(() => currentIndex = 0),
+            () => setState(() => currentIndex = 1),
+            () => setState(() => currentIndex = 2),
+          ],
+        ),
+        Center(
+          child: Text(
+            pages[currentIndex],
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
     );
   }
 }
