@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:launcher/screens/map.dart';
 import 'package:launcher/utils/git.dart';
 import 'package:launcher/utils/palette.dart';
-import 'package:launcher/widgets/navbar.dart';
+import 'package:launcher/widgets/bottom_bar.dart';
+import 'package:launcher/widgets/nav_bar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -79,7 +78,17 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
-  final pages = ["INICIO", "MODS", "SETTINGS"];
+  final List<Widget> pages = [
+    const Text(
+      "INICIO",
+      style: const TextStyle(color: Colors.white),
+    ),
+    ExampleBrowser(),
+    const Text(
+      "SETTINGS",
+      style: const TextStyle(color: Colors.white),
+    )
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -93,12 +102,10 @@ class _MainScreenState extends State<MainScreen> {
             () => setState(() => currentIndex = 2),
           ],
         ),
-        Center(
-          child: Text(
-            pages[currentIndex],
-            style: const TextStyle(color: Colors.white),
-          ),
+        Expanded(
+          child: pages[currentIndex],
         ),
+        const BottomBar(),
       ],
     );
   }
