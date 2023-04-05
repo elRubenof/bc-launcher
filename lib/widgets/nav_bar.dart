@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:launcher/widgets/mouseButton.dart';
-import 'package:launcher/widgets/mouseIconButton.dart';
+import 'package:launcher/widgets/mouse_button.dart';
+import 'package:launcher/widgets/mouse_icon_button.dart';
 
 class NavBar extends StatefulWidget {
   int currentIndex;
@@ -77,8 +77,8 @@ class _NavBarState extends State<NavBar> {
             selectedLine: true,
           ),
           MouseButton(
-            label: "MODS",
-            icon: Icons.list,
+            label: "MAPA",
+            icon: Icons.map_sharp,
             onTap: () => setState(() => widget.changeIndex[1]()),
             selected: widget.currentIndex == 1,
             selectedLine: true,

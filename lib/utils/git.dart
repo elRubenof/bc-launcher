@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:simple_git/simple_git.dart';
 
@@ -36,6 +37,8 @@ class Git {
   }
 
   static Future<String> init() async {
+    if (!Platform.isWindows) return "Success";
+
     try {
       if (_hasChanges()) {
         await _gitAsync.raw(['restore', '.'], showOutput: true);
