@@ -1,8 +1,10 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:launcher/screens/home.dart';
 import 'package:launcher/screens/map.dart';
 import 'package:launcher/utils/git.dart';
 import 'package:launcher/utils/palette.dart';
+import 'package:launcher/utils/server.dart';
 import 'package:launcher/widgets/bottom_bar.dart';
 import 'package:launcher/widgets/nav_bar.dart';
 
@@ -11,8 +13,8 @@ void main() {
 
   doWhenWindowReady(() {
     const initialSize = Size(1400, 800);
-    appWindow.minSize = const Size(1150, 0);
-    //appWindow.maxSize = initialSize;
+    appWindow.minSize = const Size(1150, 700);
+    appWindow.maxSize = initialSize;
     appWindow.size = initialSize;
     appWindow.show();
   });
@@ -45,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: const Color(0xff1b0a20),
       body: FutureBuilder(
-        future: Git.init(),
+        future: initialize(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(
@@ -78,17 +80,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
-  final List<Widget> pages = [
-    Column(children: const [
-      Expanded(
-        child: Text(
-          "INICIO",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    ]),
-    ExampleBrowser(),
-    const Text(
+  final List<Widget> pages = const [
+    HomeScreen(),
+    MapScreen(),
+    Text(
       "SETTINGS",
       style: TextStyle(color: Colors.white),
     )
@@ -109,9 +104,7 @@ class _MainScreenState extends State<MainScreen> {
               () => setState(() => currentIndex = 2),
             ],
           ),
-          Expanded(
-            child: pages[currentIndex],
-          ),
+          pages[currentIndex],
         ],
       ),
       AnimatedPositioned(
@@ -124,4 +117,9 @@ class _MainScreenState extends State<MainScreen> {
       ),
     ]);
   }
+}
+
+Future<String> initialize() async {
+  await Server.init();
+  return await Git.init();
 }

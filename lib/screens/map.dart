@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -9,19 +9,21 @@ import 'package:webview_windows/webview_windows.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-class ExampleBrowser extends StatefulWidget {
+class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
+
   @override
-  State<ExampleBrowser> createState() => _ExampleBrowser();
+  State<MapScreen> createState() => _MapScreen();
 }
 
-class _ExampleBrowser extends State<ExampleBrowser> {
+class _MapScreen extends State<MapScreen> {
   final _controller = WebviewController();
   final _textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    if (Platform.isWindows) initPlatformState();
   }
 
   Future<void> initPlatformState() async {
@@ -69,6 +71,15 @@ class _ExampleBrowser extends State<ExampleBrowser> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Platform.isWindows) {
+      return const Center(
+        child: Text(
+          "Para utilizar esta función debes tener Windows",
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+
     return FutureBuilder(
       future: outdatedVersion(),
       builder: (context, snapshot) {

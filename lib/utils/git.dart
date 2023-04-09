@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:launcher/utils/constants.dart';
+import 'package:launcher/utils/data.dart';
 import 'package:simple_git/simple_git.dart';
 
 class Git {

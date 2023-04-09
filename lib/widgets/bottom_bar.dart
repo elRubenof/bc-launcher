@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:launcher/utils/utility.dart';
+import 'package:launcher/utils/data.dart';
+import 'package:launcher/utils/minecraft.dart';
 import 'package:launcher/widgets/mouse_icon_button.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
@@ -14,6 +18,9 @@ class BottomBar extends StatefulWidget {
 }
 
 class _BottomBarState extends State<BottomBar> {
+  int rotation = 0;
+  int taps = 0;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -37,19 +44,29 @@ class _BottomBarState extends State<BottomBar> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 40,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    margin: const EdgeInsets.only(right: 10),
-                    child:
-                        SvgPicture.asset("assets/amper.svg", color: textColor),
+                  GestureDetector(
+                    onTap: () {
+                      if (++taps % 5 == 0) {
+                        setState(() => rotation -= 1);
+                      }
+                    },
+                    child: Container(
+                      width: 40,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      margin: const EdgeInsets.only(right: 10),
+                      child: AnimatedRotation(
+                          turns: rotation.toDouble(),
+                          duration: const Duration(milliseconds: 280),
+                          child: SvgPicture.asset("assets/amper.svg",
+                              color: textColor)),
+                    ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("BOLUDO´S COMPANY ®", style: brandStyle),
-                      Text("NOT AFFILLATED WITH MOJANG. AB.", style: brandStyle)
+                      Text("NOT AFFILIATED WITH MOJANG. AB.", style: brandStyle)
                     ],
                   ),
                 ],
@@ -59,17 +76,25 @@ class _BottomBarState extends State<BottomBar> {
                   MouseIconButton(
                     icon: Icons.image,
                     size: 17.0,
+                    toolTip: "Screenshots",
                     color: textColor,
                     hoverColor: Colors.white.withOpacity(0.5),
                     backgroundSize: 35.0,
                     backgroundColor: Colors.white.withOpacity(0.12),
-                    onTap: () => print("screenshots"),
+                    onTap: () async {
+                      Directory screenshots =
+                          Directory("$minecraftPath/screenshots");
+
+                      await screenshots.create();
+                      launchUrlString("file://${screenshots.path}");
+                    },
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 15),
                     child: MouseIconButton(
                       icon: Icons.autorenew,
                       size: 17.0,
+                      toolTip: "Sincronizar",
                       color: textColor,
                       hoverColor: Colors.white.withOpacity(0.5),
                       backgroundSize: 35.0,
@@ -102,10 +127,10 @@ class _BottomBarState extends State<BottomBar> {
                             child: Transform.scale(
                               scale: 0.5,
                               child: CupertinoSwitch(
-                                value: fullscreen,
+                                value: Minecraft.fullscreen,
                                 activeColor: const Color(0xff7a4aee),
                                 onChanged: (val) =>
-                                    setState(() => fullscreen = val),
+                                    setState(() => Minecraft.fullscreen = val),
                               ),
                             ),
                           ),
@@ -141,7 +166,7 @@ class _BottomBarState extends State<BottomBar> {
                     "PLAY",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () => print("PLAY"),
+                  onPressed: () => Minecraft.test(),
                 ),
               ),
             ),

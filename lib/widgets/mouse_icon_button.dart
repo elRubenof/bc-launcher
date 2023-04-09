@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MouseIconButton extends StatefulWidget {
   final IconData icon;
   final GestureTapCallback onTap;
-  final color, size, backgroundSize, hoverColor, backgroundColor;
+  final color, size, backgroundSize, hoverColor, backgroundColor, toolTip;
 
   const MouseIconButton(
       {Key? key,
@@ -13,7 +13,8 @@ class MouseIconButton extends StatefulWidget {
       this.size,
       this.backgroundSize,
       this.hoverColor,
-      this.backgroundColor})
+      this.backgroundColor,
+      this.toolTip})
       : super(key: key);
 
   @override
@@ -25,7 +26,14 @@ class _MouseIconButtonState extends State<MouseIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Tooltip(
+      waitDuration: const Duration(milliseconds: 500),
+      decoration: BoxDecoration(
+        color: widget.backgroundColor,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      message: widget.toolTip ?? "",
+      child: InkWell(
         onTap: () => widget.onTap(),
         onHover: (value) => setState(() => hover = value),
         child: Container(
@@ -45,6 +53,8 @@ class _MouseIconButtonState extends State<MouseIconButton> {
                 : widget.color ?? Colors.white,
             size: widget.size,
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

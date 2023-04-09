@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
@@ -79,9 +78,7 @@ class _NavBarState extends State<NavBar> {
           MouseButton(
             label: "MAPA",
             icon: Icons.map_sharp,
-            onTap: () => Platform.isWindows
-                ? setState(() => widget.changeIndex[1]())
-                : null,
+            onTap: () => setState(() => widget.changeIndex[1]()),
             selected: widget.currentIndex == 1,
             selectedLine: true,
           ),
