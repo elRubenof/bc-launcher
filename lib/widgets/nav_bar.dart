@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:launcher/utils/microsoft.dart';
+import 'package:launcher/utils/utility.dart';
 import 'package:launcher/widgets/mouse_button.dart';
 import 'package:launcher/widgets/mouse_icon_button.dart';
 
@@ -21,8 +23,7 @@ class NavBar extends StatefulWidget {
 }
 
 class _NavBarState extends State<NavBar> {
-  List<String> accounts = ['XxFLOYxX', 'elRubenof_YT', 'Añadir Cuenta'];
-  String dropdownValue = 'XxFLOYxX';
+  String dropdownValue = Utility.selectedAccount.username;
 
   @override
   Widget build(BuildContext context) {
@@ -96,39 +97,57 @@ class _NavBarState extends State<NavBar> {
 
   Widget account() {
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        width: 280,
-        height: double.infinity,
-        color: Colors.white.withOpacity(0.06),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            accountSelector(),
-            Container(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-              height: 25,
-            ),
-            Row(
-              children: [
-                MouseIconButton(
-                  icon: Icons.logout_rounded,
-                  color: Colors.white.withOpacity(0.2),
-                  hoverColor: Colors.red[700],
-                  size: 18.0,
-                  onTap: () => log("LOGOUT"),
-                ),
-                MouseIconButton(
-                  icon: Icons.notifications,
-                  color: Colors.white.withOpacity(0.2),
-                  hoverColor: Colors.white,
-                  size: 18.0,
-                  onTap: () => log("NOTIFICATIONS"),
-                ),
-              ],
-            )
-          ],
-        ));
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      width: 280,
+      height: double.infinity,
+      color: Colors.white.withOpacity(0.06),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          accountSelector(),
+          Container(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
+            height: 25,
+          ),
+          Row(
+            children: [
+              MouseIconButton(
+                icon: Icons.logout_rounded,
+                color: Colors.white.withOpacity(0.2),
+                hoverColor: Colors.red[700],
+                size: 18.0,
+                onTap: () async {
+                  Utility.isLoading.value = true;
+
+                  Utility.accounts.removeWhere(
+                      (e) => e.uuid == Utility.selectedAccount.uuid);
+
+                  if (Utility.accounts.isEmpty) {
+                    await Microsoft.loginFromBrowser();
+                  } else {
+                    Utility.selectedAccount = Utility.accounts[0];
+                    await Microsoft.loginUser(Utility.selectedAccount.username);
+                  }
+
+                  Utility.isLoading.value = false;
+                  setState(() {
+                    dropdownValue = Utility.selectedAccount.username;
+                  });
+                },
+              ),
+              MouseIconButton(
+                icon: Icons.notifications,
+                color: Colors.white.withOpacity(0.2),
+                hoverColor: Colors.white,
+                size: 18.0,
+                onTap: () => log("NOTIFICATIONS"),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   Widget accountSelector() {
@@ -136,36 +155,43 @@ class _NavBarState extends State<NavBar> {
       value: dropdownValue,
       underline: Container(),
       dropdownColor: const Color(0xff23162A),
-      onChanged: (String? newValue) {
-        if (newValue != "Añadir Cuenta") {
-          accounts.remove(newValue);
-          accounts.insert(0, newValue ?? "Error");
-          setState(() {
-            dropdownValue = newValue!;
-          });
-        } else {
-          log("Añadir Cuenta");
+      onChanged: (String? newValue) async {
+        if (newValue == dropdownValue) return;
+
+        Utility.isLoading.value = true;
+
+        if (newValue == "Añadir Cuenta") {
+          await Microsoft.loginFromBrowser();
+          Utility.isLoading.value = false;
+          setState(() {});
+          return;
         }
+
+        await Microsoft.loginUser(newValue!);
+        Utility.isLoading.value = false;
+        setState(() => dropdownValue = newValue);
       },
-      items: accounts.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-            value: value,
-            child: Row(children: [
-              Container(
-                  width: 25,
-                  margin: const EdgeInsets.symmetric(horizontal: 14),
-                  child: value != "Añadir Cuenta"
-                      ? Image.network("https://mc-heads.net/avatar/$value")
-                      : Image.asset("assets/plus.png")),
-              Container(
-                  constraints: const BoxConstraints(maxWidth: 84),
-                  child: Text(
-                    value,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                  ))
-            ]));
-      }).toList(),
+      items: Utility.accounts.map<DropdownMenuItem<String>>((e) {
+            return DropdownMenuItem<String>(
+                value: e.username,
+                child: Row(children: [
+                  Container(
+                    width: 25,
+                    margin: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Image.network(
+                        "https://mc-heads.net/avatar/${e.username}"),
+                  ),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 84),
+                    child: Text(
+                      e.username,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  )
+                ]));
+          }).toList() +
+          [addAccountItem()],
     );
   }
 
@@ -193,6 +219,27 @@ class _NavBarState extends State<NavBar> {
             backgroundColor: Colors.white.withOpacity(0.12),
             onTap: () => appWindow.close(),
           ),
+        ],
+      ),
+    );
+  }
+
+  DropdownMenuItem<String> addAccountItem() {
+    return DropdownMenuItem<String>(
+      value: "Añadir Cuenta",
+      child: Row(
+        children: [
+          Container(
+              width: 25,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              child: Image.asset("assets/plus.png")),
+          Container(
+              constraints: const BoxConstraints(maxWidth: 84),
+              child: const Text(
+                "Añadir Cuenta",
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ))
         ],
       ),
     );

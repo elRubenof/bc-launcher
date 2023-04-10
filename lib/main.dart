@@ -1,14 +1,17 @@
+import 'dart:io';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:launcher/screens/home.dart';
 import 'package:launcher/screens/map.dart';
-import 'package:launcher/utils/git.dart';
+import 'package:launcher/screens/settings.dart';
 import 'package:launcher/utils/palette.dart';
-import 'package:launcher/utils/server.dart';
+import 'package:launcher/utils/utility.dart';
 import 'package:launcher/widgets/bottom_bar.dart';
 import 'package:launcher/widgets/nav_bar.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -47,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: const Color(0xff1b0a20),
       body: FutureBuilder(
-        future: initialize(),
+        future: Utility.initApp(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(
@@ -83,10 +86,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> pages = const [
     HomeScreen(),
     MapScreen(),
-    Text(
-      "SETTINGS",
-      style: TextStyle(color: Colors.white),
-    )
+    SettingsScreen(),
   ];
 
   @override
@@ -115,11 +115,19 @@ class _MainScreenState extends State<MainScreen> {
           child: const BottomBar(),
         ),
       ),
+      ValueListenableBuilder(
+          valueListenable: Utility.isLoading,
+          builder: (context, bool value, _) {
+            return value
+                ? Container(
+                    color: Colors.black.withOpacity(0.4),
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  )
+                : Container();
+          })
     ]);
   }
-}
-
-Future<String> initialize() async {
-  await Server.init();
-  return await Git.init();
 }

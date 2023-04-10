@@ -1,6 +1,9 @@
 import 'dart:io';
 
-final String minecraftPath = "${Directory.current.path}/.minecraft";
+late Directory documentsDirectory;
+final String minecraftPath = "${documentsDirectory.path}/minecraft";
+
+const String minecraftApi = "https://api.minecraftservices.com";
 
 final news = [
   {

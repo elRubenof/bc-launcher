@@ -72,10 +72,12 @@ class _MapScreen extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     if (!Platform.isWindows) {
-      return const Center(
-        child: Text(
-          "Para utilizar esta función debes tener Windows",
-          style: TextStyle(color: Colors.white, fontSize: 18),
+      return const Expanded(
+        child: Center(
+          child: Text(
+            "Para utilizar esta función debes utilizar Windows",
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
         ),
       );
     }
