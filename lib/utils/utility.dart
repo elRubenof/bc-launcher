@@ -15,6 +15,7 @@ class Utility {
 
   static int allocatedRAM = 12;
   static bool autoConnect = true;
+  static bool autoUpdate = true;
   static bool autoClose = true;
 
   static List<MinecraftAccount> accounts = [];
@@ -47,6 +48,7 @@ class Utility {
 
     allocatedRAM = pref.getInt('allocatedRAM') ?? 12;
     autoConnect = pref.getBool('autoConnect') ?? true;
+    autoUpdate = pref.getBool('autoUpdate') ?? true;
     autoClose = pref.getBool('autoClose') ?? true;
   }
 
@@ -63,6 +65,7 @@ class Utility {
       String content = await accountsFile.readAsString();
       List users = json.decode(content);
 
+      accounts.clear();
       for (var user in users) {
         MinecraftAccount mcAccount = MinecraftAccount.loadFull(
           user['uuid']!,

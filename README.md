@@ -16,11 +16,12 @@ Fases del proyecto a realizar:
 - [ ] Revisado y puesta a punto
 <br>
 
-## 💻 Pre-Requisitos
+## 💻 Requisitos
 
 Antes de ejecutar el programa asegúrate de lo siguiente:
 * Dispones Java instalado en el ordenador
 * Dispones de al menos `5GB` de espacio libre.
+* <a href="https://git-scm.com/download/">Git</a> (Añadido al path)
 <br>
 
 ## 🚀 Instalación del Launcher
@@ -45,7 +46,6 @@ Con el Launcher podrás realizar las siguiente acciones:
 * Reinstalar de manera sencilla el juego.
 * Ajustar la cantidad de RAM asignada y parámetros variados del juego.
 * Cambiar entre múltiples cuentas.
-* Seleccionar skin y visualizar el historial de skins de tu jugador.
 <br>
 
 ## 📎 Descargas
@@ -64,7 +64,7 @@ Colaboradores del proyecto:
 <table>
   <tr>
     <td align="center">
-      <a href="#">
+      <a href="https://github.com/elRubenof">
         <img src="https://avatars.githubusercontent.com/elRubenof" width="100px;" alt="Foto de elRubenof en GitHub"/><br>
         <sub>
           <b>elRubenof</b>

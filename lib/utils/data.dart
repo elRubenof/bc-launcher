@@ -1,5 +1,7 @@
 import 'dart:io';
 
+const String appVersion = "1.0.0";
+
 late Directory documentsDirectory;
 final String minecraftPath = "${documentsDirectory.path}/minecraft";
 

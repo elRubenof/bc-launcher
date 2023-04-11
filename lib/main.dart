@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:launcher/screens/home.dart';
@@ -10,8 +8,9 @@ import 'package:launcher/utils/utility.dart';
 import 'package:launcher/widgets/bottom_bar.dart';
 import 'package:launcher/widgets/nav_bar.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -59,10 +58,12 @@ class _MyHomePageState extends State<MyHomePage> {
           }
 
           if (snapshot.data as String != "Success") {
-            Scaffold.of(context)
-                .showBottomSheet((context) => Text(snapshot.data as String));
-
-            return Container();
+            return Center(
+              child: Text(
+                snapshot.data as String,
+                style: const TextStyle(color: Colors.white),
+              ),
+            );
           }
 
           return const MainScreen();
