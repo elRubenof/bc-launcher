@@ -11,7 +11,7 @@ class ServerStatus extends StatelessWidget {
         (index) => Container(
             margin: const EdgeInsets.only(left: 7),
             child: Image.network(
-              "https://mc-heads.net/avatar/${Server.players[index]['uuid']}",
+              "https://mc-heads.net/avatar/${Server.players[index]['name_raw']}",
               height: 20,
             )));
 

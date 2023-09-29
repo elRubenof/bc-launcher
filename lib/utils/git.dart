@@ -80,4 +80,16 @@ class Git {
     await gitAsync.raw(['checkout', 'main'], showOutput: true);
     await _update(gitAsync);
   }
+
+  static Future<void> donwloadMinecraft() async {
+    final SimpleGitAsync gitAsync = SimpleGitAsync(
+      options: SimpleGitOptions(
+        showOutput: true,
+        binary: 'git',
+        baseDir: minecraftPath,
+      ),
+    );
+
+    await _create(gitAsync, "minecraft");
+  }
 }

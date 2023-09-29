@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:launcher/utils/data.dart';
 import 'dart:async';
 
 import 'package:webview_windows/webview_windows.dart';
@@ -35,7 +36,7 @@ class _MapScreen extends State<MapScreen> {
 
       await _controller.setBackgroundColor(Colors.transparent);
       await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-      await _controller.loadUrl("https://map.massivecraft.com/?nogui=true");
+      await _controller.loadUrl("http://$serverIp:8123");
 
       if (!mounted) return;
       setState(() {});
@@ -99,9 +100,11 @@ class _MapScreen extends State<MapScreen> {
         if (!_controller.value.isInitialized) {
           return Container();
         } else {
-          return Webview(
-            _controller,
-            permissionRequested: _onPermissionRequested,
+          return Expanded(
+            child: Webview(
+              _controller,
+              permissionRequested: _onPermissionRequested,
+            ),
           );
         }
       },

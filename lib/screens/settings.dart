@@ -184,8 +184,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           width: 210,
           child: CupertinoButton.filled(
             padding: EdgeInsets.zero,
-            onPressed: () {},
-            child: const Text("Buscar actualizaciones"),
+            onPressed: () async {
+              Utility.isLoading.value = true;
+
+              try {
+                Directory minecraftDir = Directory(minecraftPath);
+                await minecraftDir.delete(recursive: true);
+              } catch (e) {}
+                await Utility.initApp();
+
+              Utility.isLoading.value = false;
+            },
+            child: const Text("Reinstalar"),
           ),
         ),
       ],

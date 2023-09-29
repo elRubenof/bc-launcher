@@ -3,6 +3,8 @@ import 'package:launcher/utils/data.dart';
 import 'package:launcher/widgets/mouse_icon_button.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../utils/server.dart';
+
 class LastNews extends StatefulWidget {
   const LastNews({super.key});
 
@@ -35,7 +37,7 @@ class _LastNewsState extends State<LastNews> {
               ),
               Row(
                 children: List.generate(
-                  news.length,
+                  Server.news.length,
                   (index) => MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
@@ -61,7 +63,7 @@ class _LastNewsState extends State<LastNews> {
               )
             ],
           ),
-          NewsCard(newData: news[currentIndex]),
+          NewsCard(newData: Server.news[currentIndex]),
         ],
       ),
     );
@@ -69,7 +71,7 @@ class _LastNewsState extends State<LastNews> {
 }
 
 class NewsCard extends StatelessWidget {
-  final Map<String, String> newData;
+  final Map newData;
 
   const NewsCard({super.key, required this.newData});
 

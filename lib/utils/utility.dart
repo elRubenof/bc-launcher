@@ -26,8 +26,11 @@ class Utility {
 
     // Compruebo si existe el directorio .minecraft y lo creo en consecuencia
     Directory minecraftDir = Directory(minecraftPath);
-    if (!await minecraftDir.exists()) print("DESCARGAR .minecraft");
-    await minecraftDir.create();
+
+    if (!await minecraftDir.exists()) {      
+      await minecraftDir.create();
+      await Git.donwloadMinecraft();
+    }
 
     //Cargo los usuarios desde el archivo
     await _loadUsers();

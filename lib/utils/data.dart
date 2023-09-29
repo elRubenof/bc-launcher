@@ -6,6 +6,7 @@ late Directory documentsDirectory;
 final String minecraftPath = "${documentsDirectory.path}/minecraft";
 
 const String minecraftApi = "https://api.minecraftservices.com";
+const String serverIp = "server.spartaland.es";
 
 final news = [
   {
