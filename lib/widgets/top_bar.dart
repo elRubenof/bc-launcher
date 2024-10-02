@@ -1,4 +1,6 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
@@ -34,12 +36,43 @@ class _TopBarState extends State<TopBar> {
                   width: 100,
                   color: Constants.mainColor,
                   alignment: Alignment.center,
-                  child: const Text("X", style: TextStyle(color: Colors.white)), //LOGO PLACEHOLDER
+                  child: const Text("X",
+                      style: TextStyle(color: Colors.white)), //LOGO PLACEHOLDER
                 ),
+                tabs(),
                 windowButtons(),
               ],
             ),
           )
+        ],
+      ),
+    );
+  }
+
+  Widget tabs() {
+    final l = Utility.getLocalizations(context);
+
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.2,
+      constraints: const BoxConstraints(minWidth: 360),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TabButton(
+            label: l.home,
+            icon: Icons.home,
+            tab: 0,
+          ),
+          TabButton(
+            label: l.map,
+            icon: Icons.map,
+            tab: 1,
+          ),
+          TabButton(
+            label: l.settings,
+            icon: Icons.settings,
+            tab: 2,
+          ),
         ],
       ),
     );

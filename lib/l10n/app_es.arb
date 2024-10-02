@@ -1,3 +1,5 @@
 {
-    "helloWorld": "¡Hola Mundo!"
+  "home": "Inicio",
+  "map": "Mapa",
+  "settings": "Ajustes"
 }

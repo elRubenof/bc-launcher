@@ -1,8 +1,9 @@
-
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+final ValueNotifier selectedTab = ValueNotifier<int>(0);
 
 void main() {
   runApp(const MyApp());
