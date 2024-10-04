@@ -1,3 +1,4 @@
+import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
@@ -42,10 +43,26 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Column(
+    final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      body: Stack(
         children: [
-          TopBar(),
+          Image.asset("assets/background.png",
+              height: height, width: width, fit: BoxFit.cover),
+          Container(
+            height: height,
+            color: Constants.backgroundColor.withOpacity(0.85),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Constants.topBarHeight),
+            child: ValueListenableBuilder(
+              valueListenable: selectedTab,
+              builder: (context, value, child) => Constants.pages[value],
+            ),
+          ),
+          const TopBar(),
         ],
       ),
     );

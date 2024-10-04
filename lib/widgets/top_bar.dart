@@ -16,23 +16,22 @@ class _TopBarState extends State<TopBar> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    const topBarHeight = 60.0;
 
     return Container(
       width: width,
-      height: topBarHeight,
+      height: Constants.topBarHeight,
       color: Constants.backgroundColor,
       child: Stack(
         children: [
           MoveWindow(),
           Container(
-            height: topBarHeight,
+            height: Constants.topBarHeight,
             padding: const EdgeInsets.only(left: 117, right: 65),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  height: topBarHeight,
+                  height: Constants.topBarHeight,
                   width: 100,
                   color: Constants.mainColor,
                   alignment: Alignment.center,
