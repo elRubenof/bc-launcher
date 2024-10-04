@@ -26,7 +26,7 @@ class _TopBarState extends State<TopBar> {
           MoveWindow(),
           Container(
             height: Constants.topBarHeight,
-            padding: const EdgeInsets.only(left: 117, right: 65),
+            padding: const EdgeInsets.symmetric(horizontal: Constants.horizontalPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
