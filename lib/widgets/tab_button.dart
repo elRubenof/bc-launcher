@@ -72,7 +72,7 @@ class _TabButtonState extends State<TabButton> {
                       Text(
                         widget.label.toUpperCase(),
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Constants.textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),

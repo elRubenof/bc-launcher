@@ -1,4 +1,5 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/widgets/bottom_bar.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
@@ -47,23 +48,29 @@ class _MainPageState extends State<MainPage> {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Image.asset("assets/background.png",
-              height: height, width: width, fit: BoxFit.cover),
-          Container(
-            height: height,
-            color: Constants.backgroundColor.withOpacity(0.85),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: Constants.topBarHeight),
-            child: ValueListenableBuilder(
-              valueListenable: selectedTab,
-              builder: (context, value, child) => Constants.pages[value],
+      body: ValueListenableBuilder(
+        valueListenable: selectedTab,
+        builder: (context, index, child) => Stack(
+          children: [
+            Image.asset("assets/background.png",
+                height: height, width: width, fit: BoxFit.cover),
+            Container(
+              height: height,
+              color: Constants.backgroundColor.withOpacity(0.85),
             ),
-          ),
-          const TopBar(),
-        ],
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: Constants.topBarHeight),
+              child: Constants.pages[index],
+            ),
+            const TopBar(),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 250),
+              bottom: index == 0 ? 0 : -200,
+              child: const BottomBar(),
+            )
+          ],
+        ),
       ),
     );
   }
