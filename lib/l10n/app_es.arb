@@ -2,5 +2,8 @@
   "home": "Inicio",
   "map": "Mapa",
   "settings": "Ajustes",
-  "play": "Jugar"
+  "play": "Jugar",
+  "screenshots": "Capturas de pantalla",
+  "synchronize": "Sincronizar",
+  "autoConnect": "Auto-Conectar"
 }

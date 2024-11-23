@@ -1,4 +1,5 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -7,7 +8,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ValueNotifier selectedTab = ValueNotifier<int>(0);
 
-void main() {
+void main() async {
+  await Utility.init();
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -52,7 +54,7 @@ class _MainPageState extends State<MainPage> {
         valueListenable: selectedTab,
         builder: (context, index, child) => Stack(
           children: [
-            Image.asset("assets/background.png",
+            Image.asset("assets/img/background.png",
                 height: height, width: width, fit: BoxFit.cover),
             Container(
               height: height,
@@ -68,7 +70,19 @@ class _MainPageState extends State<MainPage> {
               duration: const Duration(milliseconds: 250),
               bottom: index == 0 ? 0 : -200,
               child: const BottomBar(),
-            )
+            ),
+            ValueListenableBuilder(
+              valueListenable: Utility.isLoading,
+              builder: (context, value, child) => value
+                  ? Container(
+                      color: Colors.black.withOpacity(0.4),
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    )
+                  : Container(),
+            ),
           ],
         ),
       ),

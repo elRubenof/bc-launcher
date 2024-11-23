@@ -2,5 +2,8 @@
   "home": "Home",
   "map": "Map",
   "settings": "Settings",
-  "play": "Play"
+  "play": "Play",
+  "screenshots": "Screenshots",
+  "synchronize": "Synchronize",
+  "autoConnect": "Auto-Connect"
 }

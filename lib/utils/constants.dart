@@ -13,4 +13,7 @@ class Constants {
     SizedBox(),
     SizedBox(),
   ];
+
+  static const devLogo = "";
+  static const devName = "";
 }
