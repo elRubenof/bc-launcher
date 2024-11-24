@@ -67,7 +67,10 @@ class _BottomBarState extends State<BottomBar> {
               duration: const Duration(milliseconds: 280),
               child: SvgPicture.asset(
                 Constants.devLogo,
-                colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.2), BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.2),
+                  BlendMode.srcIn,
+                ),
                 height: Constants.topBarHeight * 0.65,
               ),
             ),
@@ -121,8 +124,13 @@ class _BottomBarState extends State<BottomBar> {
             hoverColor: Colors.white.withOpacity(0.5),
             backgroundSize: 35.0,
             backgroundColor: Colors.white.withOpacity(0.12),
-            onTap: () {
-              //TODO Re-download minecraft folder
+            onTap: () async {
+              Utility.isLoading.value = true;
+
+              await Utility.minecraftDirectory.delete(recursive: true);
+              await Utility.sincMods(null);
+
+              Utility.isLoading.value = false;
             },
           ),
         ),

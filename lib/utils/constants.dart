@@ -14,6 +14,8 @@ class Constants {
     SizedBox(),
   ];
 
+  static const modsRepo = "";
+
   static const devLogo = "";
   static const devName = "";
 }
