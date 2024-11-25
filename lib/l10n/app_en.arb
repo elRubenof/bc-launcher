@@ -5,5 +5,6 @@
   "play": "Play",
   "screenshots": "Screenshots",
   "synchronize": "Synchronize",
-  "autoConnect": "Auto-Connect"
+  "autoConnect": "Auto-Connect",
+  "syncMods": "Synchronizing mods"
 }

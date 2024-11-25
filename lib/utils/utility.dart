@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -10,36 +11,54 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Utility {
+  static final key = GlobalKey<NavigatorState>();
+
   static ValueNotifier<bool> isLoading = ValueNotifier(false);
-  static bool autoConnect = false;
+  static ValueNotifier<String> loadingState = ValueNotifier("");
   static late Directory minecraftDirectory;
-
-  static Future<void> init() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-
-    autoConnect = preferences.getBool("autoConnect") ?? false;
-
-    final supportDirectory = await getApplicationSupportDirectory();
-    minecraftDirectory = Directory("${supportDirectory.path}/.minecraft");
-    await minecraftDirectory.create();
-
-    if (Constants.modsRepo.isNotEmpty) await sincMods(null);
-  }
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
+  }
+
+  static Future<void> init() async {
+    Utility.isLoading.value = true;
+
+    await loadSettings();
+    await loadFiles();
+
+    Utility.isLoading.value = false;
+  }
+
+  static Future<void> loadSettings() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    Settings.autoConnect = preferences.getBool("autoConnect") ?? false;
+  }
+
+  static Future<void> loadFiles() async {
+    final supportDirectory = await getApplicationSupportDirectory();
+    minecraftDirectory = Directory("${supportDirectory.path}/.minecraft");
+
+    if (!minecraftDirectory.existsSync()) {
+      await minecraftDirectory.create();
+    }
+
+    if (Constants.modsRepo.isNotEmpty) await sincMods();
   }
 
   static Future<void> setAutoConnect(bool value) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
     await preferences.setBool("autoConnect", value);
-    autoConnect = value;
+    Settings.autoConnect = value;
   }
 
-  static Future<void> sincMods(dynamic x) async {
-    Directory modsDir = Directory("${minecraftDirectory.path}/mods");
+  static Future<void> sincMods() async {
+    final l = Utility.getLocalizations(key.currentContext!);
+    loadingState.value = l.syncMods;
 
+    Directory modsDir = Directory("${minecraftDirectory.path}/mods");
     if (await modsDir.exists()) {
       Repository repo;
 
@@ -47,7 +66,7 @@ class Utility {
         repo = Repository.open(modsDir.path);
       } catch (e) {
         await Utility.minecraftDirectory.delete(recursive: true);
-        await Utility.sincMods(null);
+        await Utility.sincMods();
 
         return;
       }
@@ -82,12 +101,11 @@ class Utility {
         ),
       );
     } else {
-      log("Cloning mods repo...");
-      await compute<Directory, void>(test, modsDir);
+      await compute<Directory, void>(cloneRepo, modsDir);
     }
   }
 
-  static void test(Directory modsDir) {
+  static void cloneRepo(Directory modsDir) {
     Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
   }
 }

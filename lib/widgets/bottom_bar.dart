@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
@@ -128,7 +129,7 @@ class _BottomBarState extends State<BottomBar> {
               Utility.isLoading.value = true;
 
               await Utility.minecraftDirectory.delete(recursive: true);
-              await Utility.sincMods(null);
+              await Utility.sincMods();
 
               Utility.isLoading.value = false;
             },
@@ -159,7 +160,7 @@ class _BottomBarState extends State<BottomBar> {
                   child: Transform.scale(
                     scale: 0.5,
                     child: CupertinoSwitch(
-                      value: Utility.autoConnect,
+                      value: Settings.autoConnect,
                       activeColor: const Color(0xff7a4aee),
                       onChanged: (value) async {
                         await Utility.setAutoConnect(value);

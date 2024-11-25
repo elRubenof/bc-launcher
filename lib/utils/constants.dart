@@ -16,6 +16,7 @@ class Constants {
 
   static const modsRepo = "";
 
+  static const appLogo = "";
   static const devLogo = "";
   static const devName = "";
 }
