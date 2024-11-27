@@ -19,4 +19,7 @@ class Constants {
   static const appLogo = "";
   static const devLogo = "";
   static const devName = "";
+
+  static String clientID = "";
+  static String redirectUrl = "";
 }

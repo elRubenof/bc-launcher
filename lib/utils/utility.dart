@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Utility {
   static final key = GlobalKey<NavigatorState>();
 
-  static ValueNotifier<bool> isLoading = ValueNotifier(false);
+  static ValueNotifier<bool> isLoging = ValueNotifier(false);
+  static ValueNotifier<bool> isLoading = ValueNotifier(true);
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static late Directory minecraftDirectory;
 
@@ -24,6 +27,7 @@ class Utility {
   static Future<void> init() async {
     Utility.isLoading.value = true;
 
+    await Minecraft.authenticateOauth2();
     await loadSettings();
     await loadFiles();
 
@@ -107,5 +111,11 @@ class Utility {
 
   static void cloneRepo(Directory modsDir) {
     Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
+  }
+
+  static void showLoging(Uri authorizationUrl) {
+    LoginScreen.authorizationUrl = authorizationUrl;
+
+    isLoging.value = true;
   }
 }

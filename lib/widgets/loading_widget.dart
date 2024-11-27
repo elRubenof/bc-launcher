@@ -15,42 +15,47 @@ class _LoadingWidgetState extends State<LoadingWidget> {
   final color = Colors.white.withOpacity(0.8);
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SizedBox(
-          height: Constants.topBarHeight,
-          child: MoveWindow(),
-        ),
-        Center(
-          child: Constants.appLogo.isNotEmpty
-              ? SvgPicture.asset(
-                  Constants.appLogo,
-                  height: 300,
-                  colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                )
-              : CircularProgressIndicator(color: color),
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+    return ValueListenableBuilder(
+      valueListenable: Utility.isLoging,
+      builder: (context, isLoging, child) {
+        return Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: ValueListenableBuilder(
-                valueListenable: Utility.loadingState,
-                builder: (context, value, child) => Text(
-                  value,
-                  style: TextStyle(color: color),
-                ),
-              ),
+            SizedBox(
+              height: Constants.topBarHeight,
+              child: MoveWindow(),
             ),
-            if (Constants.appLogo.isNotEmpty)
-              LinearProgressIndicator(
-                color: color,
-                backgroundColor: Colors.transparent,
-              ),
+            Center(
+              child: Constants.appLogo.isNotEmpty
+                  ? SvgPicture.asset(
+                      Constants.appLogo,
+                      height: 300,
+                      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                    )
+                  : CircularProgressIndicator(color: color),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ValueListenableBuilder(
+                    valueListenable: Utility.loadingState,
+                    builder: (context, value, child) => Text(
+                      value,
+                      style: TextStyle(color: color),
+                    ),
+                  ),
+                ),
+                if (Constants.appLogo.isNotEmpty)
+                  LinearProgressIndicator(
+                    color: color,
+                    backgroundColor: Colors.transparent,
+                  ),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
