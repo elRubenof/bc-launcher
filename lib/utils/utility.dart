@@ -58,8 +58,8 @@ class Utility {
     Settings.autoConnect = value;
   }
 
-  static Future<void> sincMods() async {
-    if (isAdmin()) return;
+  static Future<void> sincMods({bool force = false}) async {
+    if (isAdmin() && !force) return;
 
     final l = Utility.getLocalizations(key.currentContext!);
     loadingState.value = l.syncMods;
@@ -112,7 +112,8 @@ class Utility {
   }
 
   static void cloneRepo(Directory modsDir) {
-    Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
+    final repo = Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
+    repo.free();
   }
 
   static void showLoging(Uri authorizationUrl) {
