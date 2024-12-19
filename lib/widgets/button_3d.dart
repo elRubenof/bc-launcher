@@ -1,4 +1,5 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/utility.dart';
 import 'package:flutter/material.dart';
 
 class Button3D extends StatefulWidget {
@@ -117,19 +118,24 @@ class _Button3DState extends State<Button3D> {
   }
 
   void _pressed(_) {
+    if (Utility.isLaunching.value) return;
+
     setState(() {
       _top = 0;
       _lateral = 3.5;
     });
-    widget.onPressed();
   }
 
   void _unPressedOnTapUp(_) => _unPressed();
 
   void _unPressed() {
+    if (Utility.isLaunching.value) return;
+
     setState(() {
       _top = 7;
       _lateral = 0;
     });
+
+    Future.delayed(_duration).then((value) => widget.onPressed());
   }
 }

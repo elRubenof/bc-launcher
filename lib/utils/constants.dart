@@ -22,4 +22,6 @@ class Constants {
 
   static String clientID = "";
   static String redirectUrl = "";
+
+  static List<String> adminList = [];
 }

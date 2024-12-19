@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -27,29 +29,55 @@ class _BottomBarState extends State<BottomBar> {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        Container(
-          height: Constants.topBarHeight,
-          width: MediaQuery.of(context).size.width,
-          color: Constants.backgroundColor,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Constants.horizontalPadding,
+        Column(
+          children: [
+            ValueListenableBuilder(
+              valueListenable: Utility.isLaunching,
+              builder: (context, value, child) => SizedBox(
+                height: value ? 5 : 0,
+                width: MediaQuery.of(context).size.width,
+                child: LinearProgressIndicator(
+                  color: Constants.backgroundColor,
+                  backgroundColor: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                devInfo(),
-                launcherOptions(),
-              ],
+            Container(
+              height: Constants.topBarHeight,
+              width: MediaQuery.of(context).size.width,
+              color: Constants.backgroundColor,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Constants.horizontalPadding,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    devInfo(),
+                    launcherOptions(),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
         Button3D(
           title: l.play,
           width: 210,
           color: Constants.mainColor,
           secondaryColor: Constants.mainColorDarked,
-          onPressed: () => print("play"),
+          onPressed: () async {
+            Utility.isLaunching.value = true;
+
+            await Utility.sincMods();
+            await Minecraft.launch();
+
+            await Future.delayed(const Duration(seconds: 1));
+            appWindow.minimize();
+
+            Utility.isLaunching.value = false;
+          },
         ),
       ],
     );

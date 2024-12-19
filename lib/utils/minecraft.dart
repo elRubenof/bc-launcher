@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Minecraft {
+  static Profile? profile;
+
   static late HttpServer _redirectServer;
   static late Credentials _credentials;
 
@@ -16,7 +18,7 @@ class Minecraft {
   static const String _tokenEndpoint =
       "https://login.live.com/oauth20_token.srf";
 
-  static Future<Credentials> authenticateOauth2() async {
+  static authenticateOauth2() async {
     final preferences = await SharedPreferences.getInstance();
     final credentialsJson = preferences.getString("credentials") ?? "";
 
@@ -34,7 +36,8 @@ class Minecraft {
       await preferences.setString("credentials", credentials.toJson());
     }
 
-    return credentials;
+    _credentials = credentials;
+    profile = await getCurrentProfile(await getToken());
   }
 
   static Future<String> getToken() async {
@@ -80,6 +83,10 @@ class Minecraft {
     await _redirectServer.close();
 
     return params;
+  }
+
+  static Future<void> launch() async {
+    return;
   }
 }
 

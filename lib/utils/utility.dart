@@ -18,6 +18,7 @@ class Utility {
   static ValueNotifier<bool> isLoging = ValueNotifier(false);
   static ValueNotifier<bool> isLoading = ValueNotifier(true);
   static ValueNotifier<String> loadingState = ValueNotifier("");
+  static ValueNotifier<bool> isLaunching = ValueNotifier(false);
   static late Directory minecraftDirectory;
 
   static AppLocalizations getLocalizations(BuildContext context) {
@@ -28,7 +29,6 @@ class Utility {
     Utility.isLoading.value = true;
 
     await Minecraft.authenticateOauth2();
-    await loadSettings();
     await loadFiles();
 
     Utility.isLoading.value = false;
@@ -59,6 +59,8 @@ class Utility {
   }
 
   static Future<void> sincMods() async {
+    if (isAdmin()) return;
+
     final l = Utility.getLocalizations(key.currentContext!);
     loadingState.value = l.syncMods;
 
@@ -117,5 +119,11 @@ class Utility {
     LoginScreen.authorizationUrl = authorizationUrl;
 
     isLoging.value = true;
+  }
+
+  static bool isAdmin() {
+    if (Minecraft.profile == null) return false;
+
+    return Constants.adminList.contains(Minecraft.profile!.uuid);
   }
 }

@@ -11,6 +11,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 final ValueNotifier selectedTab = ValueNotifier<int>(0);
 
 void main() async {
+  await Utility.loadSettings();
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -75,8 +76,9 @@ class _MainPageState extends State<MainPage> {
                   color: Constants.backgroundColor.withOpacity(0.85),
                 ),
                 Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: Constants.topBarHeight),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: Constants.topBarHeight,
+                  ),
                   child: Constants.pages[index],
                 ),
                 const TopBar(),
