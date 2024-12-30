@@ -6,5 +6,7 @@
   "screenshots": "Capturas de pantalla",
   "synchronize": "Sincronizar",
   "autoConnect": "Auto-Conectar",
-  "syncMods": "Sincronizando mods"
+  "syncMods": "Sincronizando mods",
+  "availableUpdate": "Actualización disponible",
+  "update": "Actualizar"
 }

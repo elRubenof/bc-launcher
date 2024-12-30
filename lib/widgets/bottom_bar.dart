@@ -68,6 +68,7 @@ class _BottomBarState extends State<BottomBar> {
           color: Constants.mainColor,
           secondaryColor: Constants.mainColorDarked,
           onPressed: () async {
+            if (Utility.isLaunching.value) return;
             Utility.isLaunching.value = true;
 
             await Utility.sincMods();

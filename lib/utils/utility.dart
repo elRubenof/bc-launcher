@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:auto_update/auto_update.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -9,14 +11,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:git2dart/git2dart.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Utility {
   static final key = GlobalKey<NavigatorState>();
 
   static ValueNotifier<bool> isLoging = ValueNotifier(false);
-  static ValueNotifier<bool> isLoading = ValueNotifier(true);
+  static ValueNotifier<bool> isLoading = ValueNotifier(false);
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
   static late Directory minecraftDirectory;
@@ -112,7 +116,8 @@ class Utility {
   }
 
   static void cloneRepo(Directory modsDir) {
-    final repo = Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
+    final repo =
+        Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
     repo.free();
   }
 
@@ -126,5 +131,33 @@ class Utility {
     if (Minecraft.profile == null) return false;
 
     return Constants.adminList.contains(Minecraft.profile!.uuid);
+  }
+
+  static Future<bool> isUpdated() async {
+    if (Constants.versionEndPoint.isEmpty) return true;
+
+    final packageInfo = await PackageInfo.fromPlatform();
+    final versionResponse = await http.get(
+      Uri.parse(Constants.versionEndPoint),
+    );
+    final version = json.decode(versionResponse.body);
+
+    return packageInfo.version == version["version"];
+  }
+
+  static Future<bool> update() async {
+    if (!Platform.isWindows) return false;
+
+    try {
+      final versionResponse = await http.get(
+        Uri.parse(Constants.versionEndPoint),
+      );
+      final version = json.decode(versionResponse.body);
+
+      await AutoUpdate.downloadAndUpdate(version[Platform.operatingSystem]);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

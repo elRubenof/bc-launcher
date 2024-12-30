@@ -129,8 +129,6 @@ class _Button3DState extends State<Button3D> {
   void _unPressedOnTapUp(_) => _unPressed();
 
   void _unPressed() {
-    if (Utility.isLaunching.value) return;
-
     setState(() {
       _top = 7;
       _lateral = 0;

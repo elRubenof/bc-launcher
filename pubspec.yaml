@@ -48,6 +48,8 @@ dependencies:
   http: ^1.2.2
   flutter_inappwebview: ^6.1.5
   dart_minecraft: ^0.6.0
+  package_info_plus: ^8.1.2
+  auto_update: ^0.0.4
 
 dev_dependencies:
   flutter_test:

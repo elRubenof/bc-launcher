@@ -1,4 +1,5 @@
 import 'package:bc_launcher/screens/login_screen.dart';
+import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
@@ -9,9 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ValueNotifier selectedTab = ValueNotifier<int>(0);
+bool _updated = false;
 
 void main() async {
   await Utility.loadSettings();
+  _updated = await Utility.isUpdated();
+
   runApp(const MyApp());
 
   doWhenWindowReady(() {
@@ -26,7 +30,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -34,7 +37,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const MainPage(),
+      home: _updated ? const MainPage() : const UpdateScreen(),
     );
   }
 }

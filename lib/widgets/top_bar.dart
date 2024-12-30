@@ -95,18 +95,19 @@ class _TopBarState extends State<TopBar> {
   }
 }
 
-Widget windowButtons() {
+Widget windowButtons({bool enableSettings = true}) {
   return SizedBox(
-    width: 100,
+    width: enableSettings ? 100 : 66,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        MouseIconButton(
-          icon: Icons.settings,
-          size: 14.0,
-          backgroundColor: Colors.white,
-          onTap: () => appWindow.minimize(),
-        ),
+        if (enableSettings)
+          MouseIconButton(
+            icon: Icons.settings,
+            size: 14.0,
+            backgroundColor: Colors.white,
+            onTap: () => appWindow.minimize(),
+          ),
         MouseIconButton(
           icon: Icons.minimize,
           size: 14.0,
