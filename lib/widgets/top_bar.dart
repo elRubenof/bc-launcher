@@ -1,4 +1,5 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
@@ -35,6 +36,7 @@ class _TopBarState extends State<TopBar> {
               children: [
                 logo(),
                 tabs(),
+                account(),
                 windowButtons(),
               ],
             ),
@@ -93,6 +95,58 @@ class _TopBarState extends State<TopBar> {
       ),
     );
   }
+}
+
+Widget account() {
+  return ValueListenableBuilder(
+    valueListenable: Minecraft.profile,
+    builder: (context, value, child) {
+      if (value == null) return Container();
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22),
+        width: 215,
+        height: double.infinity,
+        color: Colors.white.withOpacity(0.06),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 25,
+                  margin: const EdgeInsets.only(right: 14),
+                  child: Image.network(
+                      "https://mc-heads.net/avatar/${value.name}"),
+                ),
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 84),
+                  child: Text(
+                    value.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                )
+              ],
+            ),
+            Container(
+              color: Colors.white.withOpacity(0.15),
+              margin: const EdgeInsets.only(left: 7),
+              width: 1.5,
+              height: 25,
+            ),
+            MouseIconButton(
+              icon: Icons.logout_rounded,
+              color: Colors.white.withOpacity(0.2),
+              hoverColor: Colors.red[700],
+              size: 18.0,
+              onTap: Minecraft.logout,
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 Widget windowButtons({bool enableSettings = true}) {

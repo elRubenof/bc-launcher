@@ -128,9 +128,9 @@ class Utility {
   }
 
   static bool isAdmin() {
-    if (Minecraft.profile == null) return false;
+    if (Minecraft.profile.value == null) return false;
 
-    return Constants.adminList.contains(Minecraft.profile!.uuid);
+    return Constants.adminList.contains(Minecraft.profile.value!.uuid);
   }
 
   static Future<bool> isUpdated() async {

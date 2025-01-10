@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
+import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Minecraft {
-  static Profile? profile;
+  static ValueNotifier<Profile?> profile = ValueNotifier(null);
 
   static late HttpServer _redirectServer;
   static late Credentials _credentials;
@@ -22,22 +25,27 @@ class Minecraft {
     final preferences = await SharedPreferences.getInstance();
     final credentialsJson = preferences.getString("credentials") ?? "";
 
-    Credentials credentials;
-    if (credentialsJson.isNotEmpty) {
-      try {
+    try {
+      Credentials credentials;
+      if (credentialsJson.isNotEmpty) {
         credentials = Credentials.fromJson(credentialsJson);
         credentials = await credentials.refresh(identifier: Constants.clientID);
-      } catch (e) {
-        await preferences.remove("credentials");
-        return await authenticateOauth2();
+      } else {
+        credentials = await Minecraft._microsoftCredentials();
+        await preferences.setString("credentials", credentials.toJson());
       }
-    } else {
-      credentials = await Minecraft._microsoftCredentials();
-      await preferences.setString("credentials", credentials.toJson());
+      _credentials = credentials;
+      profile.value = await getCurrentProfile(await getToken());
+    } catch (e) {
+      return await logout();
     }
+  }
 
-    _credentials = credentials;
-    profile = await getCurrentProfile(await getToken());
+  static Future<void> logout() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove("credentials");
+
+    await authenticateOauth2();
   }
 
   static Future<String> getToken() async {

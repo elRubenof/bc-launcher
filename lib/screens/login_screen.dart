@@ -29,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
           onLoadStart: (controller, url) {
             if (!"$url".startsWith(Constants.redirectUrl)) return;
 
-            controller.loadUrl(urlRequest: initialUrl);
             Utility.isLoging.value = false;
           },
         ),
