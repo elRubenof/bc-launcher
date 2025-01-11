@@ -15,6 +15,8 @@ class TopBar extends StatefulWidget {
 }
 
 class _TopBarState extends State<TopBar> {
+  final tabsNumber = Constants.mapUrl.isNotEmpty ? 3 : 2;
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -71,8 +73,8 @@ class _TopBarState extends State<TopBar> {
     final l = Utility.getLocalizations(context);
 
     return Container(
-      width: MediaQuery.of(context).size.width * 0.2,
-      constraints: const BoxConstraints(minWidth: 360),
+      width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
+      constraints: BoxConstraints(minWidth: 120.0 * tabsNumber),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -81,11 +83,12 @@ class _TopBarState extends State<TopBar> {
             icon: Icons.home,
             tab: 0,
           ),
-          TabButton(
-            label: l.map,
-            icon: Icons.map,
-            tab: 1,
-          ),
+          if (Constants.mapUrl.isNotEmpty)
+            TabButton(
+              label: l.map,
+              icon: Icons.map,
+              tab: 1,
+            ),
           TabButton(
             label: l.settings,
             icon: Icons.settings,

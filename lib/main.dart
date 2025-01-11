@@ -1,4 +1,5 @@
 import 'package:bc_launcher/screens/login_screen.dart';
+import 'package:bc_launcher/screens/map_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -50,6 +51,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  final List<Widget> tabs = const [
+    SizedBox(), //home
+    MapScreen(),
+    SizedBox(), //settings
+  ];
+
   @override
   void initState() {
     Utility.init();
@@ -79,10 +86,11 @@ class _MainPageState extends State<MainPage> {
                   color: Constants.backgroundColor.withOpacity(0.85),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: Constants.topBarHeight,
+                  padding: EdgeInsets.only(
+                    top: Constants.topBarHeight,
+                    bottom: index == 0 ? Constants.topBarHeight : 0,
                   ),
-                  child: Constants.pages[index],
+                  child: tabs[index],
                 ),
                 const TopBar(),
                 AnimatedPositioned(

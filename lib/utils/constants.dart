@@ -8,11 +8,6 @@ class Constants {
 
   static const topBarHeight = 65.0;
   static const horizontalPadding = 90.0;
-  static const pages = [
-    SizedBox(),
-    SizedBox(),
-    SizedBox(),
-  ];
 
   static const modsRepo = "";
   static const versionEndPoint = "";
@@ -20,6 +15,8 @@ class Constants {
   static const appLogo = "";
   static const devLogo = "";
   static const devName = "";
+
+  static const mapUrl = "https://bluecolored.de/bluemap/#hermitcraft9:-2015:20:1982:373:0.6:0.78:0:0:perspective";
 
   static String clientID = "";
   static String redirectUrl = "";
