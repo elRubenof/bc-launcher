@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -23,29 +24,75 @@ class UpdateScreen extends StatelessWidget {
       body: Stack(
         children: [
           Container(
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  l.availableUpdate,
-                  style: TextStyle(
-                    color: Constants.textColor,
-                    fontSize: MediaQuery.of(context).size.height * 0.03,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/img/loging-background.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+              ),
+            ),
+          ),
+          Container(
+            height: height,
+            color: Constants.backgroundColor.withOpacity(0.85),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+              decoration: BoxDecoration(
+                color: Constants.mainColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    l.availableUpdate,
+                    style: TextStyle(
+                      color: Constants.textColor,
+                      fontSize: MediaQuery.of(context).size.height * 0.03,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 30),
-                CupertinoButton.filled(
-                  child: Text(l.update),
-                  onPressed: () async {
-                    Utility.isLoading.value = true;
+                  Text(
+                    l.updateQuestion,
+                    style: TextStyle(
+                      color: Constants.textColor.withOpacity(0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CupertinoButton.filled(
+                        child: Text(l.yes.toUpperCase()),
+                        onPressed: () async {
+                          Utility.isLoading.value = true;
 
-                    if (await Utility.update()) exit(0);
+                          if (await Utility.update()) exit(0);
 
-                    Utility.isLoading.value = false;
-                  },
-                )
-              ],
+                          Utility.isLoading.value = false;
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: CupertinoButton(
+                          color: Colors.white.withOpacity(0.1),
+                          child: Text(l.no.toUpperCase()),
+                          onPressed: () => exit(0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           ValueListenableBuilder(

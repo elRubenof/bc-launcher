@@ -19,5 +19,7 @@
 
   "syncMods": "Sincronizando mods",
   "availableUpdate": "Actualización disponible",
-  "update": "Actualizar"
+  "updateQuestion": "¿Quieres instalar la última versión de la aplicación?",
+  "yes": "Si",
+  "no": "No"
 }
