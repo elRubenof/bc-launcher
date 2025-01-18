@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
-import 'package:bc_launcher/widgets/top_bar.dart';
+import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -67,7 +67,7 @@ class UpdateScreen extends StatelessWidget {
                   horizontal: Constants.horizontalPadding,
                 ),
                 alignment: Alignment.centerRight,
-                child: windowButtons(enableSettings: false),
+                child: const WindowButtons(enableSettings: false),
               ),
             ),
           ),

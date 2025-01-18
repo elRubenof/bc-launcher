@@ -80,8 +80,12 @@ class _MainPageState extends State<MainPage> {
             valueListenable: selectedTab,
             builder: (context, index, child) => Stack(
               children: [
-                Image.asset("assets/img/background.png",
-                    height: height, width: width, fit: BoxFit.cover),
+                Image.asset(
+                  "assets/img/background.png",
+                  height: height,
+                  width: width,
+                  fit: BoxFit.cover,
+                ),
                 Container(
                   height: height,
                   color: Constants.backgroundColor.withOpacity(0.85),

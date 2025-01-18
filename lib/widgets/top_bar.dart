@@ -1,9 +1,9 @@
-import 'package:bc_launcher/main.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
+import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -40,7 +40,7 @@ class _TopBarState extends State<TopBar> {
                 logo(),
                 tabs(),
                 account(),
-                windowButtons(),
+                const WindowButtons(),
               ],
             ),
           )
@@ -150,35 +150,5 @@ Widget account() {
         ),
       );
     },
-  );
-}
-
-Widget windowButtons({bool enableSettings = true}) {
-  return SizedBox(
-    width: enableSettings ? 100 : 66,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if (enableSettings)
-          MouseIconButton(
-            icon: Icons.settings,
-            size: 14.0,
-            backgroundColor: Colors.white,
-            onTap: () => selectedTab.value = 2,
-          ),
-        MouseIconButton(
-          icon: Icons.minimize,
-          size: 14.0,
-          backgroundColor: Colors.white,
-          onTap: () => appWindow.minimize(),
-        ),
-        MouseIconButton(
-          icon: Icons.close,
-          size: 14.0,
-          backgroundColor: Colors.white,
-          onTap: () => appWindow.close(),
-        ),
-      ],
-    ),
   );
 }

@@ -1,5 +1,7 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/loading_widget.dart';
+import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -24,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        const LoadingWidget(),
         InAppWebView(
           initialUrlRequest: initialUrl,
           onLoadStart: (controller, url) {
@@ -34,7 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         SizedBox(
           height: Constants.topBarHeight,
-          child: MoveWindow(),
+          child: MoveWindow(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Constants.horizontalPadding,
+              ),
+              alignment: Alignment.centerRight,
+              child: const WindowButtons(enableSettings: false, darkMode: true),
+            ),
+          ),
         ),
       ],
     );
