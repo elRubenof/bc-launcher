@@ -1,5 +1,6 @@
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/map_screen.dart';
+import 'package:bc_launcher/screens/settings_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -54,7 +55,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> tabs = const [
     SizedBox(), //home
     MapScreen(),
-    SizedBox(), //settings
+    SettingsScreen(),
   ];
 
   @override

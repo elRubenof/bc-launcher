@@ -6,6 +6,17 @@
   "screenshots": "Screenshots",
   "synchronize": "Synchronize",
   "autoConnect": "Auto-Connect",
+
+  "gameSettings": "Game Settings",
+  "directory": "Directory",
+  "directoryDesc": "Path where your game files are located",
+  "open": "Open",
+  "resolution": "Resolution",
+  "resolutionDesc": "Initial size for the game´s window",
+  "fullscreen": "Fullscreen",
+  "memoryAllocation": "Memory Allocation",
+  "resetSettings": "Reset settings",
+
   "syncMods": "Synchronizing mods",
   "availableUpdate": "Available update",
   "update": "Update"

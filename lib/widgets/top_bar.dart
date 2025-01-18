@@ -1,3 +1,4 @@
+import 'package:bc_launcher/main.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -163,7 +164,7 @@ Widget windowButtons({bool enableSettings = true}) {
             icon: Icons.settings,
             size: 14.0,
             backgroundColor: Colors.white,
-            onTap: () => appWindow.minimize(),
+            onTap: () => selectedTab.value = 2,
           ),
         MouseIconButton(
           icon: Icons.minimize,

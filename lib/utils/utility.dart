@@ -23,7 +23,6 @@ class Utility {
   static ValueNotifier<bool> isLoading = ValueNotifier(false);
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
-  static late Directory minecraftDirectory;
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
@@ -41,15 +40,42 @@ class Utility {
   static Future<void> loadSettings() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
-    Settings.autoConnect = preferences.getBool("autoConnect") ?? false;
+    Settings.autoConnect =
+        preferences.getBool("autoConnect") ?? Constants.defaultAutoConnect;
+    Settings.allocatedRAM =
+        preferences.getInt("allocatedRAM") ?? Constants.defaultAllocatedRAM;
+    Settings.gameWidth =
+        preferences.getInt("gameWidth") ?? Constants.defaultGameWidth;
+    Settings.gameHeight =
+        preferences.getInt("gameHeight") ?? Constants.defaultGameHeight;
+    Settings.fullscreen =
+        preferences.getBool("fullscreen") ?? Constants.defaultFullscreen;
+  }
+
+  static Future<void> resetSettings() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    Settings.autoConnect = Constants.defaultAutoConnect;
+    Settings.allocatedRAM = Constants.defaultAllocatedRAM;
+    Settings.gameWidth = Constants.defaultGameWidth;
+    Settings.gameHeight = Constants.defaultGameHeight;
+    Settings.fullscreen = Constants.defaultFullscreen;
+
+    preferences.remove("autoConnect");
+    preferences.remove("allocatedRAM");
+    preferences.remove("gameWidth");
+    preferences.remove("gameHeight");
+    preferences.remove("fullscreen");
   }
 
   static Future<void> loadFiles() async {
     final supportDirectory = await getApplicationSupportDirectory();
-    minecraftDirectory = Directory("${supportDirectory.path}/.minecraft");
+    Settings.minecraftDirectory = Directory(
+      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}.minecraft",
+    );
 
-    if (!minecraftDirectory.existsSync()) {
-      await minecraftDirectory.create();
+    if (!Settings.minecraftDirectory.existsSync()) {
+      await Settings.minecraftDirectory.create();
     }
 
     if (Constants.modsRepo.isNotEmpty) await sincMods();
@@ -68,14 +94,14 @@ class Utility {
     final l = Utility.getLocalizations(key.currentContext!);
     loadingState.value = l.syncMods;
 
-    Directory modsDir = Directory("${minecraftDirectory.path}/mods");
+    Directory modsDir = Directory("${Settings.minecraftDirectory.path}/mods");
     if (await modsDir.exists()) {
       Repository repo;
 
       try {
         repo = Repository.open(modsDir.path);
       } catch (e) {
-        await Utility.minecraftDirectory.delete(recursive: true);
+        await Settings.minecraftDirectory.delete(recursive: true);
         await Utility.sincMods();
 
         return;

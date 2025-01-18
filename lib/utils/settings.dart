@@ -1,4 +1,11 @@
+import 'dart:io';
+
 class Settings {
-  static bool autoConnect = false;
-  static int allocatedRAM = 8;
+  static late Directory minecraftDirectory;
+
+  static late bool autoConnect;
+  static late int allocatedRAM;
+  static late int gameWidth;
+  static late int gameHeight;
+  static late bool fullscreen;
 }

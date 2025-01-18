@@ -8,6 +8,12 @@ class Constants {
 
   static const topBarHeight = 65.0;
   static const horizontalPadding = 90.0;
+  
+  static const defaultAutoConnect = false;
+  static const defaultAllocatedRAM = 8;
+  static const defaultGameWidth = 856;
+  static const defaultGameHeight = 482;
+  static const defaultFullscreen = true;
 
   static const modsRepo = "";
   static const versionEndPoint = "";

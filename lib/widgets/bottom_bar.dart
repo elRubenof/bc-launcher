@@ -137,7 +137,7 @@ class _BottomBarState extends State<BottomBar> {
           backgroundColor: Colors.white.withOpacity(0.12),
           onTap: () async {
             Directory screenshotsDir = Directory(
-              "${Utility.minecraftDirectory.path}/screenshots",
+              "${Settings.minecraftDirectory.path}/screenshots",
             );
 
             await screenshotsDir.create();
@@ -157,7 +157,7 @@ class _BottomBarState extends State<BottomBar> {
             onTap: () async {
               Utility.isLoading.value = true;
 
-              await Utility.minecraftDirectory.delete(recursive: true);
+              await Settings.minecraftDirectory.delete(recursive: true);
               await Utility.sincMods(force: true);
 
               Utility.isLoading.value = false;
