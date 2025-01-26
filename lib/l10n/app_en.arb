@@ -21,5 +21,7 @@
   "availableUpdate": "Available update",
   "updateQuestion": "Do you want to install the newest app´s version?",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+
+  "lastNews": "Last news"
 }

@@ -24,6 +24,8 @@ class Utility {
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
 
+  static List news = [];
+
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
   }
@@ -33,6 +35,7 @@ class Utility {
 
     await Minecraft.authenticateOauth2();
     await loadFiles();
+    await loadNews();
 
     Utility.isLoading.value = false;
   }
@@ -79,6 +82,17 @@ class Utility {
     }
 
     if (Constants.modsRepo.isNotEmpty) await sincMods();
+  }
+
+  static Future<void> loadNews() async {
+    if (Constants.newsRepo.isEmpty) return;
+
+    try {
+      final response = await http.get(Uri.parse(Constants.newsRepo));
+      news = json.decode(utf8.decode(response.bodyBytes));
+    } catch (e) {
+      return;
+    }
   }
 
   static Future<void> setAutoConnect(bool value) async {

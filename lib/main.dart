@@ -1,3 +1,4 @@
+import 'package:bc_launcher/screens/home_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/map_screen.dart';
 import 'package:bc_launcher/screens/settings_screen.dart';
@@ -53,7 +54,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   final List<Widget> tabs = const [
-    SizedBox(), //home
+    HomeScreen(),
     MapScreen(),
     SettingsScreen(),
   ];

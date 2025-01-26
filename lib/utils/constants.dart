@@ -15,6 +15,7 @@ class Constants {
   static const defaultGameHeight = 482;
   static const defaultFullscreen = true;
 
+  static const newsRepo = "";
   static const modsRepo = "";
   static const versionEndPoint = "";
 
