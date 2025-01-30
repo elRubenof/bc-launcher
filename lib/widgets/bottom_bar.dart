@@ -71,7 +71,7 @@ class _BottomBarState extends State<BottomBar> {
             if (Utility.isLaunching.value) return;
             Utility.isLaunching.value = true;
 
-            await Utility.sincMods();
+            await Utility.sincFiles();
             await Minecraft.launch();
 
             await Future.delayed(const Duration(seconds: 1));
@@ -158,7 +158,7 @@ class _BottomBarState extends State<BottomBar> {
               Utility.isLoading.value = true;
 
               await Settings.minecraftDirectory.delete(recursive: true);
-              await Utility.sincMods(force: true);
+              await Utility.sincFiles(force: true);
 
               Utility.isLoading.value = false;
             },

@@ -81,7 +81,13 @@ class Utility {
       await Settings.minecraftDirectory.create();
     }
 
-    if (Constants.modsRepo.isNotEmpty) await sincMods();
+    await sincFiles();
+  }
+
+  static Future<void> sincFiles({bool force = false}) async {
+    await sincRepo(Constants.modsRepo, force);
+    await sincRepo(Constants.configRepo, force);
+    await sincRepo(Constants.resourcePacksRepo, force);
   }
 
   static Future<void> loadNews() async {
@@ -102,21 +108,22 @@ class Utility {
     Settings.autoConnect = value;
   }
 
-  static Future<void> sincMods({bool force = false}) async {
-    if (isAdmin() && !force) return;
+  static Future<void> sincRepo(String repoUrl, bool force) async {
+    if (repoUrl.isEmpty || (isAdmin() && !force)) return;
 
     final l = Utility.getLocalizations(key.currentContext!);
     loadingState.value = l.syncMods;
 
-    Directory modsDir = Directory("${Settings.minecraftDirectory.path}/mods");
-    if (await modsDir.exists()) {
+    final name = repoUrl.split('/').last.replaceAll(".git", "");
+    Directory repoDir = Directory("${Settings.minecraftDirectory.path}/$name");
+    if (await repoDir.exists()) {
       Repository repo;
 
       try {
-        repo = Repository.open(modsDir.path);
+        repo = Repository.open(repoDir.path);
       } catch (e) {
         await Settings.minecraftDirectory.delete(recursive: true);
-        await Utility.sincMods();
+        await Utility.sincRepo(repoUrl, force);
 
         return;
       }
@@ -125,11 +132,11 @@ class Utility {
       for (String key in repo.status.keys) {
         try {
           if (repo.status[key]!.first != GitStatus.indexDeleted) {
-            File("${modsDir.path}/$key").deleteSync();
-            log("Deleted mod: $key");
+            File("${repoDir.path}/$key").deleteSync();
+            log("Deleted file: $key");
           }
         } catch (e) {
-          log("Error deleting mod: $key");
+          log("Error deleting file: $key");
         }
       }
 
@@ -151,13 +158,16 @@ class Utility {
         ),
       );
     } else {
-      await compute<Directory, void>(cloneRepo, modsDir);
+      await compute<Map<String, dynamic>, void>(
+          cloneRepo, {"dir": repoDir, "url": repoUrl});
     }
   }
 
-  static void cloneRepo(Directory modsDir) {
-    final repo =
-        Repository.clone(url: Constants.modsRepo, localPath: modsDir.path);
+  static void cloneRepo(Map<String, dynamic> data) {
+    final repo = Repository.clone(
+      url: data["repoUrl"],
+      localPath: data["dir"].path,
+    );
     repo.free();
   }
 

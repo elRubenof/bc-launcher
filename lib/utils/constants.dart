@@ -17,6 +17,8 @@ class Constants {
 
   static const newsRepo = "";
   static const modsRepo = "";
+  static const configRepo = "";
+  static const resourcePacksRepo = "";
   static const versionEndPoint = "";
 
   static const appLogo = "";
