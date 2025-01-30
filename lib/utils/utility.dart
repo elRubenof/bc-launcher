@@ -72,16 +72,30 @@ class Utility {
   }
 
   static Future<void> loadFiles() async {
+    await checkInstallation();
+    await sincFiles();
+  }
+
+  static Future<void> checkInstallation() async {
     final supportDirectory = await getApplicationSupportDirectory();
     Settings.minecraftDirectory = Directory(
-      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}.minecraft",
+      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}minecraft",
     );
 
     if (!Settings.minecraftDirectory.existsSync()) {
-      await Settings.minecraftDirectory.create();
-    }
+      final l = Utility.getLocalizations(key.currentContext!);
+      Utility.loadingState.value = l.installingMinecraft;
 
-    await sincFiles();
+      await compute<String, void>(
+        cloneRepo,
+        json.encode(
+          {
+            "url": Constants.minecraftRepo,
+            "path": Settings.minecraftDirectory.path,
+          },
+        ),
+      );
+    }
   }
 
   static Future<void> sincFiles({bool force = false}) async {
@@ -109,13 +123,15 @@ class Utility {
   }
 
   static Future<void> sincRepo(String repoUrl, bool force) async {
-    if (repoUrl.isEmpty || (isAdmin() && !force)) return;
-
-    final l = Utility.getLocalizations(key.currentContext!);
-    loadingState.value = l.syncMods;
-
     final name = repoUrl.split('/').last.replaceAll(".git", "");
     Directory repoDir = Directory("${Settings.minecraftDirectory.path}/$name");
+
+    if (repoDir.existsSync() && (repoUrl.isEmpty || (isAdmin() && !force))) {
+      return;
+    }
+
+    final l = Utility.getLocalizations(key.currentContext!);
+    loadingState.value = "${l.syncing} $name";
     if (await repoDir.exists()) {
       Repository repo;
 
@@ -158,16 +174,25 @@ class Utility {
         ),
       );
     } else {
-      await compute<Map<String, dynamic>, void>(
-          cloneRepo, {"dir": repoDir, "url": repoUrl});
+      await compute<String, void>(
+        cloneRepo,
+        json.encode(
+          {
+            "url": repoUrl,
+            "path": repoDir.path,
+          },
+        ),
+      );
     }
   }
 
-  static void cloneRepo(Map<String, dynamic> data) {
+  static void cloneRepo(String encodedData) {
+    final data = json.decode(encodedData);
     final repo = Repository.clone(
-      url: data["repoUrl"],
-      localPath: data["dir"].path,
+      url: data["url"],
+      localPath: data["path"],
     );
+
     repo.free();
   }
 

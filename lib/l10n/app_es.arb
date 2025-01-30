@@ -17,7 +17,8 @@
   "memoryAllocation": "Memoria Asignada",
   "resetSettings": "Reiniciar ajustes",
 
-  "syncMods": "Sincronizando mods",
+  "installingMinecraft": "Instalando minecraft",
+  "syncing": "Sincronizando",
   "availableUpdate": "Actualización disponible",
   "updateQuestion": "¿Quieres instalar la última versión de la aplicación?",
   "yes": "Si",

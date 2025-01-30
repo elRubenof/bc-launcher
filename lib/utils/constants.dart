@@ -16,6 +16,7 @@ class Constants {
   static const defaultFullscreen = true;
 
   static const newsRepo = "";
+  static const minecraftRepo = "";
   static const modsRepo = "";
   static const configRepo = "";
   static const resourcePacksRepo = "";

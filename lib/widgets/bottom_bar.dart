@@ -158,7 +158,7 @@ class _BottomBarState extends State<BottomBar> {
               Utility.isLoading.value = true;
 
               await Settings.minecraftDirectory.delete(recursive: true);
-              //TODO
+              await Utility.checkInstallation();
               await Utility.sincFiles(force: true);
 
               Utility.isLoading.value = false;
