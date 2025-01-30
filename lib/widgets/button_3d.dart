@@ -37,7 +37,7 @@ class _Button3DState extends State<Button3D> {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Constants.mainColor.withOpacity(0.3),
+            color: Constants.mainColor.withValues(alpha: 0.3),
             blurRadius: 50.0,
             spreadRadius: 40.0,
           ),

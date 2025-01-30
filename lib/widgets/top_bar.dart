@@ -111,7 +111,7 @@ Widget account() {
         padding: const EdgeInsets.symmetric(horizontal: 22),
         width: 215,
         height: double.infinity,
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -134,14 +134,14 @@ Widget account() {
               ],
             ),
             Container(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               margin: const EdgeInsets.only(left: 7),
               width: 1.5,
               height: 25,
             ),
             MouseIconButton(
               icon: Icons.logout_rounded,
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               hoverColor: Colors.red[700],
               size: 18.0,
               onTap: Minecraft.logout,

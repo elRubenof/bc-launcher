@@ -89,7 +89,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 Container(
                   height: height,
-                  color: Constants.backgroundColor.withOpacity(0.85),
+                  color: Constants.backgroundColor.withValues(alpha: 0.85),
                 ),
                 Padding(
                   padding: EdgeInsets.only(

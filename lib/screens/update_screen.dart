@@ -33,19 +33,19 @@ class UpdateScreen extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
               child: Container(
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.0)),
               ),
             ),
           ),
           Container(
             height: height,
-            color: Constants.backgroundColor.withOpacity(0.85),
+            color: Constants.backgroundColor.withValues(alpha: 0.85),
           ),
           Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
               decoration: BoxDecoration(
-                color: Constants.mainColor.withOpacity(0.1),
+                color: Constants.mainColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Column(
@@ -62,7 +62,7 @@ class UpdateScreen extends StatelessWidget {
                   Text(
                     l.updateQuestion,
                     style: TextStyle(
-                      color: Constants.textColor.withOpacity(0.5),
+                      color: Constants.textColor.withValues(alpha: 0.5),
                       fontSize: 12,
                     ),
                   ),
@@ -84,7 +84,7 @@ class UpdateScreen extends StatelessWidget {
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: CupertinoButton(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           child: Text(l.no.toUpperCase()),
                           onPressed: () => exit(0),
                         ),

@@ -39,7 +39,7 @@ class _TabButtonState extends State<TabButton> {
                       borderRadius: BorderRadius.circular(50),
                       boxShadow: [
                         BoxShadow(
-                          color: Constants.mainColor.withOpacity(0.5),
+                          color: Constants.mainColor.withValues(alpha: 0.5),
                           blurRadius: 50.0,
                           spreadRadius: 40.0,
                         ),

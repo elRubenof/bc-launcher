@@ -44,7 +44,7 @@ class _MouseIconButtonState extends State<MouseIconButton> {
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   color:
-                      widget.backgroundColor!.withOpacity(hover ? 0.12 : 0.06),
+                      widget.backgroundColor!.withValues(alpha: hover ? 0.12 : 0.06),
                 )
               : null,
           child: Icon(

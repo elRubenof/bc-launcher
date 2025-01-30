@@ -17,7 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final resolutionWith = TextEditingController();
   final resoulutionHeight = TextEditingController();
 
-  final greyColor = Constants.textColor.withOpacity(0.45);
+  final greyColor = Constants.textColor.withValues(alpha: 0.45);
 
   double allocatedRAM = Settings.allocatedRAM.toDouble();
 
@@ -98,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.5,
-          color: greyColor.withOpacity(0.15),
+          color: greyColor.withValues(alpha: 0.15),
         ),
         borderRadius: BorderRadius.circular(6),
       ),
@@ -112,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Text(
                     text,
                     style: TextStyle(
-                      color: Constants.textColor.withOpacity(0.75),
+                      color: Constants.textColor.withValues(alpha: 0.75),
                       fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -290,7 +290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               decoration: BoxDecoration(
                 border: Border.all(
                   width: 1.5,
-                  color: greyColor.withOpacity(0.15),
+                  color: greyColor.withValues(alpha: 0.15),
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -416,10 +416,10 @@ class _RectSliderThumbShape extends SliderComponentShape {
       RRect.fromRectAndRadius(innerRect, const Radius.circular(2)),
       Paint()
         ..color = Color.fromARGB(
-          thumbColor.alpha,
-          thumbColor.red - 40,
-          thumbColor.green - 40,
-          thumbColor.blue - 40,
+          thumbColor.a.toInt(),
+          thumbColor.r.toInt() - 40,
+          thumbColor.g.toInt() - 40,
+          thumbColor.b.toInt() - 40,
         ),
     );
   }

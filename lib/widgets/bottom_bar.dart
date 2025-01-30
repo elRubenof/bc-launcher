@@ -98,7 +98,7 @@ class _BottomBarState extends State<BottomBar> {
               child: SvgPicture.asset(
                 Constants.devLogo,
                 colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.2),
+                  Colors.white.withValues(alpha: 0.2),
                   BlendMode.srcIn,
                 ),
                 height: Constants.topBarHeight * 0.65,
@@ -112,7 +112,7 @@ class _BottomBarState extends State<BottomBar> {
             child: Text(
               Constants.devName.toUpperCase(),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 fontSize: Constants.topBarHeight * 0.155,
                 fontWeight: FontWeight.bold,
               ),
@@ -132,9 +132,9 @@ class _BottomBarState extends State<BottomBar> {
           size: 17.0,
           toolTip: l.screenshots,
           color: Constants.textColor,
-          hoverColor: Colors.white.withOpacity(0.5),
+          hoverColor: Colors.white.withValues(alpha: 0.5),
           backgroundSize: 35.0,
-          backgroundColor: Colors.white.withOpacity(0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.12),
           onTap: () async {
             Directory screenshotsDir = Directory(
               "${Settings.minecraftDirectory.path}/screenshots",
@@ -151,13 +151,14 @@ class _BottomBarState extends State<BottomBar> {
             size: 17.0,
             toolTip: l.synchronize,
             color: Constants.textColor,
-            hoverColor: Colors.white.withOpacity(0.5),
+            hoverColor: Colors.white.withValues(alpha: 0.5),
             backgroundSize: 35.0,
-            backgroundColor: Colors.white.withOpacity(0.12),
+            backgroundColor: Colors.white.withValues(alpha: 0.12),
             onTap: () async {
               Utility.isLoading.value = true;
 
               await Settings.minecraftDirectory.delete(recursive: true);
+              //TODO
               await Utility.sincFiles(force: true);
 
               Utility.isLoading.value = false;
@@ -169,7 +170,7 @@ class _BottomBarState extends State<BottomBar> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: Colors.white.withOpacity(0.12).withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.12).withValues(alpha: 0.06),
           ),
           child: Row(
             children: [
@@ -190,7 +191,7 @@ class _BottomBarState extends State<BottomBar> {
                     scale: 0.5,
                     child: CupertinoSwitch(
                       value: Settings.autoConnect,
-                      activeColor: const Color(0xff7a4aee),
+                      activeTrackColor: const Color(0xff7a4aee),
                       onChanged: (value) async {
                         await Utility.setAutoConnect(value);
 

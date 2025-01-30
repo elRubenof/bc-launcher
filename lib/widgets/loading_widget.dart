@@ -12,7 +12,7 @@ class LoadingWidget extends StatefulWidget {
 }
 
 class _LoadingWidgetState extends State<LoadingWidget> {
-  final color = Colors.white.withOpacity(0.8);
+  final color = Colors.white.withValues(alpha: 0.8);
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(

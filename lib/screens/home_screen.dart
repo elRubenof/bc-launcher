@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(),
+          const SizedBox(),
           if (Utility.news.isNotEmpty) newSection(),
         ],
       ),
