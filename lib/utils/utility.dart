@@ -23,8 +23,7 @@ class Utility {
   static ValueNotifier<bool> isLoading = ValueNotifier(false);
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
-
-  static List news = [];
+  static ValueNotifier<List> news = ValueNotifier([]);
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
@@ -109,7 +108,7 @@ class Utility {
 
     try {
       final response = await http.get(Uri.parse(Constants.newsRepo));
-      news = json.decode(utf8.decode(response.bodyBytes));
+      news.value = json.decode(utf8.decode(response.bodyBytes));
     } catch (e) {
       return;
     }

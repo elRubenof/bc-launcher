@@ -75,7 +75,7 @@ class _BottomBarState extends State<BottomBar> {
             await Minecraft.launch();
 
             await Future.delayed(const Duration(seconds: 1));
-            appWindow.minimize();
+            appWindow.close();
 
             Utility.isLaunching.value = false;
           },
@@ -149,7 +149,7 @@ class _BottomBarState extends State<BottomBar> {
           child: MouseIconButton(
             icon: Icons.autorenew,
             size: 17.0,
-            toolTip: l.synchronize,
+            toolTip: l.reinstall,
             color: Constants.textColor,
             hoverColor: Colors.white.withValues(alpha: 0.5),
             backgroundSize: 35.0,

@@ -2,10 +2,13 @@
   "home": "Inicio",
   "map": "Mapa",
   "settings": "Ajustes",
+
   "play": "Jugar",
   "screenshots": "Capturas de pantalla",
-  "synchronize": "Sincronizar",
+  "reinstall": "Reinstall",
   "autoConnect": "Auto-Conectar",
+
+  "mapError": "Error al cargar el mapa",
 
   "gameSettings": "Ajustes de Juego",
   "directory": "Directorio",

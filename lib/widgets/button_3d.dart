@@ -31,87 +31,90 @@ class _Button3DState extends State<Button3D> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.width,
-      height: _buttonHeight + 7,
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Constants.mainColor.withValues(alpha: 0.3),
-            blurRadius: 50.0,
-            spreadRadius: 40.0,
-          ),
-        ],
-      ),
-      child: GestureDetector(
-        onTapDown: _pressed,
-        onTapUp: _unPressedOnTapUp,
-        onTapCancel: _unPressed,
-        child: Stack(
-          children: <Widget>[
-            // Arriba
-            AnimatedPositioned(
-              duration: _duration,
-              top: _top,
-              left: _lateral,
-              right: _lateral,
-              curve: _curve,
-              child: Container(
-                alignment: Alignment.center,
-                height: _buttonHeight,
-                decoration: BoxDecoration(
-                  color: widget.color,
-                  border: Border.all(color: widget.color, width: 1),
-                ),
-                child: Text(
-                  widget.title.toUpperCase(),
-                  style: const TextStyle(
-                    color: Constants.textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-            // Top 1
-            Positioned(
-              left: 3.5,
-              top: 0,
-              child: Transform(
-                transform: Matrix4.skewX(-0.5),
-                child: Transform(
-                  origin: const Offset(100, 10),
-                  transform: Matrix4.rotationX(0),
-                  child: AnimatedContainer(
-                    duration: _duration,
-                    curve: _curve,
-                    width: widget.width * 0.7,
-                    height: _top,
-                    color: widget.secondaryColor,
-                  ),
-                ),
-              ),
-            ),
-            // Top 2
-            Positioned(
-              right: 3.5,
-              top: 0,
-              child: Transform(
-                transform: Matrix4.skewX(0.5),
-                child: Transform(
-                  origin: const Offset(100, 10),
-                  transform: Matrix4.rotationX(0),
-                  child: AnimatedContainer(
-                    duration: _duration,
-                    curve: _curve,
-                    width: widget.width * 0.7,
-                    height: _top,
-                    color: widget.secondaryColor,
-                  ),
-                ),
-              ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Container(
+        width: widget.width,
+        height: _buttonHeight + 7,
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Constants.mainColor.withValues(alpha: 0.3),
+              blurRadius: 50.0,
+              spreadRadius: 40.0,
             ),
           ],
+        ),
+        child: GestureDetector(
+          onTapDown: _pressed,
+          onTapUp: _unPressedOnTapUp,
+          onTapCancel: _unPressed,
+          child: Stack(
+            children: <Widget>[
+              // Arriba
+              AnimatedPositioned(
+                duration: _duration,
+                top: _top,
+                left: _lateral,
+                right: _lateral,
+                curve: _curve,
+                child: Container(
+                  alignment: Alignment.center,
+                  height: _buttonHeight,
+                  decoration: BoxDecoration(
+                    color: widget.color,
+                    border: Border.all(color: widget.color, width: 1),
+                  ),
+                  child: Text(
+                    widget.title.toUpperCase(),
+                    style: const TextStyle(
+                      color: Constants.textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+              // Top 1
+              Positioned(
+                left: 3.5,
+                top: 0,
+                child: Transform(
+                  transform: Matrix4.skewX(-0.5),
+                  child: Transform(
+                    origin: const Offset(100, 10),
+                    transform: Matrix4.rotationX(0),
+                    child: AnimatedContainer(
+                      duration: _duration,
+                      curve: _curve,
+                      width: widget.width * 0.7,
+                      height: _top,
+                      color: widget.secondaryColor,
+                    ),
+                  ),
+                ),
+              ),
+              // Top 2
+              Positioned(
+                right: 3.5,
+                top: 0,
+                child: Transform(
+                  transform: Matrix4.skewX(0.5),
+                  child: Transform(
+                    origin: const Offset(100, 10),
+                    transform: Matrix4.rotationX(0),
+                    child: AnimatedContainer(
+                      duration: _duration,
+                      curve: _curve,
+                      width: widget.width * 0.7,
+                      height: _top,
+                      color: widget.secondaryColor,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

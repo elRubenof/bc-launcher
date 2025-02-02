@@ -25,67 +25,74 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(),
-          if (Utility.news.isNotEmpty) newSection(),
+          newSection(),
         ],
       ),
     );
   }
 
   Widget newSection() {
-     double width = MediaQuery.of(context).size.width * 0.4;
-    if (width > 1000) width = 1000;
+    return ValueListenableBuilder(
+      valueListenable: Utility.news,
+      builder: (context, value, child) {
+        if (value.isEmpty) return Container();
 
-    return SizedBox(
-      width: width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        double width = MediaQuery.of(context).size.width * 0.4;
+        if (width > 1000) width = 1000;
+
+        return SizedBox(
+          width: width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Últimas noticias",
-                style: TextStyle(
-                  color: Constants.textColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               Row(
-                children: List.generate(
-                  Utility.news.length,
-                  (index) => MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => setState(() => currentIndex = index),
-                      child: Container(
-                        color: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: AnimatedContainer(
-                          height: 3,
-                          width: currentIndex == index ? 45 : 35,
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(left: 7),
-                          decoration: BoxDecoration(
-                            color: currentIndex == index
-                                ? Theme.of(context).primaryColor
-                                : Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Últimas noticias",
+                    style: TextStyle(
+                      color: Constants.textColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: List.generate(
+                      value.length,
+                      (index) => MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => setState(() => currentIndex = index),
+                          child: Container(
+                            color: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: AnimatedContainer(
+                              height: 3,
+                              width: currentIndex == index ? 45 : 35,
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.only(left: 7),
+                              decoration: BoxDecoration(
+                                color: currentIndex == index
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              )
+                  )
+                ],
+              ),
+              NewsCard(
+                width: width,
+                newData: value[currentIndex],
+              ),
             ],
           ),
-          NewsCard(
-            width: width,
-            newData: Utility.news[currentIndex],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

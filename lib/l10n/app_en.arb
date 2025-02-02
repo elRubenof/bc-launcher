@@ -2,10 +2,13 @@
   "home": "Home",
   "map": "Map",
   "settings": "Settings",
+
   "play": "Play",
   "screenshots": "Screenshots",
-  "synchronize": "Synchronize",
+  "reinstall": "Reinstall",
   "autoConnect": "Auto-Connect",
+
+  "mapError": "Error on loading map",
 
   "gameSettings": "Game Settings",
   "directory": "Directory",
