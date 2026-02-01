@@ -70,22 +70,33 @@ class UpdateScreen extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CupertinoButton.filled(
-                        child: Text(l.yes.toUpperCase()),
-                        onPressed: () async {
-                          Utility.isLoading.value = true;
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: CupertinoButton.filled(
+                          child: Container(
+                            width: 25,
+                            alignment: Alignment.center,
+                            child: Text(l.yes.toUpperCase()),
+                          ),
+                          onPressed: () async {
+                            Utility.isLoading.value = true;
 
-                          if (await Utility.update()) exit(0);
+                            if (await Utility.update()) exit(0);
 
-                          Utility.isLoading.value = false;
-                        },
+                            Utility.isLoading.value = false;
+                          },
+                        ),
                       ),
                       const SizedBox(width: 10),
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: CupertinoButton(
                           color: Colors.white.withValues(alpha: 0.1),
-                          child: Text(l.no.toUpperCase()),
+                          child: Container(
+                            width: 25,
+                            alignment: Alignment.center,
+                            child: Text(l.no.toUpperCase()),
+                          ),
                           onPressed: () => exit(0),
                         ),
                       ),
