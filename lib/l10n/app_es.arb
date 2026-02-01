@@ -5,7 +5,7 @@
 
   "play": "Jugar",
   "screenshots": "Capturas de pantalla",
-  "reinstall": "Reinstall",
+  "reinstall": "Reinstalar",
   "autoConnect": "Auto-Conectar",
 
   "mapError": "Error al cargar el mapa",
@@ -22,10 +22,12 @@
 
   "installingMinecraft": "Instalando minecraft",
   "syncing": "Sincronizando",
+
   "availableUpdate": "Actualización disponible",
   "updateQuestion": "¿Quieres instalar la última versión de la aplicación?",
   "yes": "Si",
   "no": "No",
+  "updating": "Actualizando",
 
   "lastNews": "Últimas noticias"
 }

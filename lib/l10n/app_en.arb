@@ -22,10 +22,12 @@
 
   "installingMinecraft": "Installing minecraft",
   "syncing": "Synchronizing",
+
   "availableUpdate": "Available update",
   "updateQuestion": "Do you want to install the newest app´s version?",
   "yes": "Yes",
   "no": "No",
+  "updating": "Updating",
 
   "lastNews": "Last news"
 }
