@@ -37,6 +37,10 @@ class Minecraft {
       _credentials = credentials;
       profile.value = await getCurrentProfile(await getToken());
     } catch (e) {
+      final supportDirectory = await getApplicationSupportDirectory();
+      File file = File("${supportDirectory.path}/error.txt");
+      await file.writeAsString(e.toString());
+
       return await logout();
     }
   }
