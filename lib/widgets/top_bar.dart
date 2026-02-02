@@ -1,3 +1,4 @@
+import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -144,7 +145,18 @@ Widget account() {
               color: Colors.white.withValues(alpha: 0.2),
               hoverColor: Colors.red[700],
               size: 18.0,
-              onTap: Minecraft.logout,
+              onTap: () async {
+                await Minecraft.logout();
+
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                        const LoginScreen(),
+                    transitionDuration: Duration.zero,
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -113,7 +113,7 @@ class UpdateScreen extends StatelessWidget {
                     width: width,
                     height: height,
                     color: Constants.backgroundColor,
-                    child: const LoadingWidget(),
+                    child: const LoadingScreen(),
                   )
                 : Container(),
           ),

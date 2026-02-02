@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:auto_update/auto_update.dart';
-import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
@@ -19,7 +18,6 @@ import 'package:http/http.dart' as http;
 class Utility {
   static final key = GlobalKey<NavigatorState>();
 
-  static ValueNotifier<bool> isLoging = ValueNotifier(false);
   static ValueNotifier<bool> isLoading = ValueNotifier(false);
   static ValueNotifier<String> loadingState = ValueNotifier("");
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
@@ -193,12 +191,6 @@ class Utility {
     );
 
     repo.free();
-  }
-
-  static void showLoging(Uri authorizationUrl) {
-    LoginScreen.authorizationUrl = authorizationUrl;
-
-    isLoging.value = true;
   }
 
   static bool isAdmin() {
