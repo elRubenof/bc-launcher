@@ -1,4 +1,4 @@
-import 'package:bc_launcher/main.dart';
+import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:flutter/material.dart';
 

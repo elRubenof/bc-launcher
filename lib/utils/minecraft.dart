@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/utils/settings.dart';
-import 'package:bc_launcher/utils/utility.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
@@ -21,35 +19,31 @@ class Minecraft {
   static const String _tokenEndpoint =
       "https://login.live.com/oauth20_token.srf";
 
-  static authenticateOauth2() async {
+  static Future<bool> authenticateOauth2() async {
     final preferences = await SharedPreferences.getInstance();
     final credentialsJson = preferences.getString("credentials") ?? "";
 
     try {
-      Credentials credentials;
-      if (credentialsJson.isNotEmpty) {
-        credentials = Credentials.fromJson(credentialsJson);
-        credentials = await credentials.refresh(identifier: Constants.clientID);
-      } else {
-        credentials = await Minecraft._microsoftCredentials();
-        await preferences.setString("credentials", credentials.toJson());
-      }
-      _credentials = credentials;
+      if (credentialsJson.isEmpty) return false;
+
+      _credentials = Credentials.fromJson(credentialsJson);
+      _credentials = await _credentials.refresh(identifier: Constants.clientID);
+
       profile.value = await getCurrentProfile(await getToken());
     } catch (e) {
       final supportDirectory = await getApplicationSupportDirectory();
       File file = File("${supportDirectory.path}/error.txt");
       await file.writeAsString(e.toString());
 
-      return await logout();
+      return false;
     }
+
+    return true;
   }
 
-  static Future<void> logout() async {
+  static logout() async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.remove("credentials");
-
-    await authenticateOauth2();
   }
 
   static Future<String> getToken() async {
@@ -60,32 +54,18 @@ class Minecraft {
     return await authenticateWithXBOX(xsts.first, xsts.second);
   }
 
-  static Future<Credentials> _microsoftCredentials() async {
-    _redirectServer = await HttpServer.bind('127.0.0.1', 5020);
-
-    AuthorizationCodeGrant grant = AuthorizationCodeGrant(
+  static Future<AuthorizationCodeGrant> getAuthorizationCode() async {
+    return AuthorizationCodeGrant(
       Constants.clientID,
       Uri.parse(_authorizationEndpoint),
       Uri.parse(_tokenEndpoint),
       httpClient: _JsonAcceptingHttpClient(),
     );
-
-    Uri authorizationUrl = grant.getAuthorizationUrl(
-      Uri.parse(Constants.redirectUrl),
-      scopes: ['XboxLive.signin', 'offline_access'],
-    );
-
-    Utility.showLoging(authorizationUrl);
-
-    final responseQueryParameters = await _listenParameters();
-    var client = await grant.handleAuthorizationResponse(
-      responseQueryParameters,
-    );
-
-    return client.credentials;
   }
 
-  static Future<Map<String, String>> _listenParameters() async {
+  static Future<Map<String, String>> listenParameters() async {
+    _redirectServer = await HttpServer.bind('127.0.0.1', 5020);
+
     final request = await _redirectServer.first;
     final params = request.uri.queryParameters;
     request.response.statusCode = 200;

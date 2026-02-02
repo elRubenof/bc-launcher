@@ -1,4 +1,4 @@
-import 'package:bc_launcher/main.dart';
+import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
