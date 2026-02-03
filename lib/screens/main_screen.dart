@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 final ValueNotifier selectedTab = ValueNotifier<int>(0);
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final Map<String, dynamic> server;
+
+  const MainScreen({super.key, required this.server});
 
   @override
   State<MainScreen> createState() => _MainPageState();
@@ -23,12 +25,6 @@ class _MainPageState extends State<MainScreen> {
     MapScreen(),
     SettingsScreen(),
   ];
-
-  @override
-  void initState() {
-    Utility.init();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +54,7 @@ class _MainPageState extends State<MainScreen> {
               ),
               child: tabs[index],
             ),
-            const TopBar(),
+            TopBar(mapUrl: widget.server['map']),
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
               bottom: index == 0 ? 0 : -200,

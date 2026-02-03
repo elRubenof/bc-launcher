@@ -1,5 +1,5 @@
+import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
-import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
           return const LoginScreen();
         }
 
-        return const MainScreen();
+        return const InstancesScreen();
       },
     );
   }
