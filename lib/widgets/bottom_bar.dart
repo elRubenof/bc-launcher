@@ -87,37 +87,34 @@ class _BottomBarState extends State<BottomBar> {
   Widget devInfo() {
     return Row(
       children: [
-        if (Constants.devLogo.isNotEmpty)
-          GestureDetector(
-            onTap: () {
-              if (++taps % 5 == 0) setState(() => turns += 1);
-            },
-            child: AnimatedRotation(
-              turns: turns.toDouble(),
-              duration: const Duration(milliseconds: 280),
-              child: SvgPicture.asset(
-                Constants.devLogo,
-                colorFilter: ColorFilter.mode(
-                  Colors.white.withValues(alpha: 0.2),
-                  BlendMode.srcIn,
-                ),
-                height: Constants.topBarHeight * 0.65,
+        GestureDetector(
+          onTap: () {
+            if (++taps % 5 == 0) setState(() => turns += 1);
+          },
+          child: AnimatedRotation(
+            turns: turns.toDouble(),
+            duration: const Duration(milliseconds: 280),
+            child: SvgPicture.asset(
+              "assets/img/logo.svg",
+              colorFilter: ColorFilter.mode(
+                Colors.white.withValues(alpha: 0.2),
+                BlendMode.srcIn,
               ),
+              height: Constants.topBarHeight * 0.65,
             ),
           ),
-        if (Constants.devName.isNotEmpty)
-          Padding(
-            padding:
-                EdgeInsets.only(left: Constants.devLogo.isNotEmpty ? 10 : 0),
-            child: Text(
-              Constants.devName.toUpperCase(),
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.2),
-                fontSize: Constants.topBarHeight * 0.155,
-                fontWeight: FontWeight.bold,
-              ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Text(
+            "BOLUDO´S COMPANY ®\nNOT AFFILIATED WITH MOJANG",
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.2),
+              fontSize: Constants.topBarHeight * 0.155,
+              fontWeight: FontWeight.bold,
             ),
           ),
+        ),
       ],
     );
   }
