@@ -10,15 +10,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class TopBar extends StatefulWidget {
-  const TopBar({super.key});
+  final String? mapUrl;
+
+  const TopBar({super.key, this.mapUrl});
 
   @override
   State<TopBar> createState() => _TopBarState();
 }
 
 class _TopBarState extends State<TopBar> {
-  final tabsNumber = Constants.mapUrl.isNotEmpty ? 3 : 2;
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -73,6 +73,7 @@ class _TopBarState extends State<TopBar> {
 
   Widget tabs() {
     final l = Utility.getLocalizations(context);
+    final tabsNumber = widget.mapUrl != null ? 3 : 2;
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
@@ -85,7 +86,7 @@ class _TopBarState extends State<TopBar> {
             icon: Icons.home,
             tab: 0,
           ),
-          if (Constants.mapUrl.isNotEmpty)
+          if (widget.mapUrl != null)
             TabButton(
               label: l.map,
               icon: Icons.map,

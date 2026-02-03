@@ -28,6 +28,7 @@ class Constants {
 
   static const mapUrl = "https://bluecolored.de/bluemap/#hermitcraft9:-2015:20:1982:373:0.6:0.78:0:0:perspective";
 
+  static String api = "http://127.0.0.1:8787";
   static String clientID = "";
   static String redirectUrl = "";
 

@@ -37,6 +37,20 @@ class Utility {
     Utility.isLoading.value = false;
   }
 
+  static Future<Map<String, dynamic>> getAuth(String uuid) async {
+    final response =
+        await http.get(Uri.parse("${Constants.api}/auth?uuid=$uuid"));
+
+    if (response.statusCode != 200) {
+      return {
+        'error': true,
+        'statusCode': response.statusCode,
+      };
+    }
+
+    return json.decode(response.body);
+  }
+
   static Future<void> loadSettings() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
