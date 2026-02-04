@@ -38,14 +38,18 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 child: ValueListenableBuilder(
                   valueListenable: Utility.loadingState,
                   builder: (context, value, child) => Text(
-                    value,
+                    value ?? "",
                     style: TextStyle(color: color),
                   ),
                 ),
               ),
-              LinearProgressIndicator(
-                color: color,
-                backgroundColor: Colors.transparent,
+              ValueListenableBuilder(
+                valueListenable: Utility.loadingProgress,
+                builder: (context, value, child) => LinearProgressIndicator(
+                  value: value,
+                  color: color,
+                  backgroundColor: Colors.transparent,
+                ),
               ),
             ],
           ),

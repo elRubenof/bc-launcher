@@ -50,6 +50,8 @@ dependencies:
   dart_minecraft: ^0.6.0
   package_info_plus: ^8.1.2
   auto_update: ^0.0.4
+  dio: ^5.9.1
+  archive: ^4.0.7
 
 dev_dependencies:
   flutter_test:

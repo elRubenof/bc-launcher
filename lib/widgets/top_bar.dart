@@ -1,3 +1,4 @@
+import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -8,6 +9,7 @@ import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TopBar extends StatefulWidget {
   final String? mapUrl;
@@ -109,9 +111,10 @@ Widget account() {
     builder: (context, value, child) {
       if (value == null) return Container();
 
+      final l = Utility.getLocalizations(context);
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 22),
-        width: 215,
+        width: 235,
         height: double.infinity,
         color: Colors.white.withValues(alpha: 0.06),
         child: Row(
@@ -142,7 +145,28 @@ Widget account() {
               height: 25,
             ),
             MouseIconButton(
+              icon: Icons.density_medium,
+              toolTip: l.switchInstances,
+              color: Colors.white.withValues(alpha: 0.2),
+              hoverColor: Colors.white.withValues(alpha: 0.7),
+              size: 18.0,
+              onTap: () async {
+                final preferences = await SharedPreferences.getInstance();
+                await preferences.remove('savedInstance');
+
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                        const InstancesScreen(),
+                    transitionDuration: Duration.zero,
+                  ),
+                );
+              },
+            ),
+            MouseIconButton(
               icon: Icons.logout_rounded,
+              toolTip: l.logout,
               color: Colors.white.withValues(alpha: 0.2),
               hoverColor: Colors.red[700],
               size: 18.0,
