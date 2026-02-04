@@ -8,6 +8,9 @@
   "reinstall": "Reinstall",
   "autoConnect": "Auto-Connect",
 
+  "logout": "Logout",
+  "switchInstances": "Switch server",
+
   "mapError": "Error on loading map",
 
   "gameSettings": "Game Settings",
@@ -20,7 +23,7 @@
   "memoryAllocation": "Memory Allocation",
   "resetSettings": "Reset settings",
 
-  "installingMinecraft": "Installing minecraft",
+  "installing": "Installing",
   "syncing": "Synchronizing",
 
   "availableUpdate": "Available update",
@@ -28,6 +31,7 @@
   "yes": "Yes",
   "no": "No",
   "updating": "Updating",
+  "downloading": "Downloading",
 
   "lastNews": "Last news"
 }

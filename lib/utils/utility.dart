@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:auto_update/auto_update.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -19,7 +21,9 @@ class Utility {
   static final key = GlobalKey<NavigatorState>();
 
   static ValueNotifier<bool> isLoading = ValueNotifier(false);
-  static ValueNotifier<String> loadingState = ValueNotifier("");
+  static ValueNotifier<String?> loadingState = ValueNotifier(null);
+  static ValueNotifier<double?> loadingProgress = ValueNotifier(null);
+
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
   static ValueNotifier<List> news = ValueNotifier([]);
 
@@ -82,6 +86,81 @@ class Utility {
     preferences.remove("fullscreen");
   }
 
+  static Future<Directory> getInstanceDir(String serverId) async {
+    final supportDirectory = await getApplicationSupportDirectory();
+    final installDir = Directory(
+      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}$serverId",
+    );
+
+    return installDir;
+  }
+
+  static Future<bool> installInstance(Map server, Directory installDir) async {
+    try {
+      await _downloadInstance(server, installDir);
+      await _unZipInstance(server, installDir);
+
+      return true;
+    } catch (e) {
+      log("Error on install instance ${server['id']}: \n${e.toString()}");
+
+      return false;
+    }
+  }
+
+  static Future<void> _downloadInstance(
+      Map server, Directory installDir) async {
+    final l = Utility.getLocalizations(key.currentContext!);
+
+    log("Downloading ${server['id']}");
+    await Dio().download(
+      "${Constants.api}/server/install?serverId=${server['id']}",
+      "${installDir.path}.zip",
+      options: Options(
+        method: 'POST',
+        responseType: ResponseType.bytes,
+      ),
+      onReceiveProgress: (received, total) {
+        if (total != -1) {
+          Utility.loadingState.value ??= "${l.downloading} ${server['name']}";
+          Utility.loadingProgress.value = received / total;
+        }
+      },
+    );
+
+    Utility.loadingState.value = null;
+    Utility.loadingProgress.value = null;
+    log("Download complete: ${installDir.path}.zip");
+  }
+
+  static Future<void> _unZipInstance(Map server, Directory installDir) async {
+    final l = Utility.getLocalizations(key.currentContext!);
+    Utility.loadingState.value = "${l.installing} ${server['name']}";
+
+    String zipFilePath = "${installDir.path}.zip";
+    File zipFile = File(zipFilePath);
+    if (!await zipFile.exists()) return;
+
+    Archive archive = ZipDecoder().decodeBytes(await zipFile.readAsBytes());
+
+    for (ArchiveFile file in archive) {
+      String filename = file.name;
+      if (file.isFile) {
+        List<int> data = file.content;
+        File('${installDir.path}/$filename')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(data);
+      } else {
+        Directory('${installDir.path}/$filename').createSync(recursive: true);
+      }
+    }
+
+    log("Unzip finished: ${installDir.path}");
+
+    await zipFile.delete();
+    Utility.loadingState.value = null;
+  }
+
   static Future<void> loadFiles() async {
     await checkInstallation();
     await sincFiles();
@@ -95,7 +174,7 @@ class Utility {
 
     if (!Settings.minecraftDirectory.existsSync()) {
       final l = Utility.getLocalizations(key.currentContext!);
-      Utility.loadingState.value = l.installingMinecraft;
+      Utility.loadingState.value = l.installing;
 
       await compute<String, void>(
         cloneRepo,
