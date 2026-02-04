@@ -20,11 +20,19 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainScreen> {
-  final List<Widget> tabs = const [
-    HomeScreen(),
-    MapScreen(),
-    SettingsScreen(),
-  ];
+  late List<Widget> tabs;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selectedTab.value = 0;
+    tabs = [
+      const HomeScreen(),
+      MapScreen(mapUrl: widget.server['map']),
+      const SettingsScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

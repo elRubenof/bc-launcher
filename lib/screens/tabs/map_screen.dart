@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final String? mapUrl;
+
+  const MapScreen({super.key, required this.mapUrl});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -28,7 +30,7 @@ class _MapScreenState extends State<MapScreen> {
                 InAppWebView(
                   initialUrlRequest: URLRequest(
                     url: WebUri(
-                      Constants.mapUrl,
+                      widget.mapUrl!,
                     ),
                   ),
                   onReceivedError: (controller, request, error) {
