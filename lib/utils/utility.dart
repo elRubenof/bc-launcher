@@ -114,7 +114,7 @@ class Utility {
 
     log("Downloading ${server['id']}");
     await Dio().download(
-      "${Constants.api}/server/install?serverId=${server['id']}",
+      "${Constants.api}/server/install?id=${server['id']}",
       "${installDir.path}.zip",
       options: Options(
         method: 'POST',
