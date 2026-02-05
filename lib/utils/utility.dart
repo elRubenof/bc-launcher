@@ -93,6 +93,7 @@ class Utility {
       "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}$serverId",
     );
 
+    Settings.minecraftDirectory = installDir;
     return installDir;
   }
 
@@ -177,10 +178,9 @@ class Utility {
   }
 
   static Future<void> _deleteUntrackedFolders(Map version) async {
-    final minecraftDir = await getInstanceDir(version['instance']);
-
     for (String path in version['delete_untracked_folders'] ?? []) {
-      for (var file in Directory("${minecraftDir.path}/$path").listSync()) {
+      for (var file in Directory("${Settings.minecraftDirectory.path}/$path")
+          .listSync()) {
         if (file is! File) continue;
 
         final fileName = file.path.replaceFirst("${file.parent.path}\\", "");
@@ -194,10 +194,9 @@ class Utility {
   }
 
   static Future<void> _checkAndDownloadFiles(Map version) async {
-    final minecraftDir = await getInstanceDir(version['instance']);
-
     for (Map<String, dynamic> fileMap in version['files']) {
-      final file = File("${minecraftDir.path}/${fileMap['path']}");
+      final file =
+          File("${Settings.minecraftDirectory.path}/${fileMap['path']}");
       final hash = file.existsSync() ? await _getHash(file) : null;
 
       if (hash != null && hash == fileMap['hash']) continue;

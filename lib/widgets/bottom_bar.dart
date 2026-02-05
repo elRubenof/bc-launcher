@@ -156,9 +156,8 @@ class _BottomBarState extends State<BottomBar> {
             backgroundColor: Colors.white.withValues(alpha: 0.12),
             onTap: () async {
               Utility.isLoading.value = true;
-
-              final dir = await Utility.getInstanceDir(widget.serverId);
-              await dir.delete(recursive: true);
+              
+              await Settings.minecraftDirectory.delete(recursive: true);
 
               Utility.isLoading.value = false;
               Navigator.pushReplacement(
