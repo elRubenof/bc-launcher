@@ -52,6 +52,7 @@ dependencies:
   auto_update: ^0.0.4
   dio: ^5.9.1
   archive: ^4.0.7
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:

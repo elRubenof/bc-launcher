@@ -7,6 +7,7 @@ import 'package:auto_update/auto_update.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -159,6 +160,62 @@ class Utility {
 
     await zipFile.delete();
     Utility.loadingState.value = null;
+  }
+
+  static Future<void> checkFiles(String serverId) async {
+    final response = await http.get(
+      Uri.parse("${Constants.api}/server/version?id=$serverId"),
+    );
+
+    final version = json.decode(response.body);
+    final preferences = await SharedPreferences.getInstance();
+
+    if (preferences.getInt("$serverId-version") == version['version']) return;
+
+    await _deleteUntrackedFolders(version);
+    await _checkAndDownloadFiles(version);
+  }
+
+  static Future<void> _deleteUntrackedFolders(Map version) async {
+    final minecraftDir = await getInstanceDir(version['instance']);
+
+    for (String path in version['delete_untracked_folders'] ?? []) {
+      for (var file in Directory("${minecraftDir.path}/$path").listSync()) {
+        if (file is! File) continue;
+
+        final fileName = file.path.replaceFirst("${file.parent.path}\\", "");
+        if ((version['files'] as List)
+            .where((e) => e['path'] == "$path/$fileName")
+            .isEmpty) {
+          await file.delete();
+        }
+      }
+    }
+  }
+
+  static Future<void> _checkAndDownloadFiles(Map version) async {
+    final minecraftDir = await getInstanceDir(version['instance']);
+
+    for (Map<String, dynamic> fileMap in version['files']) {
+      final file = File("${minecraftDir.path}/${fileMap['path']}");
+      final hash = file.existsSync() ? await _getHash(file) : null;
+
+      if (hash != null && hash == fileMap['hash']) continue;
+
+      log("Downloading ${fileMap['path']}");
+      await Dio().download(
+        "${Constants.api}/server/file?id=${version['instance']}&file=${fileMap['path']}",
+        file.path,
+        options: Options(
+          method: 'POST',
+          responseType: ResponseType.bytes,
+        ),
+      );
+    }
+  }
+
+  static Future<String> _getHash(File file) async {
+    return "${await file.openRead().transform(sha256).first}";
   }
 
   static Future<void> loadFiles() async {

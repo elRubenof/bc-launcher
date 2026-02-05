@@ -13,7 +13,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
-  const BottomBar({super.key});
+  final String serverId;
+
+  const BottomBar({super.key, required this.serverId});
 
   @override
   State<BottomBar> createState() => _BottomBarState();
@@ -71,7 +73,7 @@ class _BottomBarState extends State<BottomBar> {
             if (Utility.isLaunching.value) return;
             Utility.isLaunching.value = true;
 
-            await Utility.sincFiles();
+            await Utility.checkFiles(widget.serverId);
             await Minecraft.launch();
 
             await Future.delayed(const Duration(seconds: 1));
