@@ -62,11 +62,13 @@ class _MainPageState extends State<MainScreen> {
               ),
               child: tabs[index],
             ),
-            TopBar(mapUrl: widget.server['map']),
+            TopBar(server: widget.server),
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
               bottom: index == 0 ? 0 : -200,
-              child: BottomBar(serverId: widget.server['id'],),
+              child: BottomBar(
+                serverId: widget.server['id'],
+              ),
             ),
             ValueListenableBuilder(
               valueListenable: Utility.isLoading,
