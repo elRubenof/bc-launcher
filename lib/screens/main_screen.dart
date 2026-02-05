@@ -66,7 +66,7 @@ class _MainPageState extends State<MainScreen> {
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
               bottom: index == 0 ? 0 : -200,
-              child: const BottomBar(),
+              child: BottomBar(serverId: widget.server['id'],),
             ),
             ValueListenableBuilder(
               valueListenable: Utility.isLoading,
