@@ -8,13 +8,12 @@ import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TopBar extends StatefulWidget {
-  final String? mapUrl;
+  final Map<String, dynamic> server;
 
-  const TopBar({super.key, this.mapUrl});
+  const TopBar({super.key, required this.server});
 
   @override
   State<TopBar> createState() => _TopBarState();
@@ -53,29 +52,21 @@ class _TopBarState extends State<TopBar> {
   }
 
   Widget logo() {
-    if (Constants.appLogo.isEmpty) {
-      return const SizedBox();
-    }
-
     return Container(
       height: Constants.topBarHeight,
       width: 100,
-      color: Constants.mainColor,
       alignment: Alignment.center,
-      child: SvgPicture.asset(
-        Constants.appLogo,
+      child: Image.network(
+        "${Constants.api}/server/logo?id=${widget.server['id']}",
         height: Constants.topBarHeight * 0.75,
-        colorFilter: const ColorFilter.mode(
-          Constants.textColor,
-          BlendMode.srcIn,
-        ),
+        errorBuilder: (context, error, stackTrace) => Container(),
       ),
     );
   }
 
   Widget tabs() {
     final l = Utility.getLocalizations(context);
-    final tabsNumber = widget.mapUrl != null ? 3 : 2;
+    final tabsNumber = widget.server['map'] != null ? 3 : 2;
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
@@ -88,7 +79,7 @@ class _TopBarState extends State<TopBar> {
             icon: Icons.home,
             tab: 0,
           ),
-          if (widget.mapUrl != null)
+          if (widget.server['map'] != null)
             TabButton(
               label: l.map,
               icon: Icons.map,
