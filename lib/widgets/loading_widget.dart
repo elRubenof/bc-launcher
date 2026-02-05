@@ -1,5 +1,6 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -52,6 +53,21 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 ),
               ),
             ],
+          ),
+          SizedBox(
+            height: Constants.topBarHeight,
+            child: MoveWindow(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Constants.horizontalPadding,
+                ),
+                alignment: Alignment.centerRight,
+                child: const WindowButtons(
+                  enableSettings: false,
+                  darkMode: true,
+                ),
+              ),
+            ),
           ),
         ],
       ),
