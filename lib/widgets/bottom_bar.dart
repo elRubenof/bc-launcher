@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
@@ -156,11 +157,19 @@ class _BottomBarState extends State<BottomBar> {
             onTap: () async {
               Utility.isLoading.value = true;
 
-              await Settings.minecraftDirectory.delete(recursive: true);
-              await Utility.checkInstallation();
-              await Utility.sincFiles(force: true);
+              final dir = await Utility.getInstanceDir(widget.serverId);
+              await dir.delete(recursive: true);
 
               Utility.isLoading.value = false;
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) {
+                    return const InstancesScreen();
+                  },
+                  transitionDuration: Duration.zero,
+                ),
+              );
             },
           ),
         ),
