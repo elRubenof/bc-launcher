@@ -92,4 +92,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get lastNews => 'Últimas noticias';
+
+  @override
+  String get userNotAuthorized => 'Usuario no autorizado';
+
+  @override
+  String get serverNotResponding => 'Servidor no responde';
 }

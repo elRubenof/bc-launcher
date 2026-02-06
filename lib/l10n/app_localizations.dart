@@ -265,6 +265,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last news'**
   String get lastNews;
+
+  /// No description provided for @userNotAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'User not authorized'**
+  String get userNotAuthorized;
+
+  /// No description provided for @serverNotResponding.
+  ///
+  /// In en, this message translates to:
+  /// **'Server not responding'**
+  String get serverNotResponding;
 }
 
 class _AppLocalizationsDelegate

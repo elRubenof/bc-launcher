@@ -33,5 +33,8 @@
   "updating": "Updating",
   "downloading": "Downloading",
 
-  "lastNews": "Last news"
+  "lastNews": "Last news",
+
+  "userNotAuthorized": "User not authorized",
+  "serverNotResponding": "Server not responding"
 }

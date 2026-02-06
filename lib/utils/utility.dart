@@ -43,17 +43,19 @@ class Utility {
   }
 
   static Future<Map<String, dynamic>> getAuth(String uuid) async {
-    final response =
-        await http.get(Uri.parse("${Constants.api}/auth?uuid=$uuid"));
+    try {
+      final response = await http.get(
+        Uri.parse("${Constants.api}/auth?uuid=$uuid"),
+      );
 
-    if (response.statusCode != 200) {
-      return {
-        'error': true,
-        'statusCode': response.statusCode,
-      };
+      if (response.statusCode != 200) {
+        return {'error': true, 'statusCode': response.statusCode};
+      }
+
+      return json.decode(response.body);
+    } catch (e) {
+      return {'error': true, 'statusCode': e.toString()};
     }
-
-    return json.decode(response.body);
   }
 
   static Future<void> loadSettings() async {
@@ -111,17 +113,16 @@ class Utility {
   }
 
   static Future<void> _downloadInstance(
-      Map server, Directory installDir) async {
+    Map server,
+    Directory installDir,
+  ) async {
     final l = Utility.getLocalizations(key.currentContext!);
 
     log("Downloading ${server['id']}");
     await Dio().download(
       "${Constants.api}/server/install?id=${server['id']}",
       "${installDir.path}.zip",
-      options: Options(
-        method: 'POST',
-        responseType: ResponseType.bytes,
-      ),
+      options: Options(method: 'POST', responseType: ResponseType.bytes),
       onReceiveProgress: (received, total) {
         if (total != -1) {
           Utility.loadingState.value ??= "${l.downloading} ${server['name']}";
@@ -179,8 +180,10 @@ class Utility {
 
   static Future<void> _deleteUntrackedFolders(Map version) async {
     for (String path in version['delete_untracked_folders'] ?? []) {
-      for (var file in Directory("${Settings.minecraftDirectory.path}/$path")
-          .listSync()) {
+      for (var file
+          in Directory(
+            "${Settings.minecraftDirectory.path}/$path",
+          ).listSync()) {
         if (file is! File) continue;
 
         final fileName = file.path.replaceFirst("${file.parent.path}\\", "");
@@ -195,8 +198,9 @@ class Utility {
 
   static Future<void> _checkAndDownloadFiles(Map version) async {
     for (Map<String, dynamic> fileMap in version['files']) {
-      final file =
-          File("${Settings.minecraftDirectory.path}/${fileMap['path']}");
+      final file = File(
+        "${Settings.minecraftDirectory.path}/${fileMap['path']}",
+      );
       final hash = file.existsSync() ? await _getHash(file) : null;
 
       if (hash != null && hash == fileMap['hash']) continue;
@@ -205,10 +209,7 @@ class Utility {
       await Dio().download(
         "${Constants.api}/server/file?id=${version['instance']}&file=${fileMap['path']}",
         file.path,
-        options: Options(
-          method: 'POST',
-          responseType: ResponseType.bytes,
-        ),
+        options: Options(method: 'POST', responseType: ResponseType.bytes),
       );
     }
   }
@@ -234,12 +235,10 @@ class Utility {
 
       await compute<String, void>(
         cloneRepo,
-        json.encode(
-          {
-            "url": Constants.minecraftRepo,
-            "path": Settings.minecraftDirectory.path,
-          },
-        ),
+        json.encode({
+          "url": Constants.minecraftRepo,
+          "path": Settings.minecraftDirectory.path,
+        }),
       );
     }
   }
@@ -322,22 +321,14 @@ class Utility {
     } else {
       await compute<String, void>(
         cloneRepo,
-        json.encode(
-          {
-            "url": repoUrl,
-            "path": repoDir.path,
-          },
-        ),
+        json.encode({"url": repoUrl, "path": repoDir.path}),
       );
     }
   }
 
   static void cloneRepo(String encodedData) {
     final data = json.decode(encodedData);
-    final repo = Repository.clone(
-      url: data["url"],
-      localPath: data["path"],
-    );
+    final repo = Repository.clone(url: data["url"], localPath: data["path"]);
 
     repo.free();
   }
