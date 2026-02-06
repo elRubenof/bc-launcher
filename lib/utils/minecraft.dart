@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/launch_utils/Minecraft_launcher_core.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
@@ -77,8 +79,34 @@ class Minecraft {
     return params;
   }
 
-  static Future<void> launch() async {
-    return;
+  static Future<void> launch(Map server, {bool close = true}) async {
+    final token = await Minecraft.getToken();
+    profile.value ??= await getCurrentProfile(token);
+
+    Map options = {
+      'username': profile.value!.name,
+      'uuid': profile.value!.uuid,
+      'token': token,
+      "jvmArguments": ["-Xmx${Settings.allocatedRAM}G"],
+      if (Settings.autoConnect && server['ip'] != null)
+        'quickPlayMultiplayer': server['ip'],
+      if (!Settings.fullscreen) 'resolutionWidth': "${Settings.gameWidth}",
+      if (!Settings.fullscreen) 'resolutionHeight': "${Settings.gameHeight}",
+    };
+
+    List<String> cmd = await MinecraftLauncherCore.getMinecraftCommand(
+      server['version'],
+      Settings.minecraftDirectory.path,
+      options,
+    );
+
+    final process = await Process.start(
+      cmd[0],
+      cmd.sublist(1),
+      mode: ProcessStartMode.detachedWithStdio,
+    );
+
+    if (close) process.stdout.listen((line) => exit(0));
   }
 }
 
