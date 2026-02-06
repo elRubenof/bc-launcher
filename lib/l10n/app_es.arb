@@ -33,5 +33,8 @@
   "updating": "Actualizando",
   "downloading": "Descargando",
 
-  "lastNews": "Últimas noticias"
+  "lastNews": "Últimas noticias",
+
+  "userNotAuthorized": "Usuario no autorizado",
+  "serverNotResponding": "Servidor no responde"
 }

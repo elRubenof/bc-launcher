@@ -46,12 +46,49 @@ class _InstancesScreenState extends State<InstancesScreen> {
 
               final data = snapshot.data!;
               if (data['error'] != null) {
-                return Center(
-                  child: Text(
-                    data['statusCode'] == 401
-                        ? "NO AUTORIZADO"
-                        : "ERROR EN EL SERVIDOR",
-                  ),
+                final l = Utility.getLocalizations(context);
+
+                return Stack(
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 20,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.03),
+                          border: Border.all(
+                            width: 0.5,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          data['statusCode'] == 401
+                              ? l.userNotAuthorized.toUpperCase()
+                              : l.serverNotResponding.toUpperCase(),
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: Constants.topBarHeight,
+                      child: MoveWindow(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Constants.horizontalPadding,
+                          ),
+                          alignment: Alignment.centerRight,
+                          child: const WindowButtons(
+                            enableSettings: false,
+                            darkMode: true,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }
 
@@ -66,8 +103,10 @@ class _InstancesScreenState extends State<InstancesScreen> {
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 70),
-                      constraints:
-                          const BoxConstraints(minWidth: 300, minHeight: 350),
+                      constraints: const BoxConstraints(
+                        minWidth: 300,
+                        minHeight: 350,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.03),
                         border: Border.all(
@@ -84,13 +123,15 @@ class _InstancesScreenState extends State<InstancesScreen> {
 
                           return GestureDetector(
                             child: MouseRegion(
-                              cursor: isActive
-                                  ? SystemMouseCursors.click
-                                  : SystemMouseCursors.basic,
-                              onEnter: (event) =>
-                                  setState(() => selectedIndex = index),
-                              onExit: (event) =>
-                                  setState(() => selectedIndex = -1),
+                              cursor:
+                                  isActive
+                                      ? SystemMouseCursors.click
+                                      : SystemMouseCursors.basic,
+                              onEnter:
+                                  (event) =>
+                                      setState(() => selectedIndex = index),
+                              onExit:
+                                  (event) => setState(() => selectedIndex = -1),
                               child: Container(
                                 width: 150,
                                 margin: const EdgeInsets.all(5),
@@ -101,18 +142,20 @@ class _InstancesScreenState extends State<InstancesScreen> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   color: Colors.white.withValues(
-                                    alpha: isActive
-                                        ? index == selectedIndex && isActive
-                                            ? 0.06
-                                            : 0.04
-                                        : 0.03,
+                                    alpha:
+                                        isActive
+                                            ? index == selectedIndex && isActive
+                                                ? 0.06
+                                                : 0.04
+                                            : 0.03,
                                   ),
                                 ),
                                 child: Text(
                                   "${servers[index]['name']}",
                                   style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: isActive ? 1 : 0.4),
+                                    color: Colors.white.withValues(
+                                      alpha: isActive ? 1 : 0.4,
+                                    ),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),

@@ -72,7 +72,6 @@ class Minecraft {
     final params = request.uri.queryParameters;
     request.response.statusCode = 200;
     request.response.headers.set('content-type', 'text/plain; charset=utf-8');
-    request.response.writeln("Loging complete, you can now close this window");
     await request.response.close();
     await _redirectServer.close();
 

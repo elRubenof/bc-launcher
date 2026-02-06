@@ -23,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
+    SharedPreferences.getInstance().then((pref) => pref.remove("credentials"));
     Minecraft.listenParameters().then((response) async {
       final client = await grant.handleAuthorizationResponse(response);
 
@@ -65,9 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
           return Stack(
             children: [
               const LoadingScreen(),
-              InAppWebView(
-                initialUrlRequest: initialUrl,
-              ),
+              InAppWebView(initialUrlRequest: initialUrl),
               SizedBox(
                 height: Constants.topBarHeight,
                 child: MoveWindow(
@@ -77,7 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     alignment: Alignment.centerRight,
                     child: const WindowButtons(
-                        enableSettings: false, darkMode: true),
+                      enableSettings: false,
+                      darkMode: true,
+                    ),
                   ),
                 ),
               ),
