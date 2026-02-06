@@ -43,40 +43,40 @@ class _MainPageState extends State<MainScreen> {
       backgroundColor: Constants.backgroundColor,
       body: ValueListenableBuilder(
         valueListenable: selectedTab,
-        builder: (context, index, child) => Stack(
-          children: [
-            Image.asset(
-              "assets/img/background.png",
-              height: height,
-              width: width,
-              fit: BoxFit.cover,
+        builder:
+            (context, index, child) => Stack(
+              children: [
+                Image.asset(
+                  "assets/img/background.png",
+                  height: height,
+                  width: width,
+                  fit: BoxFit.cover,
+                ),
+                Container(
+                  height: height,
+                  color: Constants.backgroundColor.withValues(alpha: 0.85),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: Constants.topBarHeight,
+                    bottom: index == 0 ? Constants.topBarHeight : 0,
+                  ),
+                  child: tabs[index],
+                ),
+                TopBar(server: widget.server),
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 250),
+                  bottom: index == 0 ? 0 : -200,
+                  child: BottomBar(server: widget.server),
+                ),
+                ValueListenableBuilder(
+                  valueListenable: Utility.isLoading,
+                  builder:
+                      (context, value, child) =>
+                          value ? const LoadingScreen() : Container(),
+                ),
+              ],
             ),
-            Container(
-              height: height,
-              color: Constants.backgroundColor.withValues(alpha: 0.85),
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: Constants.topBarHeight,
-                bottom: index == 0 ? Constants.topBarHeight : 0,
-              ),
-              child: tabs[index],
-            ),
-            TopBar(server: widget.server),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 250),
-              bottom: index == 0 ? 0 : -200,
-              child: BottomBar(
-                serverId: widget.server['id'],
-              ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: Utility.isLoading,
-              builder: (context, value, child) =>
-                  value ? const LoadingScreen() : Container(),
-            ),
-          ],
-        ),
       ),
     );
   }

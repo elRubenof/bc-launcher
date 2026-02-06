@@ -14,9 +14,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
-  final String serverId;
+  final Map server;
 
-  const BottomBar({super.key, required this.serverId});
+  const BottomBar({super.key, required this.server});
 
   @override
   State<BottomBar> createState() => _BottomBarState();
@@ -36,15 +36,16 @@ class _BottomBarState extends State<BottomBar> {
           children: [
             ValueListenableBuilder(
               valueListenable: Utility.isLaunching,
-              builder: (context, value, child) => SizedBox(
-                height: value ? 5 : 0,
-                width: MediaQuery.of(context).size.width,
-                child: LinearProgressIndicator(
-                  color: Constants.backgroundColor,
-                  backgroundColor: Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              builder:
+                  (context, value, child) => SizedBox(
+                    height: value ? 5 : 0,
+                    width: MediaQuery.of(context).size.width,
+                    child: LinearProgressIndicator(
+                      color: Constants.backgroundColor,
+                      backgroundColor: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
             ),
             Container(
               height: Constants.topBarHeight,
@@ -56,10 +57,7 @@ class _BottomBarState extends State<BottomBar> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    devInfo(),
-                    launcherOptions(),
-                  ],
+                  children: [devInfo(), launcherOptions()],
                 ),
               ),
             ),
@@ -74,13 +72,8 @@ class _BottomBarState extends State<BottomBar> {
             if (Utility.isLaunching.value) return;
             Utility.isLaunching.value = true;
 
-            await Utility.checkFiles(widget.serverId);
-            await Minecraft.launch();
-
-            await Future.delayed(const Duration(seconds: 1));
-            appWindow.close();
-
-            Utility.isLaunching.value = false;
+            await Utility.checkFiles(widget.server['id']);
+            Minecraft.launch(widget.server);
           },
         ),
       ],
@@ -156,7 +149,7 @@ class _BottomBarState extends State<BottomBar> {
             backgroundColor: Colors.white.withValues(alpha: 0.12),
             onTap: () async {
               Utility.isLoading.value = true;
-              
+
               await Settings.minecraftDirectory.delete(recursive: true);
 
               Utility.isLoading.value = false;
@@ -172,45 +165,48 @@ class _BottomBarState extends State<BottomBar> {
             },
           ),
         ),
-        Container(
-          height: 35,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: Colors.white.withValues(alpha: 0.12).withValues(alpha: 0.06),
-          ),
-          child: Row(
-            children: [
-              Text(
-                l.autoConnect,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.bold,
+        if (widget.server['ip'] != null)
+          Container(
+            height: 35,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: Colors.white
+                  .withValues(alpha: 0.12)
+                  .withValues(alpha: 0.06),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  l.autoConnect,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Container(
-                width: 25,
-                margin: const EdgeInsets.only(left: 8),
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Transform.scale(
-                    scale: 0.5,
-                    child: CupertinoSwitch(
-                      value: Settings.autoConnect,
-                      activeTrackColor: const Color(0xff7a4aee),
-                      onChanged: (value) async {
-                        await Utility.setAutoConnect(value);
+                Container(
+                  width: 25,
+                  margin: const EdgeInsets.only(left: 8),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Transform.scale(
+                      scale: 0.5,
+                      child: CupertinoSwitch(
+                        value: Settings.autoConnect,
+                        activeTrackColor: const Color(0xff7a4aee),
+                        onChanged: (value) async {
+                          await Utility.setAutoConnect(value);
 
-                        setState(() {});
-                      },
+                          setState(() {});
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
