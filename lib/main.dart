@@ -1,3 +1,4 @@
+import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
@@ -6,7 +7,6 @@ import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool _updated = false;
 
