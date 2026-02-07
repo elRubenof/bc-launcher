@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as p;
+import 'package:path/path.dart';
 
 class MinecraftLauncherHelper {
   static bool parseSingeRule(Map rule, Map options) {
@@ -101,13 +101,13 @@ class MinecraftLauncherHelper {
       suffix = "jar";
     }
 
-    String libpath = p.join(path, "libraries");
+    String libpath = join(path, "libraries");
     final parts = name.split(':');
     final basePath = parts[0];
     final libname = parts[1];
     final version = parts[2];
     for (String item in basePath.split('.')) {
-      libpath = p.join(libpath, item);
+      libpath = join(libpath, item);
     }
 
     String extraParts = "";
@@ -116,8 +116,7 @@ class MinecraftLauncherHelper {
     }
 
     String fileName = '$libname-$version$extraParts.$suffix';
-    ;
-    libpath = p.join(libpath, libname, version, fileName);
+    libpath = join(libpath, libname, version, fileName);
 
     return libpath;
   }
@@ -126,7 +125,7 @@ class MinecraftLauncherHelper {
     final inheritVersion = originalData["inheritsFrom"];
 
     final versionFile = File(
-      p.join(path, "versions", inheritVersion, "$inheritVersion.json"),
+      join(path, "versions", inheritVersion, "$inheritVersion.json"),
     );
     final newData = jsonDecode(await versionFile.readAsString());
 

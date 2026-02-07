@@ -52,6 +52,7 @@ dependencies:
   dio: ^5.9.1
   archive: ^4.0.7
   crypto: ^3.0.7
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

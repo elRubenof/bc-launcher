@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
-import 'package:path/path.dart' as p;
+import 'package:path/path.dart';
 
 class MinecraftLauncherCore {
   static String getLibraries(Map data, String path) {
@@ -22,7 +22,7 @@ class MinecraftLauncherCore {
         if (item.containsKey("downloads") &&
             item["downloads"]["classifiers"][native].containsKey("path")) {
           libstr +=
-              p.join(
+              join(
                 path,
                 "libraries",
                 item["downloads"]["classifiers"][native]["path"],
@@ -40,9 +40,9 @@ class MinecraftLauncherCore {
     }
 
     if (data.containsKey("jar")) {
-      libstr += p.join(path, "versions", data["jar"], data["jar"] + ".jar");
+      libstr += join(path, "versions", data["jar"], data["jar"] + ".jar");
     } else {
-      libstr += p.join(path, "versions", data["id"], data["id"] + ".jar");
+      libstr += join(path, "versions", data["id"], data["id"] + ".jar");
     }
 
     return libstr;
@@ -66,7 +66,7 @@ class MinecraftLauncherCore {
         .replaceAll(r"${auth_player_name}", options["username"] ?? "{username}")
         .replaceAll(r"${version_name}", versionData["id"])
         .replaceAll(r"${game_directory}", options["gameDirectory"] ?? path)
-        .replaceAll(r"${assets_root}", p.join(path, "assets"))
+        .replaceAll(r"${assets_root}", join(path, "assets"))
         .replaceAll(
           r"${assets_index_name}",
           versionData["assets"] ?? versionData["id"],
@@ -83,10 +83,10 @@ class MinecraftLauncherCore {
         )
         .replaceAll(
           r"${game_assets}",
-          p.join(path, "assets", "virtual", "legacy"),
+          join(path, "assets", "virtual", "legacy"),
         )
         .replaceAll(r"${auth_session}", options["token"] ?? "{token}")
-        .replaceAll(r"${library_directory}", p.join(path, "libraries"))
+        .replaceAll(r"${library_directory}", join(path, "libraries"))
         .replaceAll(
           r"${classpath_separator}",
           MinecraftLauncherHelper.getClasspathSeparator(),
@@ -184,12 +184,12 @@ class MinecraftLauncherCore {
     String path,
     Map options,
   ) async {
-    if (!Directory(p.join(path, "versions", version)).existsSync()) {
+    if (!Directory(join(path, "versions", version)).existsSync()) {
       throw Exception("Version not found");
     }
 
     final versionFile = File(
-      p.join(path, "versions", version, "$version.json"),
+      join(path, "versions", version, "$version.json"),
     );
 
     var data = jsonDecode(await versionFile.readAsString());
@@ -199,7 +199,7 @@ class MinecraftLauncherCore {
 
     options["nativesDirectory"] =
         options['nativesDirectory'] ??
-        p.join(path, "versions", data["id"], "natives");
+        join(path, "versions", data["id"], "natives");
     final classPath = getLibraries(data, path);
 
     List<String> command = [options["executablePath"] ?? "java"];

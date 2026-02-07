@@ -1,6 +1,7 @@
 import 'package:bc_launcher/main.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
+import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
@@ -30,13 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setString("credentials", client.credentials.toJson());
 
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const MyApp(),
-          transitionDuration: Duration.zero,
-        ),
-      );
+      Utility.pushReplacement(context, const MyApp());
     });
   }
 
