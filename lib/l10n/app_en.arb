@@ -30,6 +30,8 @@
   "updateQuestion": "Do you want to install the newest app´s version?",
   "yes": "Yes",
   "no": "No",
+  "updatedNeeded": "Updated needed",
+  "close": "Close",
   "updating": "Updating",
   "downloading": "Downloading",
 

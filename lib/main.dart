@@ -8,11 +8,9 @@ import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 
-bool _updated = false;
-
 void main() async {
   await Utility.loadSettings();
-  _updated = await Utility.isUpdated();
+  final updated = await Utility.isUpdated();
 
   runApp(
     MaterialApp(
@@ -20,7 +18,7 @@ void main() async {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: !_updated ? const UpdateScreen() : const MyApp(),
+      home: updated == null ? const MyApp() : UpdateScreen(url: updated),
     ),
   );
 

@@ -85,6 +85,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get no => 'No';
 
   @override
+  String get updatedNeeded => 'Actualización necesaria';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
   String get updating => 'Actualizando';
 
   @override

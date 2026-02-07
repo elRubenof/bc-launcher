@@ -85,6 +85,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no => 'No';
 
   @override
+  String get updatedNeeded => 'Updated needed';
+
+  @override
+  String get close => 'Close';
+
+  @override
   String get updating => 'Updating';
 
   @override

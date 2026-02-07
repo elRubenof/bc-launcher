@@ -223,28 +223,27 @@ class Utility {
     Settings.autoConnect = value;
   }
 
-  static Future<bool> isUpdated() async {
-    if (Constants.versionEndPoint.isEmpty) return true;
+  static Future<String?> isUpdated() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final versionResponse = await http.get(
+        Uri.parse("${Constants.api}/version"),
+      );
 
-    final packageInfo = await PackageInfo.fromPlatform();
-    final versionResponse = await http.get(
-      Uri.parse(Constants.versionEndPoint),
-    );
-    final version = json.decode(versionResponse.body);
+      final version = json.decode(versionResponse.body);
+      if (packageInfo.version == version["version"]) return null;
 
-    return packageInfo.version == version["version"];
+      return version['installers'][Platform.operatingSystem] ?? "";
+    } catch (e) {
+      return null;
+    }
   }
 
-  static Future<bool> update() async {
+  static Future<bool> update(String url) async {
     if (!Platform.isWindows) return false;
 
     try {
-      final versionResponse = await http.get(
-        Uri.parse(Constants.versionEndPoint),
-      );
-      final version = json.decode(versionResponse.body);
-
-      await AutoUpdate.downloadAndUpdate(version[Platform.operatingSystem]);
+      await AutoUpdate.downloadAndUpdate(url);
       return true;
     } catch (e) {
       return false;
