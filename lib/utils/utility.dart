@@ -23,7 +23,6 @@ class Utility {
   static ValueNotifier<double?> loadingProgress = ValueNotifier(null);
 
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
-  static ValueNotifier<List> news = ValueNotifier([]);
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
@@ -203,17 +202,6 @@ class Utility {
 
   static Future<String> _getHash(File file) async {
     return "${await file.openRead().transform(sha256).first}";
-  }
-
-  static Future<void> loadNews() async {
-    if (Constants.newsRepo.isEmpty) return;
-
-    try {
-      final response = await http.get(Uri.parse(Constants.newsRepo));
-      news.value = json.decode(utf8.decode(response.bodyBytes));
-    } catch (e) {
-      return;
-    }
   }
 
   static Future<void> setAutoConnect(bool value) async {

@@ -28,7 +28,7 @@ class _MainPageState extends State<MainScreen> {
 
     selectedTab.value = 0;
     tabs = [
-      const HomeScreen(),
+      HomeScreen(news: widget.server['news']),
       MapScreen(mapUrl: widget.server['map']),
       const SettingsScreen(),
     ];
