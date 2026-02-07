@@ -10,7 +10,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UpdateScreen extends StatelessWidget {
-  const UpdateScreen({super.key});
+  final String url;
+
+  const UpdateScreen({super.key, required this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,9 @@ class UpdateScreen extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
               child: Container(
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.0)),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.0),
+                ),
               ),
             ),
           ),
@@ -53,69 +57,84 @@ class UpdateScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    l.availableUpdate,
+                    url.isEmpty ? l.updatedNeeded : l.availableUpdate,
                     style: TextStyle(
                       color: Constants.textColor,
                       fontSize: MediaQuery.of(context).size.height * 0.03,
                     ),
                   ),
-                  Text(
-                    l.updateQuestion,
-                    style: TextStyle(
-                      color: Constants.textColor.withValues(alpha: 0.5),
-                      fontSize: 12,
+                  if (url.isNotEmpty)
+                    Text(
+                      l.updateQuestion,
+                      style: TextStyle(
+                        color: Constants.textColor.withValues(alpha: 0.5),
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 30),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MouseRegion(
+                  url.isEmpty
+                      ? MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: CupertinoButton.filled(
                           child: Container(
-                            width: 25,
+                            width: 60,
                             alignment: Alignment.center,
-                            child: Text(l.yes.toUpperCase()),
-                          ),
-                          onPressed: () async {
-                            Utility.isLoading.value = true;
-
-                            if (await Utility.update()) exit(0);
-
-                            Utility.isLoading.value = false;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: CupertinoButton(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          child: Container(
-                            width: 25,
-                            alignment: Alignment.center,
-                            child: Text(l.no.toUpperCase()),
+                            child: Text(l.close.toUpperCase()),
                           ),
                           onPressed: () => exit(0),
                         ),
+                      )
+                      : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: CupertinoButton.filled(
+                              child: Container(
+                                width: 25,
+                                alignment: Alignment.center,
+                                child: Text(l.yes.toUpperCase()),
+                              ),
+                              onPressed: () async {
+                                Utility.isLoading.value = true;
+
+                                if (await Utility.update(url)) exit(0);
+
+                                Utility.isLoading.value = false;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: CupertinoButton(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              child: Container(
+                                width: 25,
+                                alignment: Alignment.center,
+                                child: Text(l.no.toUpperCase()),
+                              ),
+                              onPressed: () => exit(0),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
           ValueListenableBuilder(
             valueListenable: Utility.isLoading,
-            builder: (context, value, child) => value
-                ? Container(
-                    width: width,
-                    height: height,
-                    color: Constants.backgroundColor,
-                    child: const LoadingScreen(),
-                  )
-                : Container(),
+            builder:
+                (context, value, child) =>
+                    value
+                        ? Container(
+                          width: width,
+                          height: height,
+                          color: Constants.backgroundColor,
+                          child: const LoadingScreen(),
+                        )
+                        : Container(),
           ),
           SizedBox(
             height: Constants.topBarHeight,

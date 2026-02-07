@@ -248,6 +248,18 @@ abstract class AppLocalizations {
   /// **'No'**
   String get no;
 
+  /// No description provided for @updatedNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated needed'**
+  String get updatedNeeded;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
   /// No description provided for @updating.
   ///
   /// In en, this message translates to:

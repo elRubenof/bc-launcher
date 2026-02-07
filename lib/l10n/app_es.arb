@@ -30,6 +30,8 @@
   "updateQuestion": "¿Quieres instalar la última versión de la aplicación?",
   "yes": "Si",
   "no": "No",
+  "updatedNeeded": "Actualización necesaria",
+  "close": "Cerrar",
   "updating": "Actualizando",
   "downloading": "Descargando",
 
