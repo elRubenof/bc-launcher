@@ -86,7 +86,9 @@ class Minecraft {
       'username': profile.value!.name,
       'uuid': profile.value!.uuid,
       'token': token,
-      "jvmArguments": ["-Xmx${Settings.allocatedRAM}G"],
+      'executablePath':
+          '${Directory.current.path}/runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin/java.exe',
+      'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
       if (Settings.autoConnect && server['ip'] != null)
         'quickPlayMultiplayer': server['ip'],
       if (!Settings.fullscreen) 'resolutionWidth': "${Settings.gameWidth}",
