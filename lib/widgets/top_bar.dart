@@ -38,14 +38,9 @@ class _TopBarState extends State<TopBar> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                logo(),
-                tabs(),
-                account(),
-                const WindowButtons(),
-              ],
+              children: [logo(), tabs(), account(), const WindowButtons()],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -74,22 +69,10 @@ class _TopBarState extends State<TopBar> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TabButton(
-            label: l.home,
-            icon: Icons.home,
-            tab: 0,
-          ),
+          TabButton(label: l.home, icon: Icons.home, tab: 0),
           if (widget.server['map'] != null)
-            TabButton(
-              label: l.map,
-              icon: Icons.map,
-              tab: 1,
-            ),
-          TabButton(
-            label: l.settings,
-            icon: Icons.settings,
-            tab: 2,
-          ),
+            TabButton(label: l.map, icon: Icons.map, tab: 1),
+          TabButton(label: l.settings, icon: Icons.settings, tab: 2),
         ],
       ),
     );
@@ -117,7 +100,8 @@ Widget account() {
                   width: 25,
                   margin: const EdgeInsets.only(right: 14),
                   child: Image.network(
-                      "https://mc-heads.net/avatar/${value.name}"),
+                    "https://mc-heads.net/avatar/${value.name}",
+                  ),
                 ),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 84),
@@ -126,7 +110,7 @@ Widget account() {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
-                )
+                ),
               ],
             ),
             Container(
@@ -145,14 +129,7 @@ Widget account() {
                 final preferences = await SharedPreferences.getInstance();
                 await preferences.remove('savedInstance');
 
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) =>
-                        const InstancesScreen(),
-                    transitionDuration: Duration.zero,
-                  ),
-                );
+                Utility.pushReplacement(context, const InstancesScreen());
               },
             ),
             MouseIconButton(
@@ -164,14 +141,7 @@ Widget account() {
               onTap: () async {
                 await Minecraft.logout();
 
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) =>
-                        const LoginScreen(),
-                    transitionDuration: Duration.zero,
-                  ),
-                );
+                Utility.pushReplacement(context, const LoginScreen());
               },
             ),
           ],

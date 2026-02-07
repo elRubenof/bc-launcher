@@ -250,4 +250,16 @@ class Utility {
       return false;
     }
   }
+
+  static void pushReplacement(BuildContext context, Widget destination) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) {
+          return destination;
+        },
+        transitionDuration: Duration.zero,
+      ),
+    );
+  }
 }

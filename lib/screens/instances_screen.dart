@@ -206,15 +206,7 @@ class _InstancesScreenState extends State<InstancesScreen> {
 
     final server = data['servers'].where((e) => e['id'] == savedInstance);
     if (server.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) {
-            return MainScreen(server: server.first);
-          },
-          transitionDuration: Duration.zero,
-        ),
-      );
+      Utility.pushReplacement(context, MainScreen(server: server.first));
     }
   }
 
@@ -230,14 +222,6 @@ class _InstancesScreenState extends State<InstancesScreen> {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString('savedInstance', server['id']);
 
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) {
-          return MainScreen(server: server);
-        },
-        transitionDuration: Duration.zero,
-      ),
-    );
+    Utility.pushReplacement(context, MainScreen(server: server));
   }
 }

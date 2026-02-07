@@ -7,7 +7,6 @@ import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -153,15 +152,7 @@ class _BottomBarState extends State<BottomBar> {
               await Settings.minecraftDirectory.delete(recursive: true);
 
               Utility.isLoading.value = false;
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) {
-                    return const InstancesScreen();
-                  },
-                  transitionDuration: Duration.zero,
-                ),
-              );
+              Utility.pushReplacement(context, const InstancesScreen());
             },
           ),
         ),
