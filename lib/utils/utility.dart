@@ -6,13 +6,10 @@ import 'package:archive/archive.dart';
 import 'package:auto_update/auto_update.dart';
 import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:git2dart/git2dart.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,16 +27,6 @@ class Utility {
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
-  }
-
-  static Future<void> init() async {
-    Utility.isLoading.value = true;
-
-    await Minecraft.authenticateOauth2();
-    await loadFiles();
-    await loadNews();
-
-    Utility.isLoading.value = false;
   }
 
   static Future<Map<String, dynamic>> getAuth(String uuid) async {
@@ -218,37 +205,6 @@ class Utility {
     return "${await file.openRead().transform(sha256).first}";
   }
 
-  static Future<void> loadFiles() async {
-    await checkInstallation();
-    await sincFiles();
-  }
-
-  static Future<void> checkInstallation() async {
-    final supportDirectory = await getApplicationSupportDirectory();
-    Settings.minecraftDirectory = Directory(
-      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}minecraft",
-    );
-
-    if (!Settings.minecraftDirectory.existsSync()) {
-      final l = Utility.getLocalizations(key.currentContext!);
-      Utility.loadingState.value = l.installing;
-
-      await compute<String, void>(
-        cloneRepo,
-        json.encode({
-          "url": Constants.minecraftRepo,
-          "path": Settings.minecraftDirectory.path,
-        }),
-      );
-    }
-  }
-
-  static Future<void> sincFiles({bool force = false}) async {
-    await sincRepo(Constants.modsRepo, force);
-    await sincRepo(Constants.configRepo, force);
-    await sincRepo(Constants.resourcePacksRepo, force);
-  }
-
   static Future<void> loadNews() async {
     if (Constants.newsRepo.isEmpty) return;
 
@@ -265,78 +221,6 @@ class Utility {
 
     await preferences.setBool("autoConnect", value);
     Settings.autoConnect = value;
-  }
-
-  static Future<void> sincRepo(String repoUrl, bool force) async {
-    final name = repoUrl.split('/').last.replaceAll(".git", "");
-    Directory repoDir = Directory("${Settings.minecraftDirectory.path}/$name");
-
-    if (repoDir.existsSync() && (repoUrl.isEmpty || (isAdmin() && !force))) {
-      return;
-    }
-
-    final l = Utility.getLocalizations(key.currentContext!);
-    loadingState.value = "${l.syncing} $name";
-    if (await repoDir.exists()) {
-      Repository repo;
-
-      try {
-        repo = Repository.open(repoDir.path);
-      } catch (e) {
-        await Settings.minecraftDirectory.delete(recursive: true);
-        await Utility.sincRepo(repoUrl, force);
-
-        return;
-      }
-
-      //DELETES NEW / MODIFIED FILES
-      for (String key in repo.status.keys) {
-        try {
-          if (repo.status[key]!.first != GitStatus.indexDeleted) {
-            File("${repoDir.path}/$key").deleteSync();
-            log("Deleted file: $key");
-          }
-        } catch (e) {
-          log("Error deleting file: $key");
-        }
-      }
-
-      //RECOVER LOCAL HEAD FILES
-      repo.reset(oid: repo.headCommit.oid, resetType: GitReset.hard);
-
-      //GET NEW CHANGES
-      final remote = Remote.lookup(repo: repo, name: "origin");
-      remote.fetch();
-
-      Merge.commit(
-        repo: repo,
-        commit: AnnotatedCommit.fromReference(
-          repo: repo,
-          reference: Reference.lookup(
-            repo: repo,
-            name: 'refs/remotes/origin/main',
-          ),
-        ),
-      );
-    } else {
-      await compute<String, void>(
-        cloneRepo,
-        json.encode({"url": repoUrl, "path": repoDir.path}),
-      );
-    }
-  }
-
-  static void cloneRepo(String encodedData) {
-    final data = json.decode(encodedData);
-    final repo = Repository.clone(url: data["url"], localPath: data["path"]);
-
-    repo.free();
-  }
-
-  static bool isAdmin() {
-    if (Minecraft.profile.value == null) return false;
-
-    return Constants.adminList.contains(Minecraft.profile.value!.uuid);
   }
 
   static Future<bool> isUpdated() async {
