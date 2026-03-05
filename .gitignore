@@ -51,3 +51,4 @@ windows/flutter/generated_plugin_registrant.cc
 macos/Flutter/GeneratedPluginRegistrant.swift
 linux/flutter/generated_plugins.cmake
 linux/flutter/generated_plugin_registrant.cc
+installer_files/
