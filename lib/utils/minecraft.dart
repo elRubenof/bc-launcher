@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/Minecraft_launcher_core.dart';
+import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +81,7 @@ class Minecraft {
   }
 
   static Future<void> launch(Map server, {bool close = true}) async {
+    final jdk = MinecraftLauncherHelper.getJDKVersion(server['mcVersion']);
     final token = await Minecraft.getToken();
     profile.value ??= await getCurrentProfile(token);
 
@@ -87,7 +90,7 @@ class Minecraft {
       'uuid': profile.value!.uuid,
       'token': token,
       'executablePath':
-          '${Directory.current.path}/runtime/java-runtime-gamma/windows-x64/java-runtime-gamma/bin/java.exe',
+          '${Directory.current.path}/runtime/java-runtime-$jdk/bin/java.exe',
       'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
       if (Settings.autoConnect && server['ip'] != null)
         'quickPlayMultiplayer': server['ip'],
