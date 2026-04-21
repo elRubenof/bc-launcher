@@ -172,4 +172,28 @@ class MinecraftLauncherHelper {
     final nameParts = lib['name'].split(':');
     return nameParts.getRange(0, nameParts.length - 1).join(':');
   }
+
+  static int? getJDKVersion(String mcVersion) {
+    final parts =
+        mcVersion
+            .trim()
+            .split('.')
+            .map((e) => int.tryParse(e.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
+            .toList();
+
+    if (parts.isEmpty) return null;
+    if (parts.length < 2) return 8;
+
+    int major = parts[0];
+    int minor = parts[1];
+    int patch = parts.length > 2 ? parts[2] : 0;
+    
+    if (major == 1) {
+      if (minor <= 16) return 8;
+      if (minor < 20 || (minor == 20 && patch <= 4)) return 17;
+      return 21;
+    }
+
+    return 25;
+  }
 }
