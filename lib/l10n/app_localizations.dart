@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @versionErrorDialogDescription.
   ///
   /// In en, this message translates to:
-  /// **'Incorrect version of the instance detected. Do you want to reinstall '**
+  /// **'Incorrect version of the instance detected. Do you want to reinstall'**
   String get versionErrorDialogDescription;
 
   /// No description provided for @reinstallDialogTitle.
