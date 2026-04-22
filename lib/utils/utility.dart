@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
-import 'package:auto_update/auto_update.dart';
+import 'package:open_file/open_file.dart';
 import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/settings.dart';
@@ -213,6 +213,8 @@ class Utility {
 
   static Future<String?> isUpdated() async {
     try {
+      await _deleteOldInstallers();
+
       final packageInfo = await PackageInfo.fromPlatform();
       final versionResponse = await http.get(
         Uri.parse("${Constants.api}/version"),
@@ -227,11 +229,38 @@ class Utility {
     }
   }
 
-  static Future<bool> update(String url) async {
+  static Future<void> _deleteOldInstallers() async {
+    if (!Platform.isWindows) return;
+
+    final supportDirectory = await getApplicationSupportDirectory();
+    for (FileSystemEntity item in supportDirectory.listSync()) {
+      if (item.path.endsWith(".exe")) await item.delete();
+    }
+  }
+
+  static Future<bool> update(String url, String downloadigText) async {
     if (!Platform.isWindows) return false;
 
+    final supportDirectory = await getApplicationSupportDirectory();
+    final filePath = "${supportDirectory.path}/${url.split('/').last}";
+
     try {
-      await AutoUpdate.downloadAndUpdate(url);
+      final downloadFile = File(filePath);
+      if (await downloadFile.exists()) await downloadFile.delete();
+
+      await Dio().download(
+        url,
+        filePath,
+        options: Options(method: 'POST', responseType: ResponseType.bytes),
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            Utility.loadingState.value ??= downloadigText;
+            Utility.loadingProgress.value = received / total;
+          }
+        },
+      );
+
+      await OpenFile.open(filePath);
       return true;
     } catch (e) {
       return false;

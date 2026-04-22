@@ -3,10 +3,10 @@ import 'dart:ui';
 
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UpdateScreen extends StatelessWidget {
@@ -45,83 +45,20 @@ class UpdateScreen extends StatelessWidget {
             height: height,
             color: Constants.backgroundColor.withValues(alpha: 0.85),
           ),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
-              decoration: BoxDecoration(
-                color: Constants.mainColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    url.isEmpty ? l.updatedNeeded : l.availableUpdate,
-                    style: TextStyle(
-                      color: Constants.textColor,
-                      fontSize: MediaQuery.of(context).size.height * 0.03,
-                    ),
-                  ),
-                  if (url.isNotEmpty)
-                    Text(
-                      l.updateQuestion,
-                      style: TextStyle(
-                        color: Constants.textColor.withValues(alpha: 0.5),
-                        fontSize: 12,
-                      ),
-                    ),
-                  const SizedBox(height: 30),
-                  url.isEmpty
-                      ? MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: CupertinoButton.filled(
-                          child: Container(
-                            width: 60,
-                            alignment: Alignment.center,
-                            child: Text(l.close.toUpperCase()),
-                          ),
-                          onPressed: () => exit(0),
-                        ),
-                      )
-                      : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: CupertinoButton.filled(
-                              child: Container(
-                                width: 25,
-                                alignment: Alignment.center,
-                                child: Text(l.yes.toUpperCase()),
-                              ),
-                              onPressed: () async {
-                                Utility.isLoading.value = true;
+          CustomDialog(
+            title: url.isEmpty ? l.updatedNeeded : l.availableUpdate,
+            description: url.isNotEmpty ? l.updateQuestion : null,
+            backgroundColor: Constants.mainColor.withValues(alpha: 0.1),
+            mainButtonText: url.isNotEmpty ? l.yes : l.close,
+            secondaryButtonText: url.isNotEmpty ? l.no : null,
+            mainButtonOnPressed: () async {
+              if (url.isEmpty) exit(0);
 
-                                if (await Utility.update(url)) exit(0);
-
-                                Utility.isLoading.value = false;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: CupertinoButton(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              child: Container(
-                                width: 25,
-                                alignment: Alignment.center,
-                                child: Text(l.no.toUpperCase()),
-                              ),
-                              onPressed: () => exit(0),
-                            ),
-                          ),
-                        ],
-                      ),
-                ],
-              ),
-            ),
+              Utility.isLoading.value = true;
+              if (await Utility.update(url, l.downloading)) exit(0);
+              Utility.isLoading.value = false;
+            },
+            secondaryButtonOnPressed: () => exit(0),
           ),
           ValueListenableBuilder(
             valueListenable: Utility.isLoading,
