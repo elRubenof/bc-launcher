@@ -38,5 +38,10 @@
   "lastNews": "Últimas noticias",
 
   "userNotAuthorized": "Usuario no autorizado",
-  "serverNotResponding": "Servidor no responde"
+  "serverNotResponding": "Servidor no responde",
+
+  "versionErrorDialogTitle": "Versión incorrecta",
+  "versionErrorDialogDescription": "Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar ",
+  "reinstallDialogTitle": "Reinstalar instancia",
+  "reinstallDialogDescription": "¿Estás seguro que deseas reinstalar"
 }

@@ -1,9 +1,14 @@
+import 'dart:io';
+
+import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
 import 'package:bc_launcher/screens/tabs/map_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
+import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +37,12 @@ class _MainPageState extends State<MainScreen> {
       MapScreen(mapUrl: widget.server['map']),
       const SettingsScreen(),
     ];
+
+    Directory(
+      "${Settings.minecraftDirectory.path}/versions/${widget.server['version']}",
+    ).exists().then((value) {
+      if (!value) showReinstallDialog();
+    });
   }
 
   @override
@@ -78,6 +89,38 @@ class _MainPageState extends State<MainScreen> {
               ],
             ),
       ),
+    );
+  }
+
+  Future<void> showReinstallDialog() {
+    final l = Utility.getLocalizations(context);
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return CustomDialog(
+          title: l.versionErrorDialogTitle,
+          description:
+              "${l.versionErrorDialogDescription} ${widget.server['name']}?",
+          mainButtonText: l.yes,
+          secondaryButtonText: l.no,
+          mainButtonOnPressed: () async {
+            Navigator.pop(context);
+            Utility.isLoading.value = true;
+
+            if (await Settings.minecraftDirectory.exists()) {
+              await Settings.minecraftDirectory.delete(recursive: true);
+            }
+
+            Utility.isLoading.value = false;
+            Utility.pushReplacement(
+              context,
+              InstancesScreen(server: widget.server),
+            );
+          },
+          secondaryButtonOnPressed: () => Navigator.pop(context),
+        );
+      },
     );
   }
 }

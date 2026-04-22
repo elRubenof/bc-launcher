@@ -38,5 +38,10 @@
   "lastNews": "Last news",
 
   "userNotAuthorized": "User not authorized",
-  "serverNotResponding": "Server not responding"
+  "serverNotResponding": "Server not responding",
+
+  "versionErrorDialogTitle": "Incorrect version",
+  "versionErrorDialogDescription": "Incorrect version of the instance detected. Do you want to reinstall ",
+  "reinstallDialogTitle": "Reinstall instance",
+  "reinstallDialogDescription": "Do you want to reinstall"
 }

@@ -289,6 +289,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Server not responding'**
   String get serverNotResponding;
+
+  /// No description provided for @versionErrorDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect version'**
+  String get versionErrorDialogTitle;
+
+  /// No description provided for @versionErrorDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect version of the instance detected. Do you want to reinstall '**
+  String get versionErrorDialogDescription;
+
+  /// No description provided for @reinstallDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reinstall instance'**
+  String get reinstallDialogTitle;
+
+  /// No description provided for @reinstallDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to reinstall'**
+  String get reinstallDialogDescription;
 }
 
 class _AppLocalizationsDelegate

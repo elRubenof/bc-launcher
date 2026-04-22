@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InstancesScreen extends StatefulWidget {
-  const InstancesScreen({super.key});
+  final Map<String, dynamic>? server;
+
+  const InstancesScreen({super.key, this.server});
 
   @override
   State<InstancesScreen> createState() => _InstancesScreenState();
@@ -26,7 +28,12 @@ class _InstancesScreenState extends State<InstancesScreen> {
     super.initState();
 
     _authFuture = Utility.getAuth(Minecraft.profile.value!.uuid).then((value) {
-      autoSelectInstance(value);
+      if (widget.server != null) {
+        checkInstallAndTravel(widget.server!);
+      } else {
+        autoSelectInstance(value);
+      }
+
       return value;
     });
   }
