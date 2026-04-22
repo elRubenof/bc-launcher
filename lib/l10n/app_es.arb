@@ -40,7 +40,7 @@
   "serverNotResponding": "Servidor no responde",
 
   "versionErrorDialogTitle": "Versión incorrecta",
-  "versionErrorDialogDescription": "Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar ",
+  "versionErrorDialogDescription": "Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar",
   "reinstallDialogTitle": "Reinstalar instancia",
   "reinstallDialogDescription": "¿Estás seguro que deseas reinstalar"
 }

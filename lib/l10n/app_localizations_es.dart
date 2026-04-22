@@ -107,7 +107,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get versionErrorDialogDescription =>
-      'Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar ';
+      'Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar';
 
   @override
   String get reinstallDialogTitle => 'Reinstalar instancia';
