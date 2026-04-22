@@ -104,4 +104,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serverNotResponding => 'Server not responding';
+
+  @override
+  String get versionErrorDialogTitle => 'Incorrect version';
+
+  @override
+  String get versionErrorDialogDescription =>
+      'Incorrect version of the instance detected. Do you want to reinstall ';
+
+  @override
+  String get reinstallDialogTitle => 'Reinstall instance';
+
+  @override
+  String get reinstallDialogDescription => 'Do you want to reinstall';
 }
