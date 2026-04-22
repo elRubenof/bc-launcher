@@ -91,9 +91,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
-  String get updating => 'Updating';
-
-  @override
   String get downloading => 'Downloading';
 
   @override
