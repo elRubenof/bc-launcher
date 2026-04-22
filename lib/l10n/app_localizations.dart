@@ -260,12 +260,6 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get close;
 
-  /// No description provided for @updating.
-  ///
-  /// In en, this message translates to:
-  /// **'Updating'**
-  String get updating;
-
   /// No description provided for @downloading.
   ///
   /// In en, this message translates to:
