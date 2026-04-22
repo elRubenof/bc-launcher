@@ -6,6 +6,7 @@ import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
+import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
-  final Map server;
+  final Map<String, dynamic> server;
 
   const BottomBar({super.key, required this.server});
 
@@ -146,14 +147,7 @@ class _BottomBarState extends State<BottomBar> {
             hoverColor: Colors.white.withValues(alpha: 0.5),
             backgroundSize: 35.0,
             backgroundColor: Colors.white.withValues(alpha: 0.12),
-            onTap: () async {
-              Utility.isLoading.value = true;
-
-              await Settings.minecraftDirectory.delete(recursive: true);
-
-              Utility.isLoading.value = false;
-              Utility.pushReplacement(context, const InstancesScreen());
-            },
+            onTap: showReinstallDialog,
           ),
         ),
         if (widget.server['ip'] != null)
@@ -199,6 +193,40 @@ class _BottomBarState extends State<BottomBar> {
             ),
           ),
       ],
+    );
+  }
+
+  Future<void> showReinstallDialog() async {
+    final l = Utility.getLocalizations(context);
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return CustomDialog(
+          title: l.reinstallDialogTitle,
+          description:
+              "${l.reinstallDialogDescription} ${widget.server['name']}?",
+          mainButtonText: l.yes,
+          secondaryButtonText: l.no,
+          mainButtonOnPressed: () async {
+            Navigator.pop(context);
+            Utility.isLoading.value = true;
+
+            if (await Settings.minecraftDirectory.exists()) {
+              await Settings.minecraftDirectory.delete(recursive: true);
+            }
+
+            Utility.isLoading.value = false;
+            Utility.pushReplacement(
+              context,
+              InstancesScreen(server: widget.server),
+            );
+          },
+          secondaryButtonOnPressed: () {
+            Navigator.pop(context);
+          },
+        );
+      },
     );
   }
 }
