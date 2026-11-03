@@ -140,6 +140,60 @@ abstract class AppLocalizations {
   /// **'Auto-Connect'**
   String get autoConnect;
 
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// No description provided for @loginInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with your Microsoft account and come back to this screen'**
+  String get loginInBrowser;
+
+  /// No description provided for @loginOpenBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open again'**
+  String get loginOpenBrowser;
+
+  /// No description provided for @loginCopyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get loginCopyLink;
+
+  /// No description provided for @loginLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get loginLinkCopied;
+
+  /// No description provided for @loginError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign in'**
+  String get loginError;
+
+  /// No description provided for @loginErrorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while signing in with Microsoft'**
+  String get loginErrorDesc;
+
+  /// No description provided for @loginRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get loginRetry;
+
+  /// No description provided for @loginBrowserDone.
+  ///
+  /// In en, this message translates to:
+  /// **'You can close this tab and go back to BC Launcher'**
+  String get loginBrowserDone;
+
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:

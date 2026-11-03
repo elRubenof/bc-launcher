@@ -30,6 +30,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoConnect => 'Auto-Connect';
 
   @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String get loginInBrowser =>
+      'Sign in with your Microsoft account and come back to this screen';
+
+  @override
+  String get loginOpenBrowser => 'Open again';
+
+  @override
+  String get loginCopyLink => 'Copy link';
+
+  @override
+  String get loginLinkCopied => 'Link copied';
+
+  @override
+  String get loginError => 'Couldn\'t sign in';
+
+  @override
+  String get loginErrorDesc =>
+      'Something went wrong while signing in with Microsoft';
+
+  @override
+  String get loginRetry => 'Try again';
+
+  @override
+  String get loginBrowserDone =>
+      'You can close this tab and go back to BC Launcher';
+
+  @override
   String get logout => 'Logout';
 
   @override

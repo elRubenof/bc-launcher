@@ -8,6 +8,16 @@
   "reinstall": "Reinstalar",
   "autoConnect": "Auto-Conectar",
 
+  "loginTitle": "Inicia sesión",
+  "loginInBrowser": "Inicia sesión con tu cuenta de Microsoft y regresa a esta pantalla",
+  "loginOpenBrowser": "Abrir de nuevo",
+  "loginCopyLink": "Copiar enlace",
+  "loginLinkCopied": "Enlace copiado",
+  "loginError": "No se ha podido iniciar sesión",
+  "loginErrorDesc": "Algo ha fallado al iniciar sesión con Microsoft",
+  "loginRetry": "Reintentar",
+  "loginBrowserDone": "Ya puedes cerrar esta pestaña y volver a BC Launcher",
+
   "logout": "Cerrar sesión",
   "switchInstances": "Cambiar servidor",
 

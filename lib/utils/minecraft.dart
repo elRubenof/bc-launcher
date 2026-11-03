@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
@@ -15,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Minecraft {
   static ValueNotifier<Profile?> profile = ValueNotifier(null);
 
-  static late HttpServer _redirectServer;
+  static HttpServer? _redirectServer;
   static late Credentials _credentials;
 
   static const String _authorizationEndpoint =
@@ -67,17 +69,72 @@ class Minecraft {
     );
   }
 
-  static Future<Map<String, String>> listenParameters() async {
-    _redirectServer = await HttpServer.bind('127.0.0.1', 5020);
+  static Uri getAuthorizationUrl(AuthorizationCodeGrant grant, Uri redirect) {
+    final random = Random.secure();
+    final state = base64UrlEncode(
+      List.generate(16, (_) => random.nextInt(256)),
+    );
+    final url = grant.getAuthorizationUrl(
+      redirect,
+      scopes: ['XboxLive.signin', 'offline_access'],
+      state: state,
+    );
 
-    final request = await _redirectServer.first;
-    final params = request.uri.queryParameters;
-    request.response.statusCode = 200;
-    request.response.headers.set('content-type', 'text/plain; charset=utf-8');
-    await request.response.close();
-    await _redirectServer.close();
+    return url.replace(
+      queryParameters: {
+        ...url.queryParameters,
+        'cobrandid': '8058f65d-ce06-4c30-9559-473c9275a65d',
+        'prompt': 'select_account',
+      },
+    );
+  }
 
-    return params;
+  /// Starts the loopback server that receives the Microsoft redirect and
+  /// returns the redirect URI to use. A port in [Constants.redirectUrl] is
+  /// kept; without one, a free port is picked.
+  static Future<Uri> startRedirectServer() async {
+    await closeRedirectServer();
+
+    final redirect = Uri.parse(Constants.redirectUrl);
+    final server = await HttpServer.bind(
+      InternetAddress.loopbackIPv4,
+      redirect.hasPort ? redirect.port : 0,
+    );
+    _redirectServer = server;
+
+    return redirect.replace(port: server.port);
+  }
+
+  /// Waits for the Microsoft redirect, answers the browser with [page] and
+  /// returns the redirect's query parameters.
+  static Future<Map<String, String>> waitForRedirect(String page) async {
+    final server = _redirectServer;
+    if (server == null) throw StateError("Redirect server not started");
+
+    await for (final request in server) {
+      final params = request.uri.queryParameters;
+      if (!params.containsKey('code') && !params.containsKey('error')) {
+        request.response.statusCode = HttpStatus.notFound;
+        await request.response.close();
+        continue;
+      }
+
+      request.response.statusCode = HttpStatus.ok;
+      request.response.headers.contentType = ContentType.html;
+      request.response.write(page);
+      await request.response.close();
+      await closeRedirectServer();
+
+      return params;
+    }
+
+    throw StateError("Redirect server closed");
+  }
+
+  static Future<void> closeRedirectServer() async {
+    final server = _redirectServer;
+    _redirectServer = null;
+    await server?.close(force: true);
   }
 
   static Future<void> launch(Map server, {bool close = true}) async {

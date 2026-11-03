@@ -30,6 +30,36 @@ class AppLocalizationsEs extends AppLocalizations {
   String get autoConnect => 'Auto-Conectar';
 
   @override
+  String get loginTitle => 'Inicia sesión';
+
+  @override
+  String get loginInBrowser =>
+      'Inicia sesión con tu cuenta de Microsoft y regresa a esta pantalla';
+
+  @override
+  String get loginOpenBrowser => 'Abrir de nuevo';
+
+  @override
+  String get loginCopyLink => 'Copiar enlace';
+
+  @override
+  String get loginLinkCopied => 'Enlace copiado';
+
+  @override
+  String get loginError => 'No se ha podido iniciar sesión';
+
+  @override
+  String get loginErrorDesc =>
+      'Algo ha fallado al iniciar sesión con Microsoft';
+
+  @override
+  String get loginRetry => 'Reintentar';
+
+  @override
+  String get loginBrowserDone =>
+      'Ya puedes cerrar esta pestaña y volver a BC Launcher';
+
+  @override
   String get logout => 'Cerrar sesión';
 
   @override
