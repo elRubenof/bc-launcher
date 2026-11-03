@@ -5,11 +5,13 @@ import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _setUpWindow();
+
   await Utility.loadSettings();
 
   final updated = await Utility.isUpdated();
@@ -22,14 +24,19 @@ void main() async {
       home: updated == null ? const MyApp() : UpdateScreen(url: updated),
     ),
   );
+}
 
-  doWhenWindowReady(() {
-    const initialSize = Size(1280, 750);
-    appWindow.minSize = initialSize;
-    appWindow.size = initialSize;
-    appWindow.alignment = Alignment.center;
-    appWindow.show();
-  });
+void _setUpWindow() {
+  final window = WindowManager.instance.getCurrent();
+  if (window == null) return;
+
+  const initialSize = Size(1280, 750);
+  window.titleBarStyle = TitleBarStyle.hidden;
+  window.isWindowControlButtonsVisible = false;
+  window.minimumSize = initialSize.toNative();
+  window.setSize(initialSize.toNative(), false);
+  window.center();
+  window.show();
 }
 
 class MyApp extends StatelessWidget {

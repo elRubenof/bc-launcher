@@ -4,9 +4,9 @@ import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 class InstancesScreen extends StatefulWidget {
   final Map<String, dynamic>? server;
@@ -82,7 +82,7 @@ class _InstancesScreenState extends State<InstancesScreen> {
                     ),
                     SizedBox(
                       height: Constants.topBarHeight,
-                      child: MoveWindow(
+                      child: DragToMoveArea(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: Constants.horizontalPadding,
@@ -177,7 +177,7 @@ class _InstancesScreenState extends State<InstancesScreen> {
                   ),
                   SizedBox(
                     height: Constants.topBarHeight,
-                    child: MoveWindow(
+                    child: DragToMoveArea(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: Constants.horizontalPadding,

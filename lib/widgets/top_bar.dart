@@ -6,9 +6,9 @@ import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 class TopBar extends StatefulWidget {
   final Map<String, dynamic> server;
@@ -30,7 +30,7 @@ class _TopBarState extends State<TopBar> {
       color: Constants.backgroundColor,
       child: Stack(
         children: [
-          MoveWindow(),
+          const DragToMoveArea(child: SizedBox.expand()),
           Container(
             height: Constants.topBarHeight,
             padding: const EdgeInsets.symmetric(

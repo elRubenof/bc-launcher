@@ -6,8 +6,8 @@ import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
 class UpdateScreen extends StatelessWidget {
   final String url;
@@ -75,7 +75,7 @@ class UpdateScreen extends StatelessWidget {
           ),
           SizedBox(
             height: Constants.topBarHeight,
-            child: MoveWindow(
+            child: DragToMoveArea(
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: Constants.horizontalPadding,

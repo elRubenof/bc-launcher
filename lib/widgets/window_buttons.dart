@@ -1,7 +1,7 @@
 import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
 class WindowButtons extends StatelessWidget {
   final bool enableSettings, darkMode;
@@ -30,13 +30,13 @@ class WindowButtons extends StatelessWidget {
             icon: Icons.minimize,
             size: 14.0,
             backgroundColor: darkMode ? Colors.black : Colors.white,
-            onTap: () => appWindow.minimize(),
+            onTap: () => WindowManager.instance.getCurrent()?.minimize(),
           ),
           MouseIconButton(
             icon: Icons.close,
             size: 14.0,
             backgroundColor: darkMode ? Colors.black : Colors.white,
-            onTap: () => appWindow.close(),
+            onTap: () => WindowManager.instance.getCurrent()?.close(),
           ),
         ],
       ),

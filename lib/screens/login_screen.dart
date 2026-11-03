@@ -4,11 +4,11 @@ import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:oauth2/oauth2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
               InAppWebView(initialUrlRequest: initialUrl),
               SizedBox(
                 height: Constants.topBarHeight,
-                child: MoveWindow(
+                child: DragToMoveArea(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: Constants.horizontalPadding,

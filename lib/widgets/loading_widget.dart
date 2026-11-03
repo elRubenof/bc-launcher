@@ -1,9 +1,9 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:window_manager/window_manager.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -20,9 +20,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
       backgroundColor: Constants.backgroundColor,
       body: Stack(
         children: [
-          SizedBox(
+          const SizedBox(
             height: Constants.topBarHeight,
-            child: MoveWindow(),
+            child: DragToMoveArea(child: SizedBox.expand()),
           ),
           Center(
             child: SvgPicture.asset(
@@ -56,7 +56,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           ),
           SizedBox(
             height: Constants.topBarHeight,
-            child: MoveWindow(
+            child: DragToMoveArea(
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: Constants.horizontalPadding,
