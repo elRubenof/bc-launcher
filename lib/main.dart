@@ -9,9 +9,10 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Utility.loadSettings();
-  final updated = await Utility.isUpdated();
 
+  final updated = await Utility.isUpdated();
   runApp(
     MaterialApp(
       navigatorKey: Utility.key,
