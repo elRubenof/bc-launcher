@@ -8,6 +8,7 @@ import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,7 +36,7 @@ class Minecraft {
       profile.value = await getCurrentProfile(await getToken());
     } catch (e) {
       final supportDirectory = await getApplicationSupportDirectory();
-      File file = File("${supportDirectory.path}/error.txt");
+      File file = File(join(supportDirectory.path, "error.txt"));
       await file.writeAsString(e.toString());
 
       return false;

@@ -12,6 +12,7 @@ import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' show join;
 
 final ValueNotifier selectedTab = ValueNotifier<int>(0);
 
@@ -39,7 +40,11 @@ class _MainPageState extends State<MainScreen> {
     ];
 
     Directory(
-      "${Settings.minecraftDirectory.path}/versions/${widget.server['version']}",
+      join(
+        Settings.minecraftDirectory.path,
+        "versions",
+        widget.server['version'],
+      ),
     ).exists().then((value) {
       if (!value) showReinstallDialog();
     });

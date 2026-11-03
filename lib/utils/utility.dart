@@ -11,6 +11,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -77,9 +78,7 @@ class Utility {
 
   static Future<Directory> getInstanceDir(String serverId) async {
     final supportDirectory = await getApplicationSupportDirectory();
-    final installDir = Directory(
-      "${supportDirectory.path}${Platform.isWindows ? r'\' : '/'}$serverId",
-    );
+    final installDir = Directory(join(supportDirectory.path, serverId));
 
     Settings.minecraftDirectory = installDir;
     return installDir;
@@ -136,11 +135,13 @@ class Utility {
       String filename = file.name;
       if (file.isFile) {
         List<int> data = file.content;
-        File('${installDir.path}/$filename')
+        File(_resolvePath(installDir.path, filename))
           ..createSync(recursive: true)
           ..writeAsBytesSync(data);
       } else {
-        Directory('${installDir.path}/$filename').createSync(recursive: true);
+        Directory(
+          _resolvePath(installDir.path, filename),
+        ).createSync(recursive: true);
       }
     }
 
@@ -168,11 +169,11 @@ class Utility {
     for (String path in version['delete_untracked_folders'] ?? []) {
       for (var file
           in Directory(
-            "${Settings.minecraftDirectory.path}/$path",
+            _resolvePath(Settings.minecraftDirectory.path, path),
           ).listSync()) {
         if (file is! File) continue;
 
-        final fileName = file.path.replaceFirst("${file.parent.path}\\", "");
+        final fileName = basename(file.path);
         if ((version['files'] as List)
             .where((e) => e['path'] == "$path/$fileName")
             .isEmpty) {
@@ -185,7 +186,7 @@ class Utility {
   static Future<void> _checkAndDownloadFiles(Map version) async {
     for (Map<String, dynamic> fileMap in version['files']) {
       final file = File(
-        "${Settings.minecraftDirectory.path}/${fileMap['path']}",
+        _resolvePath(Settings.minecraftDirectory.path, fileMap['path']),
       );
       final hash = file.existsSync() ? await _getHash(file) : null;
 
@@ -198,6 +199,11 @@ class Utility {
         options: Options(method: 'POST', responseType: ResponseType.bytes),
       );
     }
+  }
+
+  /// Joins a server-provided path, which always uses `/`, onto a local [base].
+  static String _resolvePath(String base, String serverPath) {
+    return joinAll([base, ...posix.split(serverPath)]);
   }
 
   static Future<String> _getHash(File file) async {

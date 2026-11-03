@@ -11,6 +11,7 @@ import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path/path.dart' show join;
 import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
@@ -130,7 +131,7 @@ class _BottomBarState extends State<BottomBar> {
           backgroundColor: Colors.white.withValues(alpha: 0.12),
           onTap: () async {
             Directory screenshotsDir = Directory(
-              "${Settings.minecraftDirectory.path}/screenshots",
+              join(Settings.minecraftDirectory.path, "screenshots"),
             );
 
             await screenshotsDir.create();
