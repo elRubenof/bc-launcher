@@ -60,16 +60,20 @@ assets/img/                     logo.svg, logo.png, background.png
 
 ## Commits
 
-Use **Conventional Commits**, in English, imperative mood:
+Use **Conventional Commits without a scope**, in English, imperative mood:
 
 ```
-feat(sync): download files in parallel with hash verification
-fix(launch): build Java path with package:path on all platforms
-refactor(auth): move token handling into AuthService
-chore(deps): bump dio to 5.9.1
+feat: download files in parallel with hash verification
+fix: build Java path with package:path on all platforms
+refactor: move token handling into AuthService
+chore: bump dio to 5.9.1
 ```
 
-Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`, `chore`. Scopes: `auth`, `sync`, `launch`, `update`, `ui`, `l10n`, `settings`, `deps`. (The history before this change used free-form past-tense messages; don't copy that style.) Release changelogs will be generated from these messages.
+Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`, `chore`. **Never add a scope** (`fix(sync): …` is wrong). (The history before this change used free-form past-tense messages; don't copy that style.) Release changelogs will be generated from these messages.
+
+**Agents must propose the commit message and wait for the owner's confirmation before every commit.**
+
+Use a branch only when a change spans several commits; a single-commit change goes straight to `main`.
 
 ### No AI attribution (mandatory)
 
