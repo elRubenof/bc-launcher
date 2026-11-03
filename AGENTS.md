@@ -8,7 +8,7 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 This repo contains **only the launcher app**. The backend (`bc-server`: API + web admin panel) will live in a **separate repository** in the future and does not exist yet. Do not add server code here.
 
-- Targets: **Windows** (primary today), **macOS**, **Linux**. The `android/`, `ios/` and `web/` folders are leftovers from `flutter create` and are not supported targets.
+- Targets: **Windows** (primary today), **macOS**, **Linux**. Only the `windows/`, `macos/` and `linux/` platform folders exist; don't add mobile or web targets.
 - Dart SDK `>=3.7.2`, Flutter stable.
 - License: GPL (see README).
 
