@@ -52,3 +52,7 @@ macos/Flutter/GeneratedPluginRegistrant.swift
 linux/flutter/generated_plugins.cmake
 linux/flutter/generated_plugin_registrant.cc
 installer_files/
+
+# AI agents (local config; shared guidance lives in AGENTS.md)
+.claude/
+CLAUDE.local.md
