@@ -20,8 +20,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
       backgroundColor: Constants.backgroundColor,
       body: Stack(
         children: [
-          const SizedBox(
+          // Not const: `flutter run` fails to compile a const DragToMoveArea.
+          // ignore: prefer_const_constructors
+          SizedBox(
             height: Constants.topBarHeight,
+            // ignore: prefer_const_constructors
             child: DragToMoveArea(child: SizedBox.expand()),
           ),
           Center(

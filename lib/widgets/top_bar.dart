@@ -30,7 +30,9 @@ class _TopBarState extends State<TopBar> {
       color: Constants.backgroundColor,
       child: Stack(
         children: [
-          const DragToMoveArea(child: SizedBox.expand()),
+          // Not const: `flutter run` fails to compile a const DragToMoveArea.
+          // ignore: prefer_const_constructors
+          DragToMoveArea(child: SizedBox.expand()),
           Container(
             height: Constants.topBarHeight,
             padding: const EdgeInsets.symmetric(
