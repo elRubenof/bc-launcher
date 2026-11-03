@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/utils/launch_utils/Minecraft_launcher_core.dart';
+import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
