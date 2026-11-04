@@ -155,7 +155,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginOpenBrowser.
   ///
   /// In en, this message translates to:
-  /// **'Open again'**
+  /// **'Open in browser'**
   String get loginOpenBrowser;
 
   /// No description provided for @loginCopyLink.

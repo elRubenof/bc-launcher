@@ -10,7 +10,7 @@
 
   "loginTitle": "Sign in",
   "loginInBrowser": "Sign in with your Microsoft account and come back to this screen",
-  "loginOpenBrowser": "Open again",
+  "loginOpenBrowser": "Open in browser",
   "loginCopyLink": "Copy link",
   "loginLinkCopied": "Link copied",
   "loginError": "Couldn't sign in",

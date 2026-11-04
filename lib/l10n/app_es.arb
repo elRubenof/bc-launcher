@@ -10,7 +10,7 @@
 
   "loginTitle": "Inicia sesión",
   "loginInBrowser": "Inicia sesión con tu cuenta de Microsoft y regresa a esta pantalla",
-  "loginOpenBrowser": "Abrir de nuevo",
+  "loginOpenBrowser": "Abrir en navegador",
   "loginCopyLink": "Copiar enlace",
   "loginLinkCopied": "Enlace copiado",
   "loginError": "No se ha podido iniciar sesión",

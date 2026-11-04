@@ -39,6 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Starts the redirect server and waits for the sign-in. The browser is only
+  /// opened from the buttons.
   Future<void> _login() async {
     final l = Utility.getLocalizations(context);
     setState(() {
@@ -53,7 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       setState(() => _authUrl = authUrl);
-      await launchUrl(authUrl);
 
       final params = await Minecraft.waitForRedirect(
         _browserPage(l.loginBrowserDone),
@@ -81,6 +82,15 @@ class _LoginScreenState extends State<LoginScreen> {
         'justify-content:center;background:#23162a;color:#fff;'
         'font-family:sans-serif;font-size:18px;text-align:center">'
         '<p>$text</p><script>window.close()</script></body></html>';
+  }
+
+  Future<void> _openBrowser() async {
+    try {
+      await launchUrl(_authUrl!);
+    } catch (e) {
+      // The link can still be copied by hand.
+      log("Couldn't open the browser: $e");
+    }
   }
 
   Future<void> _copyLink() async {
@@ -134,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _button(
                         l.loginOpenBrowser,
                         filled: true,
-                        onPressed: () => launchUrl(_authUrl!),
+                        onPressed: _openBrowser,
                       ),
                       const SizedBox(width: 12),
                       _button(

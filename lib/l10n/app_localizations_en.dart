@@ -38,7 +38,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in with your Microsoft account and come back to this screen';
 
   @override
-  String get loginOpenBrowser => 'Open again';
+  String get loginOpenBrowser => 'Open in browser';
 
   @override
   String get loginCopyLink => 'Copy link';
