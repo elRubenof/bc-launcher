@@ -100,9 +100,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get installing => 'Instalando';
 
   @override
-  String get syncing => 'Sincronizando';
-
-  @override
   String get availableUpdate => 'Actualización disponible';
 
   @override

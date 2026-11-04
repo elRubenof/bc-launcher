@@ -15,22 +15,7 @@ class Constants {
   static const defaultGameHeight = 480;
   static const defaultFullscreen = true;
 
-  static const newsRepo = "";
-  static const minecraftRepo = "";
-  static const modsRepo = "";
-  static const configRepo = "";
-  static const resourcePacksRepo = "";
-  static const versionEndPoint = "";
-
-  static const appLogo = "";
-  static const devLogo = "";
-  static const devName = "";
-
-  static const mapUrl = "https://bluecolored.de/bluemap/#hermitcraft9:-2015:20:1982:373:0.6:0.78:0:0:perspective";
-
   static String api = "http://127.0.0.1:8787";
   static String clientID = "";
   static String redirectUrl = "";
-
-  static List<String> adminList = [];
 }

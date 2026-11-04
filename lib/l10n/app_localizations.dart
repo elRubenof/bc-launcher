@@ -272,12 +272,6 @@ abstract class AppLocalizations {
   /// **'Installing'**
   String get installing;
 
-  /// No description provided for @syncing.
-  ///
-  /// In en, this message translates to:
-  /// **'Synchronizing'**
-  String get syncing;
-
   /// No description provided for @availableUpdate.
   ///
   /// In en, this message translates to:

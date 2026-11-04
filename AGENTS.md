@@ -17,7 +17,7 @@ This repo contains **only the launcher app**. The backend (`bc-server`: API + we
 ```bash
 flutter pub get                 # also regenerates l10n (flutter: generate: true)
 flutter analyze                 # must pass with no issues before committing
-flutter test                    # NOTE: test/widget_test.dart is still the template counter test and is broken
+flutter test                    # no tests yet (see Target architecture → Tests)
 flutter run -d windows          # or -d macos / -d linux
 flutter build windows           # release build (likewise macos / linux)
 ```
