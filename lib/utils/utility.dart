@@ -157,10 +157,9 @@ class Utility {
     );
 
     final version = json.decode(response.body);
-    final preferences = await SharedPreferences.getInstance();
 
-    if (preferences.getInt("$serverId-version") == version['version']) return;
-
+    // Checked on every launch on purpose, so a modified or missing file is
+    // always fixed.
     await _deleteUntrackedFolders(version);
     await _checkAndDownloadFiles(version);
   }

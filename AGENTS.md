@@ -123,7 +123,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Sync engine:**
   1. Fetch the manifest and compute a plan (add, update, delete).
   2. Download in parallel to `.part` files, verify the hash, then rename atomically.
-  3. Cache hashes by `(path, size, mtime)`.
+  3. Cache hashes by `(path, size, mtime)`. Today `checkFiles` re-hashes every file on each launch on purpose, so local changes are always repaired; keep that guarantee.
   4. Apply a policy per file: `always`, `once`, `never`, `optional`.
   5. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by community servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
@@ -136,7 +136,6 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 ## Known issues (fix when touching the area; don't copy these patterns)
 
 **Critical**
-- `Utility.checkFiles` reads `"$serverId-version"` but never writes it, so every launch re-hashes all files.
 - Fullscreen and resolution settings are never applied (no `--fullscreen`, `customResolution` never set).
 - The update check runs before `runApp` with no timeout.
 - `isUpdated()` returns `""` for platforms without an installer, which shows a blocking "update required" on macOS/Linux.
