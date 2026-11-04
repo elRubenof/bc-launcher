@@ -44,7 +44,6 @@ dependencies:
   path_provider: ^2.1.5
   oauth2: ^2.0.3
   http: ^1.2.2
-  flutter_inappwebview: ^6.1.5
   dart_minecraft: ^0.6.0
   package_info_plus: ^8.1.2
   open_file: ^3.5.11
@@ -53,6 +52,7 @@ dependencies:
   crypto: ^3.0.7
   path: ^1.9.1
   window_manager: ^0.6.0
+  webview_all: ^1.4.12
 
 dev_dependencies:
   flutter_test:

@@ -1,7 +1,7 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:webview_all/webview_all.dart';
 
 class MapScreen extends StatefulWidget {
   final String? mapUrl;
@@ -13,7 +13,25 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  late final WebViewController _controller;
   bool show = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onWebResourceError: (error) {
+            if (error.isForMainFrame ?? true) setState(() => show = false);
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.mapUrl!));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +45,7 @@ class _MapScreenState extends State<MapScreen> {
                 const Center(
                   child: CircularProgressIndicator(color: Colors.white),
                 ),
-                InAppWebView(
-                  initialUrlRequest: URLRequest(
-                    url: WebUri(
-                      widget.mapUrl!,
-                    ),
-                  ),
-                  onReceivedError: (controller, request, error) {
-                    setState(() => show = false);
-                  },
-                ),
+                WebViewWidget(controller: _controller),
               ],
             )
           : Center(
