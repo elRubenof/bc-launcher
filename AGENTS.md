@@ -141,7 +141,6 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 - The update check runs before `runApp` with no timeout.
 - `isUpdated()` returns `""` for platforms without an installer, which shows a blocking "update required" on macOS/Linux.
 - `Utility.isLaunching` is never reset and Play has no error handling, so the button stays dead after a failure.
-- The game process is started without `workingDirectory`, so mods and logs that use relative paths (`config/`, `logs/`…) write wherever the launcher was opened from (the repo with `flutter run`, the install folder on Windows).
 
 **Important**
 - Instance zip: fully loaded into memory, extracted synchronously on the UI isolate, no zip-slip check. Server-provided file paths aren't sanitized.

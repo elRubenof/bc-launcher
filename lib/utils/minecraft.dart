@@ -212,6 +212,7 @@ class Minecraft {
     final process = await Process.start(
       cmd[0],
       cmd.sublist(1),
+      workingDirectory: path,
       mode: ProcessStartMode.detachedWithStdio,
     );
 
