@@ -36,6 +36,10 @@ lib/
     main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
     update_screen.dart          launcher self-update prompt (legacy, Windows-only)
     tabs/                       home (news), map (webview_all), settings
+  services/
+    java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
+    library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
+    file_downloader.dart        parallel downloads to .part files with sha1 check
   utils/
     constants.dart              colors, sizes, defaults, API URL, Azure client id
     settings.dart               static user settings (RAM, resolution, …)
@@ -122,7 +126,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
   3. Cache hashes by `(path, size, mtime)`.
   4. Apply a policy per file: `always`, `once`, `never`, `optional`.
   5. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
-- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by community servers). **Java on demand** from the version JSON's `javaVersion`.
+- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by community servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Tokens go in `flutter_secure_storage`. Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
 - **Tests:** unit-test the pure logic first: `launch_utils` (rules, library paths, `inheritJson`), version negotiation and sync planning.
@@ -132,22 +136,18 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 ## Known issues (fix when touching the area; don't copy these patterns)
 
 **Critical**
-- `Utility._deleteUntrackedFolders` strips the parent path with a hardcoded `\\`. On macOS/Linux every file in a managed folder is deleted and re-downloaded on each launch.
 - `Utility.checkFiles` reads `"$serverId-version"` but never writes it, so every launch re-hashes all files.
-- Java path: `Directory.current/runtime/java-runtime-N/bin/java.exe` is Windows-only and depends on the working directory.
 - Fullscreen and resolution settings are never applied (no `--fullscreen`, `customResolution` never set).
-- `main()` is missing `WidgetsFlutterBinding.ensureInitialized()`, and the update check runs before `runApp` with no timeout while the window is hidden.
+- The update check runs before `runApp` with no timeout.
 - `isUpdated()` returns `""` for platforms without an installer, which shows a blocking "update required" on macOS/Linux.
-- `minecraft.dart` imports `Minecraft_launcher_core.dart` with the wrong case, which breaks the build on case-sensitive filesystems.
 - `Utility.isLaunching` is never reset and Play has no error handling, so the button stays dead after a failure.
-- macOS entitlements: App Sandbox is on and `network.client` is missing (release builds can't reach the network).
+- The game process is started without `workingDirectory`, so mods and logs that use relative paths (`config/`, `logs/`…) write wherever the launcher was opened from (the repo with `flutter run`, the install folder on Windows).
 
 **Important**
 - Instance zip: fully loaded into memory, extracted synchronously on the UI isolate, no zip-slip check. Server-provided file paths aren't sanitized.
 - Install result is ignored. A partial install is treated as installed. Downloads go straight to the final path with no post-download hash check.
 - File download URLs interpolate the path without encoding.
 - Reinstall deletes the whole instance directory, including saves and options.
-- Natives are not extracted (pre-1.19 versions); `downloads.classifiers` may be null; rule parsing ignores `os.arch`.
 - Auto-connect uses Quick Play only (1.20+); older versions need `--server`/`--port`.
 - The game process: the launcher calls `exit(0)` on the first stdout line, no logs are kept, and the pipes are not drained when staying open.
 - Legacy updater runs a downloaded `.exe` with no signature/hash check.
@@ -161,4 +161,3 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 - Slider thumb color math uses the new 0..1 color channels.
 - Hardcoded strings ("Últimas noticias", "Abrir", the footer brand text).
 - `FutureBuilder` futures created inside `build`.
-- The committed `pubspec.lock` was stale; commit the regenerated one.
