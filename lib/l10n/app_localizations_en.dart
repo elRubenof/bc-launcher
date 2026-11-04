@@ -127,6 +127,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadingJava => 'Downloading Java';
 
   @override
+  String get downloadingLibraries => 'Downloading game files';
+
+  @override
   String get lastNews => 'Last news';
 
   @override

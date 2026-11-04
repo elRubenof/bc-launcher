@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:path/path.dart';
 
@@ -22,6 +23,7 @@ class MinecraftLauncherHelper {
           if (value == "osx" && !Platform.isMacOS) return returnValue;
           if (value == "linux" && !Platform.isLinux) return returnValue;
         }
+        if (key == "arch" && !_matchesArch(value)) return returnValue;
       }
     }
 
@@ -66,8 +68,29 @@ class MinecraftLauncherHelper {
     return true;
   }
 
+  static bool _matchesArch(String arch) {
+    final abi = Abi.current();
+    final isArm64 = [
+      Abi.macosArm64,
+      Abi.windowsArm64,
+      Abi.linuxArm64,
+    ].contains(abi);
+    final is32 = [Abi.windowsIA32, Abi.linuxIA32].contains(abi);
+
+    switch (arch) {
+      case "x86":
+        return is32;
+      case "x86_64" || "amd64" || "x64":
+        return !is32 && !isArm64;
+      case "arm64" || "aarch64":
+        return isArm64;
+      default:
+        return false;
+    }
+  }
+
   static String getNatives(Map data) {
-    const archType = "64";
+    final archType = _matchesArch("x86") ? "32" : "64";
 
     if (data.containsKey("natives")) {
       if (Platform.isWindows && data["natives"].containsKey("windows")) {

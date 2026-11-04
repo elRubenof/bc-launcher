@@ -326,6 +326,12 @@ abstract class AppLocalizations {
   /// **'Downloading Java'**
   String get downloadingJava;
 
+  /// No description provided for @downloadingLibraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading game files'**
+  String get downloadingLibraries;
+
   /// No description provided for @lastNews.
   ///
   /// In en, this message translates to:

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:bc_launcher/services/java_manager.dart';
+import 'package:bc_launcher/services/library_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
 import 'package:bc_launcher/utils/settings.dart';
@@ -13,6 +14,9 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// What [Minecraft.prepare] is downloading.
+enum PrepareStep { libraries, java }
 
 class Minecraft {
   static ValueNotifier<Profile?> profile = ValueNotifier(null);
@@ -137,44 +141,52 @@ class Minecraft {
     await server?.close(force: true);
   }
 
-  /// Downloads the Java runtime the instance of [server] needs, if missing,
-  /// and returns its executable. [onProgress] is only called while
-  /// downloading.
-  static Future<String> ensureJava(
+  /// Downloads what the instance of [server] is missing to run on this
+  /// system (libraries, natives and Java) and returns the Java executable.
+  /// [onProgress] is only called while downloading.
+  static Future<String> prepare(
     Map server, {
-    void Function(double progress)? onProgress,
-  }) async {
-    final versionData = await MinecraftLauncherCore.loadVersionData(
-      server['version'],
-      Settings.minecraftDirectory.path,
-    );
-    return _ensureJava(versionData, onProgress);
-  }
-
-  static Future<String> _ensureJava(
-    Map versionData,
-    void Function(double progress)? onProgress,
-  ) async {
-    final supportDirectory = await getApplicationSupportDirectory();
-    return JavaManager.ensureRuntime(
-      versionData,
-      Directory(join(supportDirectory.path, "runtime")),
-      onProgress: onProgress,
-    );
-  }
-
-  /// [onJavaProgress] reports the Java runtime download, when one is needed.
-  static Future<void> launch(
-    Map server, {
-    bool close = true,
-    void Function(double progress)? onJavaProgress,
+    void Function(PrepareStep step, double progress)? onProgress,
   }) async {
     final path = Settings.minecraftDirectory.path;
     final versionData = await MinecraftLauncherCore.loadVersionData(
       server['version'],
       path,
     );
-    final java = await _ensureJava(versionData, onJavaProgress);
+    return _prepare(versionData, path, onProgress);
+  }
+
+  static Future<String> _prepare(
+    Map versionData,
+    String path,
+    void Function(PrepareStep step, double progress)? onProgress,
+  ) async {
+    await LibraryManager.ensureLibraries(
+      versionData,
+      Directory(path),
+      onProgress: (p) => onProgress?.call(PrepareStep.libraries, p),
+    );
+
+    final supportDirectory = await getApplicationSupportDirectory();
+    return JavaManager.ensureRuntime(
+      versionData,
+      Directory(join(supportDirectory.path, "runtime")),
+      onProgress: (p) => onProgress?.call(PrepareStep.java, p),
+    );
+  }
+
+  /// [onPrepareProgress] reports the downloads of [prepare], when needed.
+  static Future<void> launch(
+    Map server, {
+    bool close = true,
+    void Function(PrepareStep step, double progress)? onPrepareProgress,
+  }) async {
+    final path = Settings.minecraftDirectory.path;
+    final versionData = await MinecraftLauncherCore.loadVersionData(
+      server['version'],
+      path,
+    );
+    final java = await _prepare(versionData, path, onPrepareProgress);
 
     final token = await Minecraft.getToken();
     profile.value ??= await getCurrentProfile(token);

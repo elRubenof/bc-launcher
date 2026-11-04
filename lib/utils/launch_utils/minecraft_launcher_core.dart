@@ -14,19 +14,23 @@ class MinecraftLauncherCore {
         continue;
       }
 
-      libstr +=
-          MinecraftLauncherHelper.getLibraryPath(item["name"], path) +
-          classpathSeparator;
+      // Natives-only libraries (before 1.19) have no main jar.
+      final downloads = item["downloads"];
+      if (downloads == null || downloads["artifact"] != null) {
+        libstr +=
+            MinecraftLauncherHelper.getLibraryPath(item["name"], path) +
+            classpathSeparator;
+      }
       final native = MinecraftLauncherHelper.getNatives(item);
       if (native.isNotEmpty) {
-        if (item.containsKey("downloads") &&
-            item["downloads"]["classifiers"][native].containsKey("path")) {
+        final classifier = item["downloads"]?["classifiers"]?[native];
+        if (classifier?["path"] != null) {
           libstr +=
-              join(
+              joinAll([
                 path,
                 "libraries",
-                item["downloads"]["classifiers"][native]["path"],
-              ) +
+                ...posix.split(classifier["path"]),
+              ]) +
               classpathSeparator;
         } else {
           libstr +=
@@ -39,13 +43,16 @@ class MinecraftLauncherCore {
       }
     }
 
-    if (data.containsKey("jar")) {
-      libstr += join(path, "versions", data["jar"], data["jar"] + ".jar");
-    } else {
-      libstr += join(path, "versions", data["id"], data["id"] + ".jar");
-    }
+    return libstr + clientJarPath(data, path);
+  }
 
-    return libstr;
+  static String clientJarPath(Map data, String path) {
+    final jar = data["jar"] ?? data["id"];
+    return join(path, "versions", jar, "$jar.jar");
+  }
+
+  static String nativesDirectory(Map data, String path) {
+    return join(path, "versions", data["id"], "natives");
   }
 
   static String replaceArguments(
@@ -204,8 +211,7 @@ class MinecraftLauncherCore {
     Map options,
   ) async {
     options["nativesDirectory"] =
-        options['nativesDirectory'] ??
-        join(path, "versions", data["id"], "natives");
+        options['nativesDirectory'] ?? nativesDirectory(data, path);
     final classPath = getLibraries(data, path);
 
     List<String> command = [options["executablePath"] ?? "java"];

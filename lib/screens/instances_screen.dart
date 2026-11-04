@@ -226,7 +226,7 @@ class _InstancesScreenState extends State<InstancesScreen> {
     if (!installDir.existsSync()) {
       setState(() => showLoading = true);
       await Utility.installInstance(server, installDir);
-      await _downloadJava(server);
+      await _prepareGame(server);
     }
 
     final preferences = await SharedPreferences.getInstance();
@@ -235,21 +235,23 @@ class _InstancesScreenState extends State<InstancesScreen> {
     Utility.pushReplacement(context, MainScreen(server: server));
   }
 
-  /// Downloads the instance's Java runtime ahead of the first launch. A
-  /// failure is not fatal: Play checks and downloads it again.
-  Future<void> _downloadJava(Map<String, dynamic> server) async {
+  /// Downloads the libraries, natives and Java the instance needs ahead of
+  /// the first launch. A failure is not fatal: Play checks them again.
+  Future<void> _prepareGame(Map<String, dynamic> server) async {
     final l = Utility.getLocalizations(context);
 
     try {
-      await Minecraft.ensureJava(
+      await Minecraft.prepare(
         server,
-        onProgress: (progress) {
-          Utility.loadingState.value = l.downloadingJava;
+        onProgress: (step, progress) {
+          Utility.loadingState.value = step == PrepareStep.java
+              ? l.downloadingJava
+              : l.downloadingLibraries;
           Utility.loadingProgress.value = progress;
         },
       );
     } catch (e) {
-      log("Java download failed for ${server['id']}: $e");
+      log("Preparing ${server['id']} failed: $e");
     } finally {
       Utility.loadingState.value = null;
       Utility.loadingProgress.value = null;

@@ -1,7 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
+import 'package:bc_launcher/services/file_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
 
@@ -11,15 +11,7 @@ class JavaManager {
   static const _runtimesUrl =
       'https://launchermeta.mojang.com/v1/products/java-runtime/'
       '2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
-  static const _parallelDownloads = 8;
   static const _installedMarker = '.installed';
-
-  static final _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 60),
-    ),
-  );
 
   /// Makes sure the runtime required by [versionData] (a version JSON) is
   /// installed under [runtimesDir] and returns its Java executable.
@@ -34,11 +26,13 @@ class JavaManager {
     final component =
         versionData['javaVersion']?['component'] as String? ?? 'jre-legacy';
 
+    final platforms = _platforms(versionData);
+
     Map? release;
     String? platform;
     try {
-      final runtimes = (await _dio.get(_runtimesUrl)).data as Map;
-      for (final candidate in _platforms()) {
+      final runtimes = (await FileDownloader.dio.get(_runtimesUrl)).data as Map;
+      for (final candidate in platforms) {
         final releases = runtimes[candidate]?[component] as List?;
         if (releases != null && releases.isNotEmpty) {
           release = releases.first;
@@ -48,7 +42,7 @@ class JavaManager {
       }
     } on DioException {
       // Offline: fall back to any runtime that is already installed.
-      for (final candidate in _platforms()) {
+      for (final candidate in platforms) {
         final dir = Directory(join(runtimesDir.path, component, candidate));
         if (await File(join(dir.path, _installedMarker)).exists()) {
           return _executable(dir);
@@ -71,7 +65,8 @@ class JavaManager {
       return _executable(dir);
     }
 
-    final manifest = (await _dio.get(release['manifest']['url'])).data as Map;
+    final manifest =
+        (await FileDownloader.dio.get(release['manifest']['url'])).data as Map;
     await _install(manifest['files'] as Map, dir, onProgress);
     await marker.writeAsString(manifestSha1);
 
@@ -79,17 +74,27 @@ class JavaManager {
   }
 
   /// Mojang platform names for this system, preferred first. ARM machines
-  /// fall back to the x64 runtime, which runs under emulation.
-  static List<String> _platforms() {
+  /// fall back to the x64 runtime, which runs under emulation. Versions
+  /// without ARM natives (before 1.19) must use it, or LWJGL fails to load.
+  static List<String> _platforms(Map versionData) {
     final abi = Abi.current();
+    final arm64Natives = (versionData['libraries'] as List? ?? []).any(
+      (library) => (library['name'] as String).contains('arm64'),
+    );
 
     if (Platform.isWindows) {
-      if (abi == Abi.windowsArm64) return ['windows-arm64', 'windows-x64'];
+      if (abi == Abi.windowsArm64) {
+        return arm64Natives
+            ? ['windows-arm64', 'windows-x64']
+            : ['windows-x64'];
+      }
       if (abi == Abi.windowsIA32) return ['windows-x86'];
       return ['windows-x64'];
     }
     if (Platform.isMacOS) {
-      if (abi == Abi.macosArm64) return ['mac-os-arm64', 'mac-os'];
+      if (abi == Abi.macosArm64 && arm64Natives) {
+        return ['mac-os-arm64', 'mac-os'];
+      }
       return ['mac-os'];
     }
     if (Platform.isLinux) {
@@ -114,7 +119,8 @@ class JavaManager {
     Directory dir,
     void Function(double progress)? onProgress,
   ) async {
-    final downloads = <_RuntimeFile>[];
+    final downloads = <DownloadTask>[];
+    final executables = <String>[];
     final links = <String, String>{};
 
     for (final entry in files.entries) {
@@ -127,39 +133,24 @@ class JavaManager {
         case 'file':
           final raw = info['downloads']['raw'] as Map;
           downloads.add(
-            _RuntimeFile(
+            DownloadTask(
               path: path,
               url: raw['url'],
-              hash: raw['sha1'],
+              sha1: raw['sha1'],
               size: raw['size'],
-              executable: info['executable'] == true,
             ),
           );
+          if (info['executable'] == true) executables.add(path);
         case 'link':
           links[path] = info['target'] as String;
       }
     }
 
-    final pending = <_RuntimeFile>[];
-    for (final file in downloads) {
-      if (!await file.isValid()) pending.add(file);
+    final pending = <DownloadTask>[];
+    for (final task in downloads) {
+      if (await task.isMissing(verifyHash: true)) pending.add(task);
     }
-
-    final total = pending.fold<int>(0, (sum, file) => sum + file.size);
-    var received = 0;
-    if (pending.isNotEmpty) onProgress?.call(0);
-
-    final queue = pending.iterator;
-    Future<void> worker() async {
-      while (queue.moveNext()) {
-        final file = queue.current;
-        await file.download(_dio);
-        received += file.size;
-        onProgress?.call(total == 0 ? 1 : received / total);
-      }
-    }
-
-    await Future.wait(List.generate(_parallelDownloads, (_) => worker()));
+    await FileDownloader.downloadAll(pending, onProgress: onProgress);
 
     for (final entry in links.entries) {
       final link = Link(entry.key);
@@ -167,16 +158,10 @@ class JavaManager {
       await link.create(entry.value);
     }
 
-    if (!Platform.isWindows) {
-      final executables = downloads
-          .where((file) => file.executable)
-          .map((file) => file.path)
-          .toList();
-      if (executables.isNotEmpty) {
-        final result = await Process.run('chmod', ['+x', ...executables]);
-        if (result.exitCode != 0) {
-          throw FileSystemException('chmod failed: ${result.stderr}');
-        }
+    if (!Platform.isWindows && executables.isNotEmpty) {
+      final result = await Process.run('chmod', ['+x', ...executables]);
+      if (result.exitCode != 0) {
+        throw FileSystemException('chmod failed: ${result.stderr}');
       }
     }
   }
@@ -189,44 +174,5 @@ class JavaManager {
       throw FileSystemException('Unsafe path in runtime manifest', path);
     }
     return path;
-  }
-}
-
-class _RuntimeFile {
-  final String path;
-  final String url;
-  final String hash;
-  final int size;
-  final bool executable;
-
-  const _RuntimeFile({
-    required this.path,
-    required this.url,
-    required this.hash,
-    required this.size,
-    required this.executable,
-  });
-
-  Future<bool> isValid() async {
-    final file = File(path);
-    if (!await file.exists() || await file.length() != size) return false;
-    return await _sha1(file) == hash;
-  }
-
-  /// Downloads to a `.part` file, checks the hash and then moves it into place.
-  Future<void> download(Dio dio) async {
-    final part = File('$path.part');
-    await dio.download(url, part.path);
-
-    if (await _sha1(part) != hash) {
-      await part.delete();
-      throw FileSystemException('Hash mismatch', path);
-    }
-
-    await part.rename(path);
-  }
-
-  static Future<String> _sha1(File file) async {
-    return (await file.openRead().transform(sha1).first).toString();
   }
 }
