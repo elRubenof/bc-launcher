@@ -176,9 +176,12 @@ class Minecraft {
   }
 
   /// [onPrepareProgress] reports the downloads of [prepare], when needed.
+  /// [onStartFailed] is called if the game exits before writing anything,
+  /// which means it never started.
   static Future<void> launch(
     Map server, {
     bool close = true,
+    VoidCallback? onStartFailed,
     void Function(PrepareStep step, double progress)? onPrepareProgress,
   }) async {
     final path = Settings.minecraftDirectory.path;
@@ -216,7 +219,17 @@ class Minecraft {
       mode: ProcessStartMode.detachedWithStdio,
     );
 
-    if (close) process.stdout.listen((line) => exit(0));
+    var started = false;
+    process.stderr.drain<void>();
+    process.stdout.listen(
+      (_) {
+        started = true;
+        if (close) exit(0);
+      },
+      onDone: () {
+        if (!started) onStartFailed?.call();
+      },
+    );
   }
 }
 

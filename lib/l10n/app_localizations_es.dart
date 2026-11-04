@@ -131,6 +131,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get downloadingLibraries => 'Descargando archivos del juego';
 
   @override
+  String get launchError => 'No se pudo iniciar el juego';
+
+  @override
+  String get launchErrorDesc => 'Comprueba tu conexión e inténtalo de nuevo';
+
+  @override
   String get lastNews => 'Últimas noticias';
 
   @override

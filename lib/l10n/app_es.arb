@@ -45,6 +45,8 @@
   "downloading": "Descargando",
   "downloadingJava": "Descargando Java",
   "downloadingLibraries": "Descargando archivos del juego",
+  "launchError": "No se pudo iniciar el juego",
+  "launchErrorDesc": "Comprueba tu conexión e inténtalo de nuevo",
 
   "lastNews": "Últimas noticias",
 

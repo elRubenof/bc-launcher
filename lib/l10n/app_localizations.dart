@@ -332,6 +332,18 @@ abstract class AppLocalizations {
   /// **'Downloading game files'**
   String get downloadingLibraries;
 
+  /// No description provided for @launchError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start the game'**
+  String get launchError;
+
+  /// No description provided for @launchErrorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again'**
+  String get launchErrorDesc;
+
   /// No description provided for @lastNews.
   ///
   /// In en, this message translates to:

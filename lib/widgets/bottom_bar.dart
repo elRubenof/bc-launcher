@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:bc_launcher/screens/instances_screen.dart';
@@ -73,10 +74,11 @@ class _BottomBarState extends State<BottomBar> {
             if (Utility.isLaunching.value) return;
             Utility.isLaunching.value = true;
 
-            await Utility.checkFiles(widget.server['id']);
             try {
+              await Utility.checkFiles(widget.server['id']);
               await Minecraft.launch(
                 widget.server,
+                onStartFailed: onLaunchFailed,
                 onPrepareProgress: (step, progress) {
                   Utility.isLoading.value = true;
                   Utility.loadingState.value = step == PrepareStep.java
@@ -85,6 +87,9 @@ class _BottomBarState extends State<BottomBar> {
                   Utility.loadingProgress.value = progress;
                 },
               );
+            } catch (e) {
+              log("Launch failed: $e");
+              onLaunchFailed();
             } finally {
               Utility.isLoading.value = false;
               Utility.loadingState.value = null;
@@ -209,6 +214,25 @@ class _BottomBarState extends State<BottomBar> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Re-enables Play and tells the user the game couldn't be started.
+  void onLaunchFailed() {
+    Utility.isLaunching.value = false;
+    if (!mounted) return;
+
+    final l = Utility.getLocalizations(context);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CustomDialog(
+          title: l.launchError,
+          description: l.launchErrorDesc,
+          mainButtonText: l.close,
+          mainButtonOnPressed: () => Navigator.pop(context),
+        );
+      },
     );
   }
 

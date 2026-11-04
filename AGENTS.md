@@ -140,7 +140,6 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 - Fullscreen and resolution settings are never applied (no `--fullscreen`, `customResolution` never set).
 - The update check runs before `runApp` with no timeout.
 - `isUpdated()` returns `""` for platforms without an installer, which shows a blocking "update required" on macOS/Linux.
-- `Utility.isLaunching` is never reset and Play has no error handling, so the button stays dead after a failure.
 
 **Important**
 - Instance zip: fully loaded into memory, extracted synchronously on the UI isolate, no zip-slip check. Server-provided file paths aren't sanitized.

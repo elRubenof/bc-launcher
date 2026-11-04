@@ -68,7 +68,7 @@ class CustomDialog extends StatelessWidget {
                       color: mainButtonColor,
                       onPressed: mainButtonOnPressed,
                       child: Container(
-                        width: 25,
+                        constraints: const BoxConstraints(minWidth: 25),
                         alignment: Alignment.center,
                         child: Text(mainButtonText),
                       ),
@@ -82,7 +82,7 @@ class CustomDialog extends StatelessWidget {
                         color: secondaryButtonColor,
                         onPressed: () => Navigator.pop(context),
                         child: Container(
-                          width: 25,
+                          constraints: const BoxConstraints(minWidth: 25),
                           alignment: Alignment.center,
                           child: Text(secondaryButtonText!),
                         ),

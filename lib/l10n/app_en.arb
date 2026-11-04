@@ -45,6 +45,8 @@
   "downloading": "Downloading",
   "downloadingJava": "Downloading Java",
   "downloadingLibraries": "Downloading game files",
+  "launchError": "Couldn't start the game",
+  "launchErrorDesc": "Check your connection and try again",
 
   "lastNews": "Last news",
 
