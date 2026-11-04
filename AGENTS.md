@@ -31,11 +31,11 @@ lib/
   main.dart                     entry: load settings → update check → auth → InstancesScreen
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
   screens/
-    login_screen.dart           Microsoft OAuth (PKCE) in an InAppWebView + loopback server on :5020
+    login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     instances_screen.dart       list of servers/instances returned by the API, install on first open
     main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
     update_screen.dart          launcher self-update prompt (legacy, Windows-only)
-    tabs/                       home (news), map (webview), settings
+    tabs/                       home (news), map (webview_all), settings
   utils/
     constants.dart              colors, sizes, defaults, API URL, Azure client id
     settings.dart               static user settings (RAM, resolution, …)
@@ -56,7 +56,8 @@ assets/img/                     logo.svg, logo.png, background.png
 - **Never block the UI isolate** with large sync I/O (hashing, unzipping). Use async I/O or `Isolate.run`.
 - **Secrets:** never commit real `clientID`s, tokens or signing keys. Never log access or refresh tokens.
 - `analysis_options.yaml` ignores `use_build_context_synchronously`. Still check `mounted` after `await` in new code.
-- Desktop window chrome uses `bitsdojo_window` (custom frame). It is configured on Windows only (`windows/runner/main.cpp`).
+- Desktop window chrome uses `window_manager` (hidden title bar, custom `WindowButtons`, `DragToMoveArea`), set up in `main.dart`. Don't make `DragToMoveArea` `const`: `flutter run` fails to compile it.
+- macOS plugins come through **Swift Package Manager** (enabled in `pubspec.yaml`); there is no CocoaPods/Podfile. Only add plugins that ship a `Package.swift` for macOS. Deployment target is macOS 12.0.
 
 ## Commits
 
@@ -122,7 +123,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
   4. Apply a policy per file: `always`, `once`, `never`, `optional`.
   5. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by community servers). **Java on demand** from the version JSON's `javaVersion`.
-- **Microsoft login in the system browser** (random loopback port + `state`) instead of the embedded webview, which doesn't work on Linux. Tokens go in `flutter_secure_storage`. Cache the Minecraft token (24 h validity). Support multiple accounts.
+- **Microsoft login in the system browser** (done). Tokens go in `flutter_secure_storage`. Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
 - **Tests:** unit-test the pure logic first: `launch_utils` (rules, library paths, `inheritJson`), version negotiation and sync planning.
 
