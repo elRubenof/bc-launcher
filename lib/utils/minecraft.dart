@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
-import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
@@ -137,8 +137,45 @@ class Minecraft {
     await server?.close(force: true);
   }
 
-  static Future<void> launch(Map server, {bool close = true}) async {
-    final jdk = MinecraftLauncherHelper.getJDKVersion(server['mcVersion']);
+  /// Downloads the Java runtime the instance of [server] needs, if missing,
+  /// and returns its executable. [onProgress] is only called while
+  /// downloading.
+  static Future<String> ensureJava(
+    Map server, {
+    void Function(double progress)? onProgress,
+  }) async {
+    final versionData = await MinecraftLauncherCore.loadVersionData(
+      server['version'],
+      Settings.minecraftDirectory.path,
+    );
+    return _ensureJava(versionData, onProgress);
+  }
+
+  static Future<String> _ensureJava(
+    Map versionData,
+    void Function(double progress)? onProgress,
+  ) async {
+    final supportDirectory = await getApplicationSupportDirectory();
+    return JavaManager.ensureRuntime(
+      versionData,
+      Directory(join(supportDirectory.path, "runtime")),
+      onProgress: onProgress,
+    );
+  }
+
+  /// [onJavaProgress] reports the Java runtime download, when one is needed.
+  static Future<void> launch(
+    Map server, {
+    bool close = true,
+    void Function(double progress)? onJavaProgress,
+  }) async {
+    final path = Settings.minecraftDirectory.path;
+    final versionData = await MinecraftLauncherCore.loadVersionData(
+      server['version'],
+      path,
+    );
+    final java = await _ensureJava(versionData, onJavaProgress);
+
     final token = await Minecraft.getToken();
     profile.value ??= await getCurrentProfile(token);
 
@@ -146,8 +183,7 @@ class Minecraft {
       'username': profile.value!.name,
       'uuid': profile.value!.uuid,
       'token': token,
-      'executablePath':
-          '${Directory.current.path}/runtime/java-runtime-$jdk/bin/java.exe',
+      'executablePath': java,
       'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
       if (Settings.autoConnect && server['ip'] != null)
         'quickPlayMultiplayer': server['ip'],
@@ -156,8 +192,8 @@ class Minecraft {
     };
 
     List<String> cmd = await MinecraftLauncherCore.getMinecraftCommand(
-      server['version'],
-      Settings.minecraftDirectory.path,
+      versionData,
+      path,
       options,
     );
 

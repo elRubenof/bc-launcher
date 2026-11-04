@@ -320,6 +320,12 @@ abstract class AppLocalizations {
   /// **'Downloading'**
   String get downloading;
 
+  /// No description provided for @downloadingJava.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading Java'**
+  String get downloadingJava;
+
   /// No description provided for @lastNews.
   ///
   /// In en, this message translates to:

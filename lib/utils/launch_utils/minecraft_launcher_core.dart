@@ -179,11 +179,9 @@ class MinecraftLauncherCore {
     return argList;
   }
 
-  static Future<List<String>> getMinecraftCommand(
-    String version,
-    String path,
-    Map options,
-  ) async {
+  /// Reads the JSON of [version] and merges it with the version it inherits
+  /// from, if any.
+  static Future<Map> loadVersionData(String version, String path) async {
     if (!Directory(join(path, "versions", version)).existsSync()) {
       throw Exception("Version not found");
     }
@@ -197,6 +195,14 @@ class MinecraftLauncherCore {
       data = await MinecraftLauncherHelper.inheritJson(data, path);
     }
 
+    return data;
+  }
+
+  static Future<List<String>> getMinecraftCommand(
+    Map data,
+    String path,
+    Map options,
+  ) async {
     options["nativesDirectory"] =
         options['nativesDirectory'] ??
         join(path, "versions", data["id"], "natives");

@@ -74,7 +74,20 @@ class _BottomBarState extends State<BottomBar> {
             Utility.isLaunching.value = true;
 
             await Utility.checkFiles(widget.server['id']);
-            Minecraft.launch(widget.server);
+            try {
+              await Minecraft.launch(
+                widget.server,
+                onJavaProgress: (progress) {
+                  Utility.isLoading.value = true;
+                  Utility.loadingState.value = l.downloadingJava;
+                  Utility.loadingProgress.value = progress;
+                },
+              );
+            } finally {
+              Utility.isLoading.value = false;
+              Utility.loadingState.value = null;
+              Utility.loadingProgress.value = null;
+            }
           },
         ),
       ],

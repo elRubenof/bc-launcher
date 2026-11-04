@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -224,11 +226,33 @@ class _InstancesScreenState extends State<InstancesScreen> {
     if (!installDir.existsSync()) {
       setState(() => showLoading = true);
       await Utility.installInstance(server, installDir);
+      await _downloadJava(server);
     }
 
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString('savedInstance', server['id']);
 
     Utility.pushReplacement(context, MainScreen(server: server));
+  }
+
+  /// Downloads the instance's Java runtime ahead of the first launch. A
+  /// failure is not fatal: Play checks and downloads it again.
+  Future<void> _downloadJava(Map<String, dynamic> server) async {
+    final l = Utility.getLocalizations(context);
+
+    try {
+      await Minecraft.ensureJava(
+        server,
+        onProgress: (progress) {
+          Utility.loadingState.value = l.downloadingJava;
+          Utility.loadingProgress.value = progress;
+        },
+      );
+    } catch (e) {
+      log("Java download failed for ${server['id']}: $e");
+    } finally {
+      Utility.loadingState.value = null;
+      Utility.loadingProgress.value = null;
+    }
   }
 }
