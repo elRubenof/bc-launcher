@@ -4,9 +4,9 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 ## What this is
 
-**BC Launcher** is a desktop Minecraft launcher built with Flutter for series and events. Players log in with Microsoft, pick a community's instance, sync its mods and configs from that community's server, and launch the game.
+**BC Launcher** is a desktop Minecraft launcher built with Flutter for series and events. Players log in with Microsoft, pick an instance from an organization they added, sync its mods and configs from that organization's server, and launch the game.
 
-This repo contains **only the launcher app**. The backend (`bc-server`: API + web admin panel) will live in a **separate repository** in the future and does not exist yet. Do not add server code here.
+This repo contains **only the launcher app**. The backend (`bc-launcher-server`: API + web admin panel) will live in a **separate repository** and does not exist yet. Do not add server code here.
 
 - Targets: **Windows** (primary today), **macOS**, **Linux**. Only the `windows/`, `macos/` and `linux/` platform folders exist; don't add mobile or web targets.
 - Flutter 3.47+ (Dart 3.13+), stable channel. Required by `window_manager` 0.6; older Flutter fails on `pub get`.
@@ -94,39 +94,50 @@ Agent docs like this file being committed is fine. The rule is about commits, au
 
 ## Architecture decisions (agreed, not all implemented yet)
 
-1. **Generic, multi-server launcher.** One signed executable for every community, like Discord with servers. Users add a community by URL or with the deep link `bclauncher://add?server=<url>`. The community selector is shown **only when 2+ servers are added**. With one server the UI goes straight to it, with that server's branding. There is **no "lock" mode**.
-2. **Discovery document.** Each server exposes `GET /.well-known/bc-launcher`: name, branding (logo, colors, background), `serverVersion`, `apiVersions`, `minLauncherVersion` and `capabilities`. Its format must never break (`discoveryVersion`).
+1. **Generic, multi-organization launcher.** One signed executable for everyone, like Discord with servers. Each server deployment is one **organization** (a developer or organizer of series and events) with N **instances** (series, events, servers). Users add an organization by URL ("Add organization" in the account menu/settings; `https://` is added if missing) or with the deep link `bclauncher://add?server=<url>` from the organization's download page. A deep link **always asks for confirmation** ("Add <name> (<host>)?", with its logo) before anything is saved, because any website can fire it. Download buttons point to the official generic installer; after installing, the player clicks the link again. Adding an organization means trusting it: every instance it creates and opens to the player **appears automatically** (the launcher refreshes `GET /instances` on start and when returning to the app). The organization selector is shown **only when 2+ organizations are added**. With one organization the UI goes straight to it. There is **no "lock" mode**. UI wording: "organization", never "community".
+2. **Discovery document.** Each server exposes `GET /.well-known/bc-launcher`: `discoveryVersion`, `visibility` (`public` | `private`), name, description, logo, icon, global links (Discord, web), `serverVersion`, `apiVersions`, `minLauncherVersion` and `capabilities`. It is the same for public and private organizations. The organization has **no colors or background**: those belong to each instance. Its format must never break (`discoveryVersion`).
 3. **API version negotiation.** The launcher ships `supportedApiVersions` and uses the highest version both sides share.
-   - If there is no common version, an **add-server attempt is rejected** with a clear reason.
-   - A saved server that becomes incompatible is greyed out and offers "Remove server".
+   - If there is no common version, an **add-organization attempt is rejected** with a clear reason.
+   - A saved organization that becomes incompatible is greyed out and offers "Remove organization".
    - If the launcher is too old, the launcher update is triggered.
    - `426 Upgrade Required` from any request re-runs the negotiation.
 4. **Deprecation policy.** A `compat.json` published from this repo's releases lists the supported and deprecated API versions with sunset dates. Old API versions are removed only after a long, announced window.
 5. **Launcher self-update via [`desktop_updater`](https://pub.dev/packages/desktop_updater)**, published from this repo's GitHub Releases.
    - Ed25519-signed `app-archive.json` → `release.json` → artifact.
    - `supportPolicy` sets the minimum version.
-   - The update feed **never** comes from community servers.
+   - The update feed **never** comes from organization servers.
    - It replaces the legacy `Utility.isUpdated()` / `Utility.update()` (Windows-only, server-driven).
    - The macOS install helper must ship from the first release that uses it.
    - The private key lives only in CI secrets plus an offline backup.
-6. **Two repos.** `bc-launcher` (this one) and `bc-server`, a future TypeScript monorepo with a Hono API, an admin SPA, zod contracts exported as OpenAPI, and Drizzle on SQLite/D1. Server deploy targets are **Cloudflare (Workers + D1 + R2)** and **Docker**. Vercel was discarded. The API contract's source of truth will be `bc-server`'s OpenAPI; launcher models should be generated from or validated against it.
-7. **Auth with community servers** will use Mojang's `join` / `hasJoined` handshake: the Minecraft token never leaves the client, and the server issues its own JWT. Today's `GET /auth?uuid=` is unauthenticated and must not be extended.
+6. **Two repos.** `bc-launcher` (this one) and `bc-launcher-server`, a future TypeScript monorepo with a Hono API, a React + Vite + shadcn/ui admin panel (username + password admins, `owner`/`editor` roles), zod contracts exported as OpenAPI, and Drizzle on SQLite/D1. Server deploy targets are **Cloudflare (Workers + D1 + R2)** and **Docker**. Vercel was discarded. The API contract's source of truth will be `bc-launcher-server`'s OpenAPI; launcher models should be generated from or validated against it.
+7. **Auth with organization servers** will use Mojang's `join` / `hasJoined` handshake: the Minecraft token never leaves the client, and the server issues its own JWT. Today's `GET /auth?uuid=` is unauthenticated and must not be extended.
+8. **Access in two levels.**
+   - **Organization:** public (any Minecraft player) or private (only its whitelist). A non-member, or a player on the organization blacklist, gets `403 not_member` ("You don't have access to this organization"), never told it is a ban. Adding is rejected; a saved organization that loses access is greyed out with "You no longer have access" and "Remove organization", and comes back by itself if access returns.
+   - **Instance:** `everyone` (all members) or its own whitelist, plus its own blacklist. An instance the player can't play is **invisible**: not listed, and its endpoints answer `404`. Inactive instances are hidden too.
+   - Blacklists win over whitelists and public access. Bans can expire.
+9. **Instances carry their own look and content.** Each instance has its background and colors (`primary`, `primaryDark`, `background`, `text`; new instances start with BC Launcher's defaults), its map, Discord and web links (falling back to the organization's), its news (there is no organization-wide news), its Minecraft version and loader, and a `contentVersion` counter. The launcher themes the UI with the selected instance's colors and uses its own neutral theme elsewhere.
+10. **Content sync, no zip.** Installing = syncing the manifest into an empty folder (`<AppSupport>/<organization>/<instance id>/`); the instance `id` is readable and immutable.
+    - The manifest lists `{path, sha256, size, policy, url}`, the managed dirs, the Minecraft version and the loader. Files are content-addressed and downloaded from short-lived signed URLs.
+    - **The launcher installs the loader itself** from `loader {type, version}`: Fabric/Quilt from their meta APIs, Forge/NeoForge by running the official installer's processors, cached per loader version. The server never serves loader or vanilla files.
+    - Managed dirs (set per instance, e.g. `mods/`): anything not in the manifest is deleted, including mods the player added. Elsewhere, the launcher keeps a local list of the files it installed and deletes only those removed from the manifest.
+    - The admin applies content changes atomically, so a manifest is always complete.
 
 ## Target architecture (direction for new and refactored code)
 
 The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifier`s, a global `navigatorKey` used to get l10n inside utils) and passes `Map<String, dynamic>` everywhere. New code should move toward:
 
-- **Layers:** `lib/models/` (typed models with `freezed` + `json_serializable`), `lib/services/` (`ApiClient`, `AuthService`, `ServerRegistry`/discovery, `SyncEngine`, `JavaManager`, `GameLauncher`, `UpdateService`), and `lib/screens/` + `lib/widgets/` for UI only.
+- **Layers:** `lib/models/` (typed models with `freezed` + `json_serializable`), `lib/services/` (`ApiClient`, `AuthService`, `OrganizationRegistry`/discovery, `SyncEngine`, `LoaderInstaller`, `JavaManager`, `GameLauncher`, `UpdateService`), and `lib/screens/` + `lib/widgets/` for UI only.
 - **State management: Riverpod.** Services never touch `BuildContext` or l10n; they return results or typed errors and the UI translates them.
-- **One HTTP client** (Dio) per server, with base URL, timeouts, retries and an auth interceptor.
-- **Per-server theming** from discovery branding, instead of `Constants` colors.
+- **One HTTP client** (Dio) per organization, with base URL, timeouts, retries and an auth interceptor.
+- **Per-instance theming** from the instance's colors and background, instead of `Constants` colors.
 - **Sync engine:**
-  1. Fetch the manifest and compute a plan (add, update, delete).
+  1. Fetch the manifest (`If-None-Match` with the `contentVersion`) and compute a plan (add, update, delete).
   2. Download in parallel to `.part` files, verify the hash, then rename atomically.
   3. Cache hashes by `(path, size, mtime)`. Today `checkFiles` re-hashes every file on each launch on purpose, so local changes are always repaired; keep that guarantee.
-  4. Apply a policy per file: `always`, `once`, `never`, `optional`.
-  5. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
-- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by community servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
+  4. Apply a policy per file: `always` (the server wins, restored on every launch) or `once` (copied only if missing, then the player's).
+  5. Clean managed dirs, and delete files that were in the previous manifest but not in the new one (tracked in a local list).
+  6. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
+- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Tokens go in `flutter_secure_storage`. Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
 - **Tests:** unit-test the pure logic first: `launch_utils` (rules, library paths, `inheritJson`), version negotiation and sync planning.
