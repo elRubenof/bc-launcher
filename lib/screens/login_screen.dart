@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bc_launcher/main.dart';
+import 'package:bc_launcher/services/credentials_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -9,7 +10,6 @@ import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    SharedPreferences.getInstance().then((pref) => pref.remove("credentials"));
+    CredentialsStore.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => _login());
   }
 
@@ -61,8 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       final client = await grant.handleAuthorizationResponse(params);
 
-      final preferences = await SharedPreferences.getInstance();
-      await preferences.setString("credentials", client.credentials.toJson());
+      await CredentialsStore.write(client.credentials.toJson());
 
       WindowManager.instance.getCurrent()?.focus();
       if (!mounted) return;

@@ -40,6 +40,7 @@ lib/
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
     file_downloader.dart        parallel downloads to .part files with sha1 check
+    credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
     constants.dart              colors, sizes, defaults, API URL, Azure client id
     settings.dart               static user settings (RAM, resolution, …)
@@ -139,7 +140,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
   5. Clean managed dirs, and delete files that were in the previous manifest but not in the new one (tracked in a local list).
   6. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
-- **Microsoft login in the system browser** (done). Tokens go in `flutter_secure_storage`. Cache the Minecraft token (24 h validity). Support multiple accounts.
+- **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
 - **Tests:** unit-test the pure logic first: `launch_utils` (rules, library paths, `inheritJson`), version negotiation and sync planning.
 
@@ -160,7 +161,7 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 - Auto-connect uses Quick Play only (1.20+); older versions need `--server`/`--port`.
 - The game process: the launcher calls `exit(0)` on the first stdout line, no logs are kept, and the pipes are not drained when staying open.
 - Legacy updater runs a downloaded `.exe` with no signature/hash check.
-- Refresh token stored in plain `SharedPreferences`; XSTS error codes are not handled.
+- XSTS error codes are not handled.
 
 **Minor**
 - `HomeScreen.news` is typed `List<Map>?`, but JSON gives `List<dynamic>` (runtime cast error).

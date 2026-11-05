@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:bc_launcher/services/credentials_store.dart';
 import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/services/library_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
@@ -13,7 +14,6 @@ import 'package:oauth2/oauth2.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// What [Minecraft.prepare] is downloading.
 enum PrepareStep { libraries, java }
@@ -30,14 +30,15 @@ class Minecraft {
       "https://login.live.com/oauth20_token.srf";
 
   static Future<bool> authenticateOauth2() async {
-    final preferences = await SharedPreferences.getInstance();
-    final credentialsJson = preferences.getString("credentials") ?? "";
+    final credentialsJson = await CredentialsStore.read();
 
     try {
-      if (credentialsJson.isEmpty) return false;
+      if (credentialsJson == null) return false;
 
       _credentials = Credentials.fromJson(credentialsJson);
       _credentials = await _credentials.refresh(identifier: Constants.clientID);
+      // Microsoft rotates the refresh token, so keep the new one.
+      await CredentialsStore.write(_credentials.toJson());
 
       profile.value = await getCurrentProfile(await getToken());
     } catch (e) {
@@ -52,8 +53,7 @@ class Minecraft {
   }
 
   static logout() async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.remove("credentials");
+    await CredentialsStore.clear();
   }
 
   static Future<String> getToken() async {
