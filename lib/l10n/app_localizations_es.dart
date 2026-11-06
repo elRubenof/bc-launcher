@@ -100,6 +100,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get launchErrorDesc => 'Comprueba tu conexión e inténtalo de nuevo';
 
   @override
+  String get playing => 'Jugando';
+
+  @override
+  String get gameCrashedTitle => 'El juego se cerró por un error';
+
+  @override
+  String gameCrashedDesc(String name) {
+    return '$name se ha cerrado inesperadamente. Si vuelve a pasar, exporta el registro de la partida y envíaselo a la organización.';
+  }
+
+  @override
+  String get exportLog => 'Exportar';
+
+  @override
+  String get openLogsFolder => 'Abrir carpeta de registros';
+
+  @override
+  String logsFileName(String instance, String date) {
+    return '$instance-registros-$date';
+  }
+
+  @override
   String get lastNews => 'Últimas noticias';
 
   @override

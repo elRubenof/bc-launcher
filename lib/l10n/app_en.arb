@@ -35,6 +35,14 @@
   "close": "Close",
   "launchError": "Couldn't start the game",
   "launchErrorDesc": "Check your connection and try again",
+  "playing": "Playing",
+  "gameCrashedTitle": "The game closed because of an error",
+  "gameCrashedDesc": "{name} closed unexpectedly. If it happens again, export the game's log and send it to the organization.",
+  "@gameCrashedDesc": {"placeholders": {"name": {"type": "String"}}},
+  "exportLog": "Export",
+  "openLogsFolder": "Open logs folder",
+  "logsFileName": "{instance}-logs-{date}",
+  "@logsFileName": {"placeholders": {"instance": {"type": "String"}, "date": {"type": "String"}}},
 
   "lastNews": "Last news",
 

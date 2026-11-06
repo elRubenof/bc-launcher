@@ -15,6 +15,10 @@ class CustomDialog extends StatelessWidget {
   final VoidCallback mainButtonOnPressed;
   final VoidCallback? secondaryButtonOnPressed;
 
+  /// A link below the buttons.
+  final String? linkText;
+  final VoidCallback? linkOnPressed;
+
   const CustomDialog({
     super.key,
     required this.title,
@@ -26,6 +30,8 @@ class CustomDialog extends StatelessWidget {
     this.secondaryButtonColor = const Color(0x666750A4),
     required this.mainButtonOnPressed,
     this.secondaryButtonOnPressed,
+    this.linkText,
+    this.linkOnPressed,
   });
 
   @override
@@ -80,7 +86,9 @@ class CustomDialog extends StatelessWidget {
                       cursor: SystemMouseCursors.click,
                       child: CupertinoButton.filled(
                         color: secondaryButtonColor,
-                        onPressed: () => Navigator.pop(context),
+                        onPressed:
+                            secondaryButtonOnPressed ??
+                            () => Navigator.pop(context),
                         child: Container(
                           constraints: const BoxConstraints(minWidth: 25),
                           alignment: Alignment.center,
@@ -90,6 +98,24 @@ class CustomDialog extends StatelessWidget {
                     ),
                 ],
               ),
+              if (linkText != null) ...[
+                const SizedBox(height: 20),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: linkOnPressed,
+                    child: Text(
+                      linkText!,
+                      style: const TextStyle(
+                        color: Constants.textColor,
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Constants.textColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

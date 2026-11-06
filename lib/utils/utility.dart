@@ -9,6 +9,9 @@ class Utility {
 
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
 
+  /// The game is running.
+  static ValueNotifier<bool> isPlaying = ValueNotifier(false);
+
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
   }
@@ -26,6 +29,9 @@ class Utility {
         preferences.getInt("gameHeight") ?? Constants.defaultGameHeight;
     Settings.fullscreen =
         preferences.getBool("fullscreen") ?? Constants.defaultFullscreen;
+    Settings.keepLauncherOpen =
+        preferences.getBool("keepLauncherOpen") ??
+        Constants.defaultKeepLauncherOpen;
   }
 
   static Future<void> resetSettings() async {
@@ -36,12 +42,14 @@ class Utility {
     Settings.gameWidth = Constants.defaultGameWidth;
     Settings.gameHeight = Constants.defaultGameHeight;
     Settings.fullscreen = Constants.defaultFullscreen;
+    Settings.keepLauncherOpen = Constants.defaultKeepLauncherOpen;
 
     preferences.remove("autoConnect");
     preferences.remove("allocatedRAM");
     preferences.remove("gameWidth");
     preferences.remove("gameHeight");
     preferences.remove("fullscreen");
+    preferences.remove("keepLauncherOpen");
   }
 
   static Future<void> setAutoConnect(bool value) async {

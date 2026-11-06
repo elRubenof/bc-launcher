@@ -121,7 +121,7 @@ class _Button3DState extends State<Button3D> {
   }
 
   void _pressed(_) {
-    if (Utility.isLaunching.value) return;
+    if (Utility.isLaunching.value || Utility.isPlaying.value) return;
 
     setState(() {
       _top = 0;

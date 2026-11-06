@@ -100,6 +100,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get launchErrorDesc => 'Check your connection and try again';
 
   @override
+  String get playing => 'Playing';
+
+  @override
+  String get gameCrashedTitle => 'The game closed because of an error';
+
+  @override
+  String gameCrashedDesc(String name) {
+    return '$name closed unexpectedly. If it happens again, export the game\'s log and send it to the organization.';
+  }
+
+  @override
+  String get exportLog => 'Export';
+
+  @override
+  String get openLogsFolder => 'Open logs folder';
+
+  @override
+  String logsFileName(String instance, String date) {
+    return '$instance-logs-$date';
+  }
+
+  @override
   String get lastNews => 'Last news';
 
   @override

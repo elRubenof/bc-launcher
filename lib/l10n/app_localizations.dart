@@ -272,6 +272,42 @@ abstract class AppLocalizations {
   /// **'Check your connection and try again'**
   String get launchErrorDesc;
 
+  /// No description provided for @playing.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing'**
+  String get playing;
+
+  /// No description provided for @gameCrashedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The game closed because of an error'**
+  String get gameCrashedTitle;
+
+  /// No description provided for @gameCrashedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} closed unexpectedly. If it happens again, export the game\'s log and send it to the organization.'**
+  String gameCrashedDesc(String name);
+
+  /// No description provided for @exportLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportLog;
+
+  /// No description provided for @openLogsFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open logs folder'**
+  String get openLogsFolder;
+
+  /// No description provided for @logsFileName.
+  ///
+  /// In en, this message translates to:
+  /// **'{instance}-logs-{date}'**
+  String logsFileName(String instance, String date);
+
   /// No description provided for @lastNews.
   ///
   /// In en, this message translates to:

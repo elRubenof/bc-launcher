@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/services/credentials_store.dart';
+import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
@@ -138,16 +139,15 @@ class Minecraft {
     await server?.close(force: true);
   }
 
-  /// Starts [versionId] of an installed instance in [folder], with the
-  /// libraries and assets shared in [sharedFolder]. [onStartFailed] is called
-  /// if the game exits before writing anything, which means it never started.
-  static Future<void> launch(
+  /// Plays [versionId] of an installed instance in [folder], with the
+  /// libraries and assets shared in [sharedFolder], until the game closes.
+  /// [onStarted] is called once the game is running.
+  static Future<GameExit> launch(
     Instance instance,
     Directory folder,
     String versionId,
     Directory sharedFolder, {
-    bool close = true,
-    VoidCallback? onStartFailed,
+    VoidCallback? onStarted,
   }) async {
     final path = folder.path;
     final versionData = await MinecraftLauncherCore.loadVersionData(
@@ -189,24 +189,7 @@ class Minecraft {
       options,
     );
 
-    final process = await Process.start(
-      cmd[0],
-      cmd.sublist(1),
-      workingDirectory: path,
-      mode: ProcessStartMode.detachedWithStdio,
-    );
-
-    var started = false;
-    process.stderr.drain<void>();
-    process.stdout.listen(
-      (_) {
-        started = true;
-        if (close) exit(0);
-      },
-      onDone: () {
-        if (!started) onStartFailed?.call();
-      },
-    );
+    return GameProcess.run(cmd, folder, secrets: [token], onStarted: onStarted);
   }
 }
 

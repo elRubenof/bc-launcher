@@ -5,9 +5,11 @@ import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
 import 'package:bc_launcher/services/game_installer.dart';
+import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
+import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/sync_engine.dart';
 import 'package:bc_launcher/utils/constants.dart';
@@ -21,7 +23,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path/path.dart' show join;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:window_manager/window_manager.dart';
 
 class BottomBar extends StatefulWidget {
   final Organization organization;
@@ -79,12 +83,15 @@ class _BottomBarState extends State<BottomBar> {
             ),
           ],
         ),
-        Button3D(
-          title: l.play,
-          width: 210,
-          color: Constants.mainColor,
-          secondaryColor: Constants.mainColorDarked,
-          onPressed: play,
+        ValueListenableBuilder(
+          valueListenable: Utility.isPlaying,
+          builder: (context, playing, child) => Button3D(
+            title: playing ? l.playing : l.play,
+            width: 210,
+            color: Constants.mainColor,
+            secondaryColor: Constants.mainColorDarked,
+            onPressed: play,
+          ),
         ),
       ],
     );
@@ -195,9 +202,10 @@ class _BottomBarState extends State<BottomBar> {
   }
 
   /// Repairs and updates the instance, checks its game files and starts
-  /// the game, while the bar above shows it is working.
+  /// the game, while the bar above shows it is working. Then waits for the
+  /// game to close.
   Future<void> play() async {
-    if (Utility.isLaunching.value) return;
+    if (Utility.isLaunching.value || Utility.isPlaying.value) return;
     Utility.isLaunching.value = true;
 
     final organization = widget.organization;
@@ -208,22 +216,90 @@ class _BottomBarState extends State<BottomBar> {
         organization.key,
         instance,
       );
-      await Minecraft.launch(
+      final game = await Minecraft.launch(
         instance,
         widget.folder,
         versionId,
         await InstanceManager.sharedFolder(),
-        onStartFailed: () => onLaunchFailed(null),
+        onStarted: onGameStarted,
       );
+      onGameClosed(game);
     } catch (e) {
       log("Launch of ${instance.id} failed: $e");
       onLaunchFailed(e);
     }
   }
 
+  /// Play says the game is running, and the launcher hides unless it stays
+  /// open.
+  void onGameStarted() {
+    Utility.isLaunching.value = false;
+    Utility.isPlaying.value = true;
+    if (!Settings.keepLauncherOpen) {
+      WindowManager.instance.getCurrent()?.hide();
+    }
+  }
+
+  /// A game that ended well closes the launcher unless it stays open; one
+  /// that crashed brings it back to say so.
+  void onGameClosed(GameExit game) {
+    if (!game.started) return onLaunchFailed(null);
+
+    Utility.isPlaying.value = false;
+    if (!game.crashed) {
+      if (!Settings.keepLauncherOpen) exit(0);
+      return;
+    }
+
+    showWindow();
+    if (!mounted) return;
+
+    final l = Utility.getLocalizations(context);
+    final logs = GameProcess.logsFolder(widget.folder);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CustomDialog(
+          title: l.gameCrashedTitle,
+          description: l.gameCrashedDesc(widget.instance.name),
+          mainButtonText: l.exportLog,
+          mainButtonOnPressed: exportLog,
+          secondaryButtonText: l.close,
+          linkText: l.openLogsFolder,
+          linkOnPressed: () => launchUrl(Uri.file(logs.path)),
+        );
+      },
+    );
+  }
+
+  /// Saves the last game's logs where the player chooses.
+  Future<void> exportLog() async {
+    final instance = widget.instance;
+    final zip = await LogExport.zip(
+      widget.folder,
+      await LogExport.info(instance),
+    );
+    if (zip == null || !mounted) return;
+
+    final date = DateTime.now().toIso8601String().substring(0, 10);
+    await LogExport.save(
+      zip,
+      "${Utility.getLocalizations(context).logsFileName(instance.id, date)}"
+      ".zip",
+    );
+  }
+
+  void showWindow() {
+    final window = WindowManager.instance.getCurrent();
+    window?.show();
+    window?.focus();
+  }
+
   /// Re-enables Play and tells the user why the game couldn't be started.
   void onLaunchFailed(Object? error) {
     Utility.isLaunching.value = false;
+    Utility.isPlaying.value = false;
+    showWindow();
     if (!mounted) return;
 
     final l = Utility.getLocalizations(context);
