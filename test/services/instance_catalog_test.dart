@@ -121,6 +121,38 @@ void main() {
     expect(view.greyedOut, isFalse);
   });
 
+  test('retrying while offline keeps the message until it answers', () async {
+    final a = organization('a.com');
+    await load(a, () => json(200, fixture('instances')));
+    answers['a.com'] = () => json(503, {});
+    await InstanceCatalog.refresh(a);
+
+    final seen = <OrganizationStatus>[];
+    void listener() => seen.add(InstanceCatalog.viewOf(a.key).status);
+    InstanceCatalog.organizations.addListener(listener);
+    addTearDown(() => InstanceCatalog.organizations.removeListener(listener));
+
+    await InstanceCatalog.refresh(a);
+
+    expect(seen, [OrganizationStatus.offline]);
+  });
+
+  test('a list refreshing stays on screen', () async {
+    final a = organization('a.com');
+    await load(a, () => json(200, fixture('instances')));
+
+    final seen = <OrganizationView>[];
+    void listener() => seen.add(InstanceCatalog.viewOf(a.key));
+    InstanceCatalog.organizations.addListener(listener);
+    addTearDown(() => InstanceCatalog.organizations.removeListener(listener));
+
+    await InstanceCatalog.refresh(a);
+
+    expect(seen.first.status, OrganizationStatus.loading);
+    expect(seen.first.instances, hasLength(2));
+    expect(seen.last.status, OrganizationStatus.ready);
+  });
+
   test('comes back by itself when access returns', () async {
     final a = organization('a.com');
     await load(a, () => json(403, {'code': 'not_member'}));

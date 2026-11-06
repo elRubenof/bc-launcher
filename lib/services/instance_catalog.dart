@@ -54,10 +54,18 @@ class InstanceCatalog {
   static Future<void> refresh(Organization organization) async {
     final key = organization.key;
     if (OrganizationStore.byKey(key) == null) return;
-    _set(
-      key,
-      OrganizationView(OrganizationStatus.loading, viewOf(key).instances),
-    );
+
+    // A list on screen stays while it refreshes. A message (offline, no
+    // access, incompatible) stays until the answer arrives, so the instances
+    // it had don't flash in between.
+    final current = viewOf(key);
+    if (current.status == OrganizationStatus.ready ||
+        current.status == OrganizationStatus.loading) {
+      _set(
+        key,
+        OrganizationView(OrganizationStatus.loading, current.instances),
+      );
+    }
 
     final view = await _load(organization);
     if (OrganizationStore.byKey(key) == null) {
