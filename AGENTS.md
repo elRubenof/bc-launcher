@@ -18,11 +18,13 @@ This repo contains **only the launcher app**. The backend (`bc-launcher-server`:
 flutter pub get                 # also regenerates l10n (flutter: generate: true)
 flutter analyze                 # must pass with no issues before committing
 flutter test                    # no tests yet (see Target architecture → Tests)
-flutter run -d windows          # or -d macos / -d linux
-flutter build windows           # release build (likewise macos / linux)
+flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
+flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 ```
 
-The API base URL is currently hardcoded in `lib/utils/constants.dart` (`Constants.api`, a local `wrangler dev` URL). `Constants.clientID` / `redirectUrl` (Azure app) are empty in the repo and must be filled locally to log in.
+**Build configuration:** the Azure app's values are compiled in from a `.env` file (ignored by git). Copy `.env.example` to `.env` and fill in `MS_CLIENT_ID` (required to log in) and, optionally, `MS_REDIRECT_URL` (default `http://127.0.0.1`). They are read with `String.fromEnvironment` in `lib/utils/constants.dart` and fixed at build time, so `run` and `build` both need `--dart-define-from-file=.env`; without it the client ID is empty and the Microsoft login fails. `.vscode/` is ignored: any local launch or build configuration has to pass the same flag.
+
+The API base URL is still hardcoded in `lib/utils/constants.dart` (`Constants.api`, a local `wrangler dev` URL) for the legacy API calls.
 
 ## Project layout
 
@@ -42,7 +44,7 @@ lib/
     file_downloader.dart        parallel downloads to .part files with sha1 check
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
-    constants.dart              colors, sizes, defaults, API URL, Azure client id
+    constants.dart              colors, sizes, defaults, API URL, Azure app values from .env
     settings.dart               static user settings (RAM, resolution, …)
     utility.dart                settings persistence, instance install/unzip, file sync, self-update, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
@@ -59,7 +61,7 @@ assets/img/                     logo.svg, logo.png, background.png
 - **Paths:** build them with `package:path` (`join`), never with `'/'` or `'\\'` string concatenation. Several existing bugs come from this.
 - **Networking:** every request needs a timeout and error handling. Build query strings with `Uri(queryParameters: …)`, never by interpolation.
 - **Never block the UI isolate** with large sync I/O (hashing, unzipping). Use async I/O or `Isolate.run`.
-- **Secrets:** never commit real `clientID`s, tokens or signing keys. Never log access or refresh tokens.
+- **Secrets:** never commit `.env`, real `clientID`s, tokens or signing keys. New build-time values go in `.env.example` (empty) and are read with `String.fromEnvironment`. Never log access or refresh tokens.
 - `analysis_options.yaml` ignores `use_build_context_synchronously`. Still check `mounted` after `await` in new code.
 - Desktop window chrome uses `window_manager` (hidden title bar, custom `WindowButtons`, `DragToMoveArea`), set up in `main.dart`. Don't make `DragToMoveArea` `const`: `flutter run` fails to compile it.
 - macOS plugins come through **Swift Package Manager** (enabled in `pubspec.yaml`); there is no CocoaPods/Podfile. Only add plugins that ship a `Package.swift` for macOS. Deployment target is macOS 12.0.

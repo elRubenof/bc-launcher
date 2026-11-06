@@ -8,7 +8,7 @@ class Constants {
 
   static const topBarHeight = 65.0;
   static const horizontalPadding = 90.0;
-  
+
   static const defaultAutoConnect = true;
   static const defaultAllocatedRAM = 8;
   static const defaultGameWidth = 854;
@@ -16,6 +16,9 @@ class Constants {
   static const defaultFullscreen = true;
 
   static String api = "http://127.0.0.1:8787";
-  static String clientID = "";
-  static String redirectUrl = "";
+  static const clientID = String.fromEnvironment('MS_CLIENT_ID');
+  static const redirectUrl = String.fromEnvironment(
+    'MS_REDIRECT_URL',
+    defaultValue: 'http://127.0.0.1',
+  );
 }
