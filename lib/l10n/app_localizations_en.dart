@@ -361,6 +361,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.';
 
   @override
+  String loaderNotSupportedDesc(String name, String loader) {
+    return '$name uses $loader, which this version of the launcher can\'t install yet.';
+  }
+
+  @override
   String get gameFilesFailedDesc =>
       'The game files (Minecraft, its loader and Java) couldn\'t be prepared. Try again later.';
 

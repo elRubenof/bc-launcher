@@ -68,6 +68,8 @@ lib/
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
+    game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
+                                libraries, client jar, natives and Java; loaders other than vanilla not yet
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
     file_downloader.dart        parallel downloads to .part files with sha1 or sha256 check
@@ -179,7 +181,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`) and `ServerList`. Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` and installing the game files (`GameInstaller`, against a fake Mojang). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
+import 'package:bc_launcher/services/game_installer.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_installer.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
@@ -132,6 +133,8 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
       InstanceCatalog.refresh(widget.organization);
     }
 
+    // A failure while installing the game files can also be the network.
+    final cause = error is GameFilesError ? error.cause : error;
     final (icon, title, description, canRetry) = switch (error) {
       NotEnoughSpaceError(:final needed, :final available) => (
         Icons.storage_rounded,
@@ -149,16 +152,22 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
         l.instanceGoneDesc,
         false,
       ),
+      GameFilesError(cause: UnsupportedLoaderError(:final loader)) => (
+        Icons.error_outline_rounded,
+        failedTitle,
+        l.loaderNotSupportedDesc(name, loader.displayName),
+        false,
+      ),
+      _ when InstanceInstaller.isOffline(cause) => (
+        Icons.wifi_off_rounded,
+        failedTitle,
+        l.downloadOfflineDesc,
+        true,
+      ),
       GameFilesError() => (
         Icons.error_outline_rounded,
         failedTitle,
         l.gameFilesFailedDesc,
-        true,
-      ),
-      _ when InstanceInstaller.isOffline(error) => (
-        Icons.wifi_off_rounded,
-        failedTitle,
-        l.downloadOfflineDesc,
         true,
       ),
       _ => (

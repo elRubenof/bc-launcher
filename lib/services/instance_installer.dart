@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/manifest.dart';
 import 'package:bc_launcher/services/api_client.dart';
+import 'package:bc_launcher/services/game_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/server_list.dart';
 import 'package:bc_launcher/services/sync_engine.dart';
-import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
@@ -167,9 +167,5 @@ class InstanceInstaller {
     Manifest manifest,
     Directory folder,
     void Function(double progress)? onProgress,
-  ) => Minecraft.prepareFolder(
-    manifest.minecraftVersion,
-    folder,
-    onProgress: (_, progress) => onProgress?.call(progress),
-  );
+  ) => GameInstaller.install(manifest, folder, onProgress: onProgress);
 }

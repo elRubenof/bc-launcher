@@ -110,6 +110,7 @@
   "installFailedTitle": "No se ha podido instalar {name}",
   "downloadOfflineDesc": "Revisa tu conexión a internet y vuelve a intentarlo. Lo que ya se ha descargado no se vuelve a bajar.",
   "downloadFailedDesc": "Algo ha fallado. Vuelve a intentarlo; lo que ya se ha descargado no se vuelve a bajar.",
+  "loaderNotSupportedDesc": "{name} usa {loader}, que esta versión del launcher todavía no sabe instalar.",
   "gameFilesFailedDesc": "No se han podido preparar los archivos del juego (Minecraft, su loader y Java). Vuelve a intentarlo más tarde.",
   "notEnoughSpaceTitle": "No hay espacio suficiente",
   "notEnoughSpaceDesc": "{name} necesita {needed} MB y solo quedan {available} MB libres en el disco. Libera espacio y vuelve a intentarlo.",

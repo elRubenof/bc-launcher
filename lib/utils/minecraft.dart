@@ -156,18 +156,6 @@ class Minecraft {
     return _prepare(versionData, path, onProgress);
   }
 
-  static Future<String> prepareFolder(
-    String version,
-    Directory folder, {
-    void Function(PrepareStep step, double progress)? onProgress,
-  }) async {
-    final versionData = await MinecraftLauncherCore.loadVersionData(
-      version,
-      folder.path,
-    );
-    return _prepare(versionData, folder.path, onProgress);
-  }
-
   static Future<String> _prepare(
     Map versionData,
     String path,
