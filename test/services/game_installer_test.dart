@@ -98,6 +98,33 @@ class FakeMojang implements HttpClientAdapter {
     });
   }
 
+  /// The profile of [loader] [version] for Minecraft [minecraft], with one
+  /// library of its own from its Maven repository.
+  void addLoader(LoaderType loader, String minecraft, String version) {
+    final name = '${loader.name}-loader';
+    final jar = '$name $version';
+    files['https://maven.example/org/$name/$version/$name-$version.jar'] = jar;
+    files['${GameInstaller.loaderMeta[loader]}/$minecraft/$version/profile/json'] =
+        jsonEncode({
+          'id': '$name-$version-$minecraft',
+          'inheritsFrom': minecraft,
+          'releaseTime': DateTime.now().toIso8601String(),
+          'mainClass': 'org.$name.Knot',
+          'arguments': {'game': [], 'jvm': []},
+          'libraries': [
+            {
+              'name': 'org:$name:$version',
+              'url': 'https://maven.example/',
+              // Fabric gives its hash and size; Quilt doesn't.
+              if (loader == LoaderType.fabric) ...{
+                'sha1': sha1Of(jar),
+                'size': sizeOf(jar),
+              },
+            },
+          ],
+        });
+  }
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
@@ -158,7 +185,7 @@ void main() {
     contentVersion: 1,
     minecraftVersion: version,
     loaderType: loader,
-    loaderVersion: loader == LoaderType.vanilla ? null : '1.0',
+    loaderVersion: loader == LoaderType.vanilla ? null : '0.16.5',
     managedDirs: const [],
     files: const [],
   );
@@ -313,13 +340,71 @@ void main() {
     );
   });
 
+  for (final loader in [LoaderType.fabric, LoaderType.quilt]) {
+    final id = '${loader.name}-loader-0.16.5-1.21.1';
+
+    test('${loader.name}: its profile on top of Minecraft', () async {
+      mojang.addLoader(loader, '1.21.1', '0.16.5');
+
+      expect(await GameInstaller.install(manifest(loader: loader), folder), id);
+
+      final profile = jsonDecode(
+        await local('versions/$id/$id.json').readAsString(),
+      );
+      expect(profile['inheritsFrom'], '1.21.1');
+      expect(await local('versions/1.21.1/1.21.1.json').exists(), isTrue);
+      // The loader's library and Minecraft's, in the shared folder.
+      expect(
+        await sharedFile(
+          'libraries/org/${loader.name}-loader/0.16.5/'
+          '${loader.name}-loader-0.16.5.jar',
+        ).readAsString(),
+        '${loader.name}-loader 0.16.5',
+      );
+      expect(
+        await sharedFile('libraries/lib/a/1.0/a-1.0.jar').exists(),
+        isTrue,
+      );
+      // The client jar of the version that is launched.
+      expect(
+        await local('versions/$id/$id.jar').readAsString(),
+        'client 1.21.1',
+      );
+    });
+
+    test('${loader.name}: its profile is fetched only once', () async {
+      mojang.addLoader(loader, '1.21.1', '0.16.5');
+      await GameInstaller.install(manifest(loader: loader), folder);
+      mojang
+        ..requests.clear()
+        ..offline = true;
+
+      expect(await GameInstaller.install(manifest(loader: loader), folder), id);
+      expect(mojang.requests, isEmpty);
+    });
+
+    test('${loader.name}: a loader version it does not have', () async {
+      await expectLater(
+        GameInstaller.install(manifest(loader: loader), folder),
+        throwsA(
+          isA<UnknownLoaderVersionError>()
+              .having((e) => e.loader, 'loader', loader)
+              .having((e) => e.version, 'version', '0.16.5'),
+        ),
+      );
+    });
+  }
+
+  test('the version to launch', () {
+    expect(GameInstaller.versionIdOf(manifest()), '1.21.1');
+    expect(
+      GameInstaller.versionIdOf(manifest(loader: LoaderType.quilt)),
+      'quilt-loader-0.16.5-1.21.1',
+    );
+  });
+
   test('loaders it can not install yet', () async {
-    for (final loader in [
-      LoaderType.fabric,
-      LoaderType.quilt,
-      LoaderType.forge,
-      LoaderType.neoforge,
-    ]) {
+    for (final loader in [LoaderType.forge, LoaderType.neoforge]) {
       await expectLater(
         GameInstaller.install(manifest(loader: loader), folder),
         throwsA(
