@@ -83,5 +83,24 @@
   "organizationSignInErrorTitle": "Couldn't sign in",
   "organizationSignInErrorDesc": "Something went wrong signing in to the organization. Try again.",
   "minecraftSessionRejectedTitle": "Minecraft didn't accept your session",
-  "minecraftSessionRejectedDesc": "Sign out and sign in again with your Microsoft account."
+  "minecraftSessionRejectedDesc": "Sign out and sign in again with your Microsoft account.",
+
+  "chooseInstance": "Choose an instance",
+  "noInstancesTitle": "There are no instances for you yet",
+  "noInstancesDesc": "When {name} gives you access to an instance, it will show up here.",
+  "@noInstancesDesc": {"placeholders": {"name": {"type": "String"}}},
+  "noDescription": "No description",
+  "lostAccessTitle": "You no longer have access to {name}",
+  "@lostAccessTitle": {"placeholders": {"name": {"type": "String"}}},
+  "lostAccessDesc": "If they give you access again, it will show up here by itself. If you don't need it, you can remove it.",
+  "noLongerCompatibleTitle": "{name} is no longer compatible",
+  "@noLongerCompatibleTitle": {"placeholders": {"name": {"type": "String"}}},
+  "organizationUnreachableTitle": "Couldn't connect to {name}",
+  "@organizationUnreachableTitle": {"placeholders": {"name": {"type": "String"}}},
+  "organizationUnreachableDesc": "Check your internet connection and try again.",
+  "removeOrganization": "Remove organization",
+  "removeOrganizationQuestion": "Remove {name}?",
+  "@removeOrganizationQuestion": {"placeholders": {"name": {"type": "String"}}},
+  "removeOrganizationDesc": "It will no longer show up in the launcher, and its instances will be deleted from this computer, including worlds and screenshots. To add it again you'll have to open its link.",
+  "remove": "Remove"
 }

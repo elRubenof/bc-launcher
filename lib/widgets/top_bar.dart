@@ -1,4 +1,4 @@
-import 'package:bc_launcher/screens/instances_screen.dart';
+import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -131,7 +131,7 @@ Widget account() {
                 final preferences = await SharedPreferences.getInstance();
                 await preferences.remove('savedInstance');
 
-                Utility.pushReplacement(context, const InstancesScreen());
+                Utility.pushReplacement(context, const OrganizationsScreen());
               },
             ),
             MouseIconButton(

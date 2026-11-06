@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
 import 'package:bc_launcher/services/deep_links.dart';
+import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
@@ -102,6 +103,9 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
       if (!mounted) return;
 
       await OrganizationStore.save(organization);
+      await OrganizationStore.select(organization.key);
+      InstanceCatalog.refresh(organization);
+      
       if (mounted) Navigator.pop(context);
     } on ApiError catch (e) {
       _fail(switch (e.type) {

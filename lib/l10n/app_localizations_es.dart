@@ -241,4 +241,56 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get minecraftSessionRejectedDesc =>
       'Cierra sesión y vuelve a entrar con tu cuenta de Microsoft.';
+
+  @override
+  String get chooseInstance => 'Elige una instancia';
+
+  @override
+  String get noInstancesTitle => 'Aún no hay instancias para ti';
+
+  @override
+  String noInstancesDesc(String name) {
+    return 'Cuando $name te dé acceso a una instancia, aparecerá aquí.';
+  }
+
+  @override
+  String get noDescription => 'Sin descripción';
+
+  @override
+  String lostAccessTitle(String name) {
+    return 'Ya no tienes acceso a $name';
+  }
+
+  @override
+  String get lostAccessDesc =>
+      'Si vuelven a darte acceso, aparecerá aquí sola. Si no la necesitas, puedes eliminarla.';
+
+  @override
+  String noLongerCompatibleTitle(String name) {
+    return '$name ya no es compatible';
+  }
+
+  @override
+  String organizationUnreachableTitle(String name) {
+    return 'No se ha podido conectar con $name';
+  }
+
+  @override
+  String get organizationUnreachableDesc =>
+      'Revisa tu conexión a internet y vuelve a intentarlo.';
+
+  @override
+  String get removeOrganization => 'Eliminar organización';
+
+  @override
+  String removeOrganizationQuestion(String name) {
+    return '¿Eliminar $name?';
+  }
+
+  @override
+  String get removeOrganizationDesc =>
+      'Dejará de aparecer en el launcher y se borrarán de este equipo sus instancias, incluidos los mundos y las capturas de pantalla. Para volver a añadirla tendrás que abrir su enlace.';
+
+  @override
+  String get remove => 'Eliminar';
 }

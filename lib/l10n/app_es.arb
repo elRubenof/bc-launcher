@@ -79,5 +79,19 @@
   "organizationSignInErrorTitle": "No se ha podido iniciar sesión",
   "organizationSignInErrorDesc": "Algo ha fallado al iniciar sesión en la organización. Vuelve a intentarlo.",
   "minecraftSessionRejectedTitle": "Minecraft no ha aceptado tu sesión",
-  "minecraftSessionRejectedDesc": "Cierra sesión y vuelve a entrar con tu cuenta de Microsoft."
+  "minecraftSessionRejectedDesc": "Cierra sesión y vuelve a entrar con tu cuenta de Microsoft.",
+
+  "chooseInstance": "Elige una instancia",
+  "noInstancesTitle": "Aún no hay instancias para ti",
+  "noInstancesDesc": "Cuando {name} te dé acceso a una instancia, aparecerá aquí.",
+  "noDescription": "Sin descripción",
+  "lostAccessTitle": "Ya no tienes acceso a {name}",
+  "lostAccessDesc": "Si vuelven a darte acceso, aparecerá aquí sola. Si no la necesitas, puedes eliminarla.",
+  "noLongerCompatibleTitle": "{name} ya no es compatible",
+  "organizationUnreachableTitle": "No se ha podido conectar con {name}",
+  "organizationUnreachableDesc": "Revisa tu conexión a internet y vuelve a intentarlo.",
+  "removeOrganization": "Eliminar organización",
+  "removeOrganizationQuestion": "¿Eliminar {name}?",
+  "removeOrganizationDesc": "Dejará de aparecer en el launcher y se borrarán de este equipo sus instancias, incluidos los mundos y las capturas de pantalla. Para volver a añadirla tendrás que abrir su enlace.",
+  "remove": "Eliminar"
 }

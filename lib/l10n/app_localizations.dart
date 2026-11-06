@@ -517,6 +517,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out and sign in again with your Microsoft account.'**
   String get minecraftSessionRejectedDesc;
+
+  /// No description provided for @chooseInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an instance'**
+  String get chooseInstance;
+
+  /// No description provided for @noInstancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no instances for you yet'**
+  String get noInstancesTitle;
+
+  /// No description provided for @noInstancesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'When {name} gives you access to an instance, it will show up here.'**
+  String noInstancesDesc(String name);
+
+  /// No description provided for @noDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description'**
+  String get noDescription;
+
+  /// No description provided for @lostAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You no longer have access to {name}'**
+  String lostAccessTitle(String name);
+
+  /// No description provided for @lostAccessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'If they give you access again, it will show up here by itself. If you don\'t need it, you can remove it.'**
+  String get lostAccessDesc;
+
+  /// No description provided for @noLongerCompatibleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is no longer compatible'**
+  String noLongerCompatibleTitle(String name);
+
+  /// No description provided for @organizationUnreachableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect to {name}'**
+  String organizationUnreachableTitle(String name);
+
+  /// No description provided for @organizationUnreachableDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get organizationUnreachableDesc;
+
+  /// No description provided for @removeOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove organization'**
+  String get removeOrganization;
+
+  /// No description provided for @removeOrganizationQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String removeOrganizationQuestion(String name);
+
+  /// No description provided for @removeOrganizationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'It will no longer show up in the launcher, and its instances will be deleted from this computer, including worlds and screenshots. To add it again you\'ll have to open its link.'**
+  String get removeOrganizationDesc;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
 }
 
 class _AppLocalizationsDelegate

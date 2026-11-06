@@ -31,14 +31,16 @@ The API base URL is still hardcoded in `lib/utils/constants.dart` (`Constants.ap
 ```
 lib/
   main.dart                     entry: link listener → load settings and organizations → update check → client ID
-                                check → auth → NoOrganizationsScreen (none added) or InstancesScreen
+                                check → auth → NoOrganizationsScreen (none added) or OrganizationsScreen
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
   models/                       API v1 models with fromJson/toJson: organization (from discovery), instance,
                                 instance_colors, web_tab, manifest (+ its files), news
   screens/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
+    organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
+                                can't be shown (no access, incompatible, offline); remove an organization
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
-    instances_screen.dart       list of servers/instances returned by the API, install on first open
+    instances_screen.dart       legacy list of the old API's servers (still used by the main screen's reinstall)
     main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
     update_screen.dart          launcher self-update prompt (legacy, Windows-only)
     tabs/                       home (news), map (webview_all), settings
@@ -49,6 +51,8 @@ lib/
     deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
     organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, and the
                                 selected one
+    instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/,
+                                and deleting an organization's instances; never sync, install or launch
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
@@ -63,7 +67,8 @@ lib/
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
-                                full-screen error message, add-organization dialog opened by links)
+                                full-screen error message, add-organization dialog opened by links,
+                                organization logo and rail, instance card, CustomButton)
 assets/img/                     logo.svg, logo.png, background.png
 test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1
                                 responses shaped like the server's openapi.json, read with fixture()

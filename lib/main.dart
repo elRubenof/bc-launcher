@@ -1,7 +1,7 @@
 import 'package:bc_launcher/l10n/app_localizations.dart';
-import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/no_organizations_screen.dart';
+import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/organization_store.dart';
@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
           valueListenable: OrganizationStore.organizations,
           builder: (context, organizations, _) => organizations.isEmpty
               ? const NoOrganizationsScreen()
-              : const InstancesScreen(),
+              : const OrganizationsScreen(),
         );
       },
     );
