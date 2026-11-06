@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/instance_colors.dart';
 import 'package:bc_launcher/services/shared_files.dart';
+import 'package:bc_launcher/utils/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +26,13 @@ class InstanceState {
   /// The server address the launcher wrote in `servers.dat`, if it did.
   final String? serverEntryAddress;
 
+  /// The instance as the organization last served it, to show it once the
+  /// organization no longer does.
+  final Instance? instance;
+
+  /// When it was first installed here.
+  final DateTime? installedAt;
+
   const InstanceState({
     required this.contentVersion,
     required this.minecraftVersion,
@@ -31,9 +40,18 @@ class InstanceState {
     this.loaderVersion,
     required this.complete,
     this.serverEntryAddress,
+    this.instance,
+    this.installedAt,
   });
 
   factory InstanceState.fromJson(Map<String, dynamic> json) {
+    Instance? instance;
+    try {
+      instance = Instance.fromJson(json['instance']);
+    } catch (_) {
+      // Saved before it was kept, or in a format this version doesn't read.
+    }
+
     return InstanceState(
       contentVersion: json['contentVersion'],
       minecraftVersion: json['minecraftVersion'],
@@ -41,6 +59,8 @@ class InstanceState {
       loaderVersion: json['loaderVersion'],
       complete: json['complete'] == true,
       serverEntryAddress: json['serverEntryAddress'],
+      instance: instance,
+      installedAt: DateTime.tryParse(json['installedAt'] ?? ''),
     );
   }
 
@@ -51,6 +71,8 @@ class InstanceState {
     'loaderVersion': loaderVersion,
     'complete': complete,
     'serverEntryAddress': serverEntryAddress,
+    'instance': instance?.toJson(),
+    'installedAt': installedAt?.toIso8601String(),
   };
 }
 
@@ -136,6 +158,57 @@ class InstanceManager {
         state.loaderType == instance.loaderType &&
         state.loaderVersion == instance.loaderVersion;
     return same ? InstallStatus.upToDate : InstallStatus.updateAvailable;
+  }
+
+  /// The instances installed in the organization's folder, by id.
+  static Future<Map<String, InstanceState>> installed(
+    String organizationKey,
+  ) async {
+    final folder = await organizationFolder(organizationKey);
+    if (!await folder.exists()) return {};
+
+    final installed = <String, InstanceState>{};
+    await for (final entity in folder.list()) {
+      if (entity is! Directory) continue;
+
+      final id = basename(entity.path);
+      final state = await readState(organizationKey, id);
+      if (state != null && state.complete) installed[id] = state;
+    }
+    return installed;
+  }
+
+  /// The instance an installed [state] was, as the organization last served
+  /// it; installations from before it was saved only know their versions.
+  static Instance savedInstance(String id, InstanceState state) =>
+      state.instance ??
+      Instance(
+        id: id,
+        name: id,
+        backgroundUrl: "",
+        colors: const InstanceColors(
+          primary: Constants.mainColor,
+          primaryDark: Constants.mainColorDarked,
+          background: Constants.backgroundColor,
+          text: Constants.textColor,
+        ),
+        tabs: const [],
+        minecraftVersion: state.minecraftVersion,
+        loaderType: state.loaderType,
+        loaderVersion: state.loaderVersion,
+        contentVersion: state.contentVersion,
+      );
+
+  /// Deletes an instance from this computer, worlds included, and the shared
+  /// libraries and assets no other instance uses.
+  static Future<void> deleteInstance(
+    String organizationKey,
+    String instanceId,
+  ) async {
+    final folder = await instanceFolder(organizationKey, instanceId);
+    if (await folder.exists()) await folder.delete(recursive: true);
+    changes.value++;
+    await SharedFiles.cleanUnused(await sharedFolder());
   }
 
   /// Deletes every instance of an organization from this computer, and the

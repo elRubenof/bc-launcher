@@ -596,6 +596,72 @@ abstract class AppLocalizations {
   /// **'Installed'**
   String get installed;
 
+  /// No description provided for @unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get unavailable;
+
+  /// No description provided for @showInFinder.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in Finder'**
+  String get showInFinder;
+
+  /// No description provided for @openInExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Explorer'**
+  String get openInExplorer;
+
+  /// No description provided for @deleteFromComputer.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from this computer'**
+  String get deleteFromComputer;
+
+  /// No description provided for @deleteInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete instance'**
+  String get deleteInstance;
+
+  /// No description provided for @deleteInstanceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name} from this computer?'**
+  String deleteInstanceQuestion(String name);
+
+  /// No description provided for @deleteInstanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Its worlds, screenshots and game settings will be deleted. Everything else can be downloaded again by entering the instance.'**
+  String get deleteInstanceDesc;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @deletingInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting {name}…'**
+  String deletingInstance(String name);
+
+  /// No description provided for @deleteFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete {name}'**
+  String deleteFailedTitle(String name);
+
+  /// No description provided for @deleteFailedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the game and any program using its folder, then try again.'**
+  String get deleteFailedDesc;
+
   /// No description provided for @notInstalled.
   ///
   /// In en, this message translates to:

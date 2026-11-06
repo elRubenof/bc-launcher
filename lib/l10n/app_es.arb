@@ -95,6 +95,17 @@
   "remove": "Eliminar",
 
   "installed": "Instalada",
+  "unavailable": "No disponible",
+  "showInFinder": "Mostrar en Finder",
+  "openInExplorer": "Abrir en el Explorador",
+  "deleteFromComputer": "Borrar de este equipo",
+  "deleteInstance": "Borrar instancia",
+  "deleteInstanceQuestion": "¿Borrar {name} de este equipo?",
+  "deleteInstanceDesc": "Se borrarán sus mundos, capturas y ajustes del juego. El resto se puede volver a descargar entrando en la instancia.",
+  "delete": "Borrar",
+  "deletingInstance": "Borrando {name}…",
+  "deleteFailedTitle": "No se ha podido borrar {name}",
+  "deleteFailedDesc": "Cierra el juego y cualquier programa que esté usando su carpeta y vuelve a intentarlo.",
   "notInstalled": "Sin instalar",
   "updateAvailable": "Actualización disponible",
 

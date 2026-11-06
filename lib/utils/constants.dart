@@ -6,6 +6,10 @@ class Constants {
   static const mainColorDarked = Color(0xFF8F349D);
   static const textColor = Color(0xFFFFFFFF);
 
+  /// Actions that delete the player's files.
+  static const dangerColor = Color(0xFFC93C3C);
+  static const dangerTextColor = Color(0xFFFF8A8A);
+
   static const topBarHeight = 65.0;
   static const horizontalPadding = 90.0;
 

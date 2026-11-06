@@ -41,12 +41,19 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   /// screen stays instead of the list, so the list doesn't flash.
   bool _waitingToEnter = !_autoEntered && Settings.openLastInstance;
 
+  /// The instances installed here, by organization, to show the ones it no
+  /// longer serves.
+  final _installed = <String, Map<String, InstanceState>>{};
+
   @override
   void initState() {
     super.initState();
     InstanceCatalog.refreshAll();
     _lifecycle = AppLifecycleListener(onResume: _refreshOnReturn);
     InstanceCatalog.organizations.addListener(_autoEnter);
+    OrganizationStore.selected.addListener(_loadInstalled);
+    InstanceManager.changes.addListener(_loadInstalled);
+    _loadInstalled();
 
     if (_waitingToEnter) {
       final key = OrganizationStore.selected.value ?? "";
@@ -59,6 +66,8 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   @override
   void dispose() {
     InstanceCatalog.organizations.removeListener(_autoEnter);
+    OrganizationStore.selected.removeListener(_loadInstalled);
+    InstanceManager.changes.removeListener(_loadInstalled);
     _lifecycle.dispose();
     super.dispose();
   }
@@ -124,6 +133,37 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     } finally {
       _entering = false;
     }
+  }
+
+  Future<void> _loadInstalled() async {
+    final key = OrganizationStore.selected.value;
+    if (key == null) return;
+
+    final installed = await InstanceManager.installed(key);
+    if (mounted) setState(() => _installed[key] = installed);
+  }
+
+  /// The installed instances [organization] no longer serves, newest
+  /// installation first.
+  List<Instance> _unavailable(
+    Organization organization,
+    List<Instance> served,
+  ) {
+    final ids = {for (final instance in served) instance.id};
+    final entries =
+        (_installed[organization.key] ?? {}).entries
+            .where((entry) => !ids.contains(entry.key))
+            .toList()
+          ..sort((a, b) {
+            final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+            return (b.value.installedAt ?? epoch).compareTo(
+              a.value.installedAt ?? epoch,
+            );
+          });
+    return [
+      for (final entry in entries)
+        InstanceManager.savedInstance(entry.key, entry.value),
+    ];
   }
 
   void _refreshOnReturn() {
@@ -215,10 +255,12 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     final name = organization.name;
 
     // While refreshing, the instances it had stay on screen.
-    if (view.instances.isNotEmpty &&
-        (view.status == OrganizationStatus.loading ||
-            view.status == OrganizationStatus.ready)) {
-      return _instances(organization, view.instances);
+    final unavailable = _unavailable(organization, view.instances);
+    if ((view.instances.isNotEmpty &&
+            view.status == OrganizationStatus.loading) ||
+        (view.status == OrganizationStatus.ready &&
+            (view.instances.isNotEmpty || unavailable.isNotEmpty))) {
+      return _instances(organization, view.instances, unavailable);
     }
 
     return switch (view.status) {
@@ -274,7 +316,11 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   /// The instances in a grid that fits as many columns as the window allows
   /// and scrolls only when they don't fit; the title stays on top.
-  Widget _instances(Organization organization, List<Instance> instances) {
+  Widget _instances(
+    Organization organization,
+    List<Instance> instances,
+    List<Instance> unavailable,
+  ) {
     final l = Utility.getLocalizations(context);
     return Column(
       children: [
@@ -312,6 +358,13 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
                             organizationKey: organization.key,
                             instance: instance,
                             onTap: () => _enter(organization, instance),
+                          ),
+                        for (final instance in unavailable)
+                          InstanceCard(
+                            key: ValueKey("unavailable ${instance.id}"),
+                            organizationKey: organization.key,
+                            instance: instance,
+                            unavailable: true,
                           ),
                       ],
                     ),

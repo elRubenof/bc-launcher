@@ -119,6 +119,22 @@ void main() {
       expect((await state())!.contentVersion, 2);
     });
 
+    test('the state keeps the instance and its first installation', () async {
+      await enter(instance());
+      final installedAt = (await state())!.installedAt;
+      expect(installedAt, isNotNull);
+      expect((await state())!.instance!.name, 'Test');
+
+      final renamed = Instance.fromJson({
+        ...instance().toJson(),
+        'name': 'Test renamed',
+      });
+      await enter(renamed);
+
+      expect((await state())!.instance!.name, 'Test renamed');
+      expect((await state())!.installedAt, installedAt);
+    });
+
     test('the state saves the versions of the manifest applied', () async {
       // The list was older than the content when it was fetched.
       server.contentVersion = 2;

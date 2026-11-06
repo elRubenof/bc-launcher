@@ -1,18 +1,21 @@
 import 'dart:io';
 
 import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/custom_dialog.dart';
+import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
+  final String organizationKey;
   final Instance instance;
 
   /// The instance's folder.
@@ -20,6 +23,7 @@ class SettingsScreen extends StatefulWidget {
 
   const SettingsScreen({
     super.key,
+    required this.organizationKey,
     required this.instance,
     required this.folder,
   });
@@ -95,7 +99,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-          resetButton(),
+          Row(
+            children: [
+              resetButton(),
+              const SizedBox(width: 16),
+              deleteButton(),
+            ],
+          ),
         ],
       ),
     );
@@ -492,6 +502,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
             allocatedRAM = Settings.allocatedRAM.toDouble();
           });
         },
+      ),
+    );
+  }
+
+  /// Deletes the instance from this computer and goes back to the list.
+  Widget deleteButton() {
+    final l = Utility.getLocalizations(context);
+
+    return ValueListenableBuilder(
+      valueListenable: Utility.isPlaying,
+      builder: (context, playing, _) => Opacity(
+        opacity: playing ? 0.4 : 1,
+        child: MouseRegion(
+          cursor: playing ? MouseCursor.defer : SystemMouseCursors.click,
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: playing
+                ? null
+                : () async {
+                    final instance = widget.instance;
+                    final deleted = await InstanceActions.delete(
+                      context,
+                      widget.organizationKey,
+                      instance.id,
+                      instance.name,
+                    );
+                    if (deleted && mounted) {
+                      Utility.pushReplacement(
+                        context,
+                        const OrganizationsScreen(),
+                      );
+                    }
+                  },
+            child: Container(
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 28,
+                top: 16,
+                bottom: 16,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(color: Constants.dangerTextColor),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    CupertinoIcons.delete,
+                    color: Constants.dangerTextColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    l.deleteInstance.toUpperCase(),
+                    style: const TextStyle(
+                      color: Constants.dangerTextColor,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

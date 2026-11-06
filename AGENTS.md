@@ -38,7 +38,8 @@ lib/
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
                                 can't be shown (no access, incompatible, offline); remove an organization;
                                 entering an instance (by click, or the last one used on start without showing
-                                the list, unless turned off in Settings) opens MainScreen
+                                the list, unless turned off in Settings) opens MainScreen; installed instances
+                                it no longer serves are listed last, greyed out, newest installation first
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
@@ -53,9 +54,10 @@ lib/
     organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, the
                                 selected one and each one's last used instance
     instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/:
-                                .bc-launcher/state.json (what is installed), its status against the server
-                                (not installed, update available, up to date), deleting an organization's
-                                instances (and cleaning the shared files); never sync, install or launch
+                                .bc-launcher/state.json (what is installed, the instance as last served and
+                                when it was installed), its status against the server (not installed, update
+                                available, up to date), the installed ones, deleting one instance or all of an
+                                organization's (and cleaning the shared files); never sync, install or launch
     sync_plan.dart              what a sync does, without touching the disk: downloads, deletions (managed
                                 folders, files the launcher installed), protected player files, unsafe paths
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
@@ -96,7 +98,8 @@ lib/
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
                                 full-screen error message, add-organization dialog opened by links,
-                                organization logo and rail, instance card, CustomButton, LoadingScreen with its own
+                                organization logo and rail, instance card with its menu, instance actions (open
+                                its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
 test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1

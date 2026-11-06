@@ -84,6 +84,22 @@ void main() {
       );
     });
 
+    test('keeps the instance and when it was installed', () async {
+      final state = InstanceState(
+        contentVersion: 1,
+        minecraftVersion: instance.minecraftVersion,
+        loaderType: instance.loaderType,
+        complete: true,
+        instance: instance,
+        installedAt: DateTime.utc(2026, 11, 6, 18),
+      );
+      await InstanceManager.writeState('a.com', instance.id, state);
+
+      final read = await InstanceManager.readState('a.com', instance.id);
+      expect(read!.instance!.toJson(), instance.toJson());
+      expect(read.installedAt, DateTime.utc(2026, 11, 6, 18));
+    });
+
     test('a broken state file reads as null', () async {
       final folder = await InstanceManager.launcherFolder('a.com', 'x');
       await File(join(folder.path, 'state.json'))
@@ -143,6 +159,53 @@ void main() {
         await InstanceManager.status('a.com', instance),
         InstallStatus.upToDate,
       );
+    });
+  });
+
+  group('installed', () {
+    test('only finished installations, with what they saved', () async {
+      await InstanceManager.writeState('a.com', 'done', stateOf(instance));
+      await InstanceManager.writeState(
+        'a.com',
+        'half',
+        stateOf(instance, complete: false),
+      );
+      await InstanceManager.writeState('b.com', 'other', stateOf(instance));
+      await Directory(join(support.path, 'a.com', 'empty')).create();
+
+      final installed = await InstanceManager.installed('a.com');
+
+      expect(installed.keys, ['done']);
+      expect(await InstanceManager.installed('none.com'), isEmpty);
+    });
+
+    test('an installation from before keeps showing its versions', () {
+      final saved = InstanceManager.savedInstance('old', stateOf(instance));
+
+      expect(saved.id, 'old');
+      expect(saved.name, 'old');
+      expect(saved.minecraftVersion, instance.minecraftVersion);
+      expect(saved.loaderType, instance.loaderType);
+    });
+
+    test('deleting one leaves the others', () async {
+      await InstanceManager.writeState('a.com', 'one', stateOf(instance));
+      await InstanceManager.writeState('a.com', 'two', stateOf(instance));
+      final world = File(
+        join(support.path, 'a.com', 'one', 'saves', 'w', 'level.dat'),
+      );
+      await world.create(recursive: true);
+      final changes = InstanceManager.changes.value;
+
+      await InstanceManager.deleteInstance('a.com', 'one');
+
+      expect(await world.exists(), isFalse);
+      expect(
+        await Directory(join(support.path, 'a.com', 'one')).exists(),
+        isFalse,
+      );
+      expect((await InstanceManager.installed('a.com')).keys, ['two']);
+      expect(InstanceManager.changes.value, greaterThan(changes));
     });
   });
 }

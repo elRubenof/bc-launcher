@@ -300,6 +300,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get installed => 'Installed';
 
   @override
+  String get unavailable => 'Unavailable';
+
+  @override
+  String get showInFinder => 'Show in Finder';
+
+  @override
+  String get openInExplorer => 'Open in Explorer';
+
+  @override
+  String get deleteFromComputer => 'Delete from this computer';
+
+  @override
+  String get deleteInstance => 'Delete instance';
+
+  @override
+  String deleteInstanceQuestion(String name) {
+    return 'Delete $name from this computer?';
+  }
+
+  @override
+  String get deleteInstanceDesc =>
+      'Its worlds, screenshots and game settings will be deleted. Everything else can be downloaded again by entering the instance.';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String deletingInstance(String name) {
+    return 'Deleting $name…';
+  }
+
+  @override
+  String deleteFailedTitle(String name) {
+    return 'Couldn\'t delete $name';
+  }
+
+  @override
+  String get deleteFailedDesc =>
+      'Close the game and any program using its folder, then try again.';
+
+  @override
   String get notInstalled => 'Not installed';
 
   @override

@@ -2,23 +2,31 @@ import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/instance_actions.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// An instance in the list: a header in its own background color with its
 /// icon, then its name, description, Minecraft version and loader, and
-/// whether it is installed here.
+/// whether it is installed here. Installed ones have a menu to open their
+/// folder or delete them.
 class InstanceCard extends StatefulWidget {
   static const width = 300.0;
 
   final String organizationKey;
   final Instance instance;
-  final VoidCallback onTap;
+
+  /// Installed here but no longer served by the organization: greyed out,
+  /// with only its menu.
+  final bool unavailable;
+  final VoidCallback? onTap;
 
   const InstanceCard({
     super.key,
     required this.organizationKey,
     required this.instance,
-    required this.onTap,
+    this.unavailable = false,
+    this.onTap,
   });
 
   @override
@@ -61,46 +69,74 @@ class _InstanceCardState extends State<InstanceCard> {
     final l = Utility.getLocalizations(context);
     final instance = widget.instance;
     final colors = instance.colors;
-    final highlighted = _hovered || _status == InstallStatus.updateAvailable;
+    final unavailable = widget.unavailable;
+    final hovered = _hovered && !unavailable;
+    final highlighted =
+        hovered || (!unavailable && _status == InstallStatus.updateAvailable);
+    final installed =
+        unavailable ||
+        (_status != null && _status != InstallStatus.notInstalled);
+    final textAlpha = unavailable ? 0.6 : 1.0;
 
     return Semantics(
-      button: true,
+      button: !unavailable,
       label: instance.name,
       child: MouseRegion(
-        cursor: SystemMouseCursors.click,
+        cursor: unavailable ? MouseCursor.defer : SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hovered = true),
         onExit: (_) => setState(() => _hovered = false),
         child: GestureDetector(
-          onTap: widget.onTap,
+          onTap: unavailable ? null : widget.onTap,
           child: Container(
             width: InstanceCard.width,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: _hovered ? 0.06 : 0.03),
+              color: Colors.white.withValues(
+                alpha: unavailable ? 0.02 : (hovered ? 0.06 : 0.03),
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            // Painted over the card, so a thicker border doesn't resize it.
+            foregroundDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 width: highlighted ? 1.5 : 0.5,
                 color: highlighted
                     ? colors.primary
-                    : Colors.white.withValues(alpha: 0.25),
+                    : Colors.white.withValues(alpha: unavailable ? 0.15 : 0.25),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 150,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: colors.background,
-                    border: Border(
-                      bottom: BorderSide(
-                        width: 0.5,
-                        color: Colors.white.withValues(alpha: 0.12),
+                Stack(
+                  children: [
+                    Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: unavailable
+                            ? Colors.white.withValues(alpha: 0.03)
+                            : colors.background,
+                        border: Border(
+                          bottom: BorderSide(
+                            width: 0.5,
+                            color: Colors.white.withValues(
+                              alpha: unavailable ? 0.08 : 0.12,
+                            ),
+                          ),
+                        ),
                       ),
+                      child: unavailable
+                          ? ColorFiltered(
+                              colorFilter: const ColorFilter.matrix(_greyscale),
+                              child: Opacity(opacity: 0.6, child: _icon()),
+                            )
+                          : _icon(),
                     ),
-                  ),
-                  child: _icon(),
+                    if (installed)
+                      Positioned(top: 10, right: 10, child: _menu()),
+                  ],
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
@@ -111,8 +147,10 @@ class _InstanceCardState extends State<InstanceCard> {
                         instance.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Constants.textColor,
+                        style: TextStyle(
+                          color: Constants.textColor.withValues(
+                            alpha: textAlpha,
+                          ),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -123,7 +161,9 @@ class _InstanceCardState extends State<InstanceCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withValues(
+                            alpha: unavailable ? 0.6 : 0.7,
+                          ),
                           fontSize: 13,
                         ),
                       ),
@@ -133,7 +173,10 @@ class _InstanceCardState extends State<InstanceCard> {
                         runSpacing: 8,
                         children: [
                           _chip(_version(instance)),
-                          if (_status != null) _statusChip(_status!),
+                          if (unavailable)
+                            _chip(l.unavailable)
+                          else if (_status != null)
+                            _statusChip(_status!),
                         ],
                       ),
                     ],
@@ -146,6 +189,108 @@ class _InstanceCardState extends State<InstanceCard> {
       ),
     );
   }
+
+  /// Opens the folder of the installed instance or deletes it.
+  Widget _menu() {
+    final l = Utility.getLocalizations(context);
+    final instance = widget.instance;
+    final key = widget.organizationKey;
+
+    return ValueListenableBuilder(
+      valueListenable: Utility.isPlaying,
+      // Without the ripple Material puts behind the button.
+      builder: (context, playing, _) => Theme(
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+        ),
+        child: PopupMenuButton<VoidCallback>(
+          tooltip: "",
+          padding: EdgeInsets.zero,
+          popUpAnimationStyle: const AnimationStyle(
+            duration: Duration(milliseconds: 150),
+          ),
+          offset: const Offset(0, 34),
+          color: const Color(0xFF2F2037),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              width: 0.5,
+              color: Colors.white.withValues(alpha: 0.18),
+            ),
+          ),
+          onSelected: (action) => action(),
+          itemBuilder: (context) => [
+            _menuItem(
+              Icons.folder_outlined,
+              InstanceActions.openFolderLabel(l),
+              () => InstanceActions.openFolder(key, instance.id),
+            ),
+            _menuItem(
+              CupertinoIcons.delete,
+              l.deleteFromComputer,
+              () => InstanceActions.delete(
+                context,
+                key,
+                instance.id,
+                instance.name,
+              ),
+              color: Constants.dangerTextColor,
+              enabled: !playing,
+            ),
+          ],
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.more_horiz,
+                size: 18,
+                color: Constants.textColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<VoidCallback> _menuItem(
+    IconData icon,
+    String text,
+    VoidCallback action, {
+    Color color = Constants.textColor,
+    bool enabled = true,
+  }) {
+    final shown = enabled ? color : color.withValues(alpha: 0.4);
+    return PopupMenuItem(
+      value: action,
+      enabled: enabled,
+      height: 40,
+      mouseCursor: SystemMouseCursors.click,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: shown),
+          const SizedBox(width: 10),
+          Text(text, style: TextStyle(color: shown, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  /// Leaves only the light of the colors.
+  static const _greyscale = <double>[
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 1, 0,
+  ];
 
   Widget _icon() {
     final instance = widget.instance;

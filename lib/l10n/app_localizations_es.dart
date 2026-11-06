@@ -300,6 +300,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get installed => 'Instalada';
 
   @override
+  String get unavailable => 'No disponible';
+
+  @override
+  String get showInFinder => 'Mostrar en Finder';
+
+  @override
+  String get openInExplorer => 'Abrir en el Explorador';
+
+  @override
+  String get deleteFromComputer => 'Borrar de este equipo';
+
+  @override
+  String get deleteInstance => 'Borrar instancia';
+
+  @override
+  String deleteInstanceQuestion(String name) {
+    return '¿Borrar $name de este equipo?';
+  }
+
+  @override
+  String get deleteInstanceDesc =>
+      'Se borrarán sus mundos, capturas y ajustes del juego. El resto se puede volver a descargar entrando en la instancia.';
+
+  @override
+  String get delete => 'Borrar';
+
+  @override
+  String deletingInstance(String name) {
+    return 'Borrando $name…';
+  }
+
+  @override
+  String deleteFailedTitle(String name) {
+    return 'No se ha podido borrar $name';
+  }
+
+  @override
+  String get deleteFailedDesc =>
+      'Cierra el juego y cualquier programa que esté usando su carpeta y vuelve a intentarlo.';
+
+  @override
   String get notInstalled => 'Sin instalar';
 
   @override

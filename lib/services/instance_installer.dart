@@ -90,6 +90,7 @@ class InstanceInstaller {
 
     final firstTime = status == InstallStatus.notInstalled;
     var serverEntry = state?.serverEntryAddress;
+    final installedAt = state?.installedAt ?? DateTime.now();
     if (firstTime) {
       onStep?.call(EntryStep.downloading);
       await InstanceManager.writeState(
@@ -102,6 +103,8 @@ class InstanceInstaller {
           loaderVersion: instance.loaderVersion,
           complete: false,
           serverEntryAddress: serverEntry,
+          instance: instance,
+          installedAt: installedAt,
         ),
       );
     } else if (status == InstallStatus.updateAvailable) {
@@ -154,6 +157,8 @@ class InstanceInstaller {
         loaderVersion: manifest.loaderVersion,
         complete: true,
         serverEntryAddress: serverEntry,
+        instance: instance,
+        installedAt: installedAt,
       ),
     );
     return GameInstaller.versionIdOf(manifest);
@@ -202,6 +207,8 @@ class InstanceInstaller {
       loaderVersion: state.loaderVersion,
       complete: state.complete,
       serverEntryAddress: entry,
+      instance: state.instance,
+      installedAt: state.installedAt,
     );
   }
 
