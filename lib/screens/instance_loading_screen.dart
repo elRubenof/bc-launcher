@@ -98,7 +98,11 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
     final sync = _sync;
     final install = _install;
 
-    if (_step == EntryStep.checking && !_changing) return (null, null, null);
+    // Nothing until it knows what entering does, and nothing while checking
+    // finds no changes.
+    if (_step == null || (_step == EntryStep.checking && !_changing)) {
+      return (null, null, null);
+    }
 
     final preparing = _step == EntryStep.installing || install != null;
     final fraction = preparing ? (install ?? 0) : (sync?.fraction ?? 0);
