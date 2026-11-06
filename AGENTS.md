@@ -71,10 +71,11 @@ lib/
     game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
                                 libraries, client jar, natives, assets and Java; Fabric/Quilt profile from their
                                 meta APIs; Forge/NeoForge through ForgeInstaller
-    forge_installer.dart        Forge 1.13+ and NeoForge with their official installer: its version JSON and
-                                libraries, then its client processors run with Java; the files they make in the
-                                shared libraries/ are listed in the saved version JSON (bcLauncherGenerated), so
-                                the cleaning keeps them and a missing one installs it again
+    forge_installer.dart        Forge 1.7.10+ and NeoForge 1.20.2+ with their official installer: its version JSON
+                                and libraries, then its client processors (1.13+) run with Java; the files it puts
+                                in the shared libraries/ (Forge's jar before 1.13, what the processors make) are
+                                listed in the saved version JSON (bcLauncherGenerated), so the cleaning keeps them
+                                and a missing one installs it again; older versions are UnsupportedLoaderError
     asset_manager.dart          the game's assets from Mojang (index and objects by hash), shared by every instance
     shared_files.dart           deletes the shared libraries and assets no installed instance uses (Forge's
                                 generated files included)

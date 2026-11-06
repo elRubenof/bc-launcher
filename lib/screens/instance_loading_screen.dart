@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
+import 'package:bc_launcher/services/forge_installer.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_installer.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
@@ -170,6 +171,15 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
         l.instanceGoneDesc,
         false,
       ),
+      GameFilesError(
+        cause: UnsupportedLoaderError(:final loader, :final minecraft),
+      ) =>
+        (
+          Icons.error_outline_rounded,
+          failedTitle,
+          l.loaderNotSupportedDesc(name, loader.displayName, minecraft),
+          false,
+        ),
       _ when InstanceInstaller.isOffline(cause) => (
         Icons.wifi_off_rounded,
         failedTitle,

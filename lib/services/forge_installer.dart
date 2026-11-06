@@ -25,9 +25,20 @@ class LoaderInstallError implements Exception {
   String toString() => "LoaderInstallError(${loader.name}, $message)";
 }
 
-/// Installs Forge (1.13+) and NeoForge with their official installer: its
+/// This launcher can't install [loader] for Minecraft [minecraft].
+class UnsupportedLoaderError implements Exception {
+  final LoaderType loader;
+  final String minecraft;
+
+  const UnsupportedLoaderError(this.loader, this.minecraft);
+
+  @override
+  String toString() => "UnsupportedLoaderError(${loader.name}, $minecraft)";
+}
+
+/// Installs Forge (1.7.10+) and NeoForge with their official installer: its
 /// version JSON, its libraries and the files its processors make from
-/// Minecraft's client jar, which go to the shared `libraries/`.
+/// Minecraft's client jar (1.13+), which go to the shared `libraries/`.
 ///
 /// Those files are in no version JSON, so the version JSON it saves lists
 /// them under [generatedKey]; it is saved last, so an installation that
@@ -41,6 +52,26 @@ class ForgeInstaller {
     LoaderType.neoforge:
         "https://maven.neoforged.net/releases/net/neoforged/neoforge",
   };
+
+  /// The oldest Minecraft each loader is installed for: older Forge needs
+  /// files from servers that are gone or a Java older than Mojang's.
+  static const _oldest = {
+    LoaderType.forge: [1, 7, 10],
+    LoaderType.neoforge: [1, 20, 2],
+  };
+
+  /// Whether it installs [loader] for Minecraft [minecraft].
+  static bool supports(LoaderType loader, String minecraft) {
+    final oldest = _oldest[loader]!;
+    final parts = minecraft.split(".").map(int.tryParse).toList();
+    if (parts.contains(null)) return true;
+
+    for (var i = 0; i < oldest.length; i++) {
+      final part = i < parts.length ? parts[i]! : 0;
+      if (part != oldest[i]) return part > oldest[i];
+    }
+    return true;
+  }
 
   /// Runs a processor (tests replace it).
   @visibleForTesting
@@ -106,6 +137,10 @@ class ForgeInstaller {
     required Future<String> Function(Map versionData) java,
     void Function(double progress)? onProgress,
   }) async {
+    if (!supports(loader, minecraft)) {
+      throw UnsupportedLoaderError(loader, minecraft);
+    }
+
     final id = versionId(loader, minecraft, version);
     if (await isInstalled(id, folder, shared)) return;
 
@@ -131,10 +166,25 @@ class ForgeInstaller {
       await Isolate.run(() => extractFileToDisk(jar, installer));
 
       final profile = await _readJson(join(installer, "install_profile.json"));
-      final versionJson = await _readJson(
-        _inInstaller(installer, profile["json"] ?? "/version.json"),
-      );
       await _copyMaven(installer, shared);
+
+      // Before 1.12.2's last builds the version JSON is in the profile and
+      // Forge's jar beside it, with nothing to run.
+      final legacy = profile["versionInfo"] as Map?;
+      final versionJson =
+          legacy ??
+          await _readJson(
+            _inInstaller(installer, profile["json"] ?? "/version.json"),
+          );
+      final generated = <String>[];
+      if (legacy != null) {
+        final install = profile["install"] as Map;
+        final forge = File(_libraryPath(install["path"], shared));
+        await forge.parent.create(recursive: true);
+        await File(_inInstaller(installer, install["filePath"]))
+            .copy(forge.path);
+        generated.add(_relative(forge.path, shared));
+      }
 
       // Saved now to read it with Minecraft's; without the generated files
       // it isn't installed yet.
@@ -182,16 +232,13 @@ class ForgeInstaller {
       }
 
       // Every file the processors made that the game may need.
-      final generated = <String>[];
       for (final Map value in (profile["data"] as Map? ?? {}).values) {
         final client = value["client"];
         if (client is! String || !_isArtifact(client)) continue;
 
         final path = _libraryPath(client, shared);
         if (await File(path).exists()) {
-          generated.add(
-            posix.joinAll(split(relative(path, from: shared.path))),
-          );
+          generated.add(_relative(path, shared));
         }
       }
       versionJson[generatedKey] = generated;
@@ -349,6 +396,10 @@ class ForgeInstaller {
   /// A file of the installer, by its path in the jar (`/data/client.lzma`).
   static String _inInstaller(String installer, String path) =>
       joinAll([installer, ...posix.split(path).where((part) => part != "/")]);
+
+  /// [path] in [shared], as the version JSON lists it.
+  static String _relative(String path, Directory shared) =>
+      posix.joinAll(split(relative(path, from: shared.path)));
 
   static String _sharedPath(Directory shared, String path) =>
       joinAll([shared.path, ...posix.split(path)]);

@@ -295,6 +295,105 @@ void main() {
     );
   });
 
+  test('before 1.13: the version JSON and Forge inside the installer', () async {
+    mojang.addVersion('1.12.2');
+    const version = '14.23.5.2847';
+    mojang.binaries[ForgeInstaller.installerUrl(
+      LoaderType.forge,
+      '1.12.2',
+      version,
+    )] = zip({
+      'install_profile.json': jsonEncode({
+        'install': {
+          'path': 'net.minecraftforge:forge:1.12.2-$version',
+          'filePath': 'forge-1.12.2-$version-universal.jar',
+          'minecraft': '1.12.2',
+        },
+        'versionInfo': {
+          'id': '1.12.2-forge1.12.2-$version',
+          'inheritsFrom': '1.12.2',
+          'mainClass': 'net.minecraft.launchwrapper.Launch',
+          'minecraftArguments': '--tweakClass net.example.FMLTweaker',
+          'libraries': [
+            {
+              'name': 'net.minecraftforge:forge:1.12.2-$version',
+              'url': 'https://maven.example/',
+            },
+          ],
+        },
+      }),
+      'forge-1.12.2-$version-universal.jar': 'forge universal',
+    });
+
+    final id = await GameInstaller.install(
+      const Manifest(
+        contentVersion: 1,
+        minecraftVersion: '1.12.2',
+        loaderType: LoaderType.forge,
+        loaderVersion: version,
+        managedDirs: [],
+        files: [],
+      ),
+      folder,
+    );
+
+    expect(id, '1.12.2-forge-$version');
+    expect(processors, isEmpty);
+    const forge =
+        'libraries/net/minecraftforge/forge/1.12.2-$version/forge-1.12.2-$version.jar';
+    expect(await sharedFile(forge).readAsString(), 'forge universal');
+    expect(
+      mojang.requests,
+      isNot(contains(startsWith('https://maven.example/'))),
+    );
+
+    final data = await MinecraftLauncherCore.loadVersionData(id, folder.path);
+    expect(data['id'], id);
+    expect(data['mainClass'], 'net.minecraft.launchwrapper.Launch');
+    expect(data[ForgeInstaller.generatedKey], [forge]);
+  });
+
+  test('the Minecraft versions each loader is installed for', () async {
+    for (final (loader, minecraft, supported) in [
+      (LoaderType.forge, '1.7.10', true),
+      (LoaderType.forge, '1.12.2', true),
+      (LoaderType.forge, '1.21.1', true),
+      (LoaderType.forge, '26.1', true),
+      (LoaderType.forge, '1.7.2', false),
+      (LoaderType.forge, '1.6.4', false),
+      (LoaderType.neoforge, '1.20.2', true),
+      (LoaderType.neoforge, '1.21', true),
+      (LoaderType.neoforge, '1.20.1', false),
+    ]) {
+      expect(
+        ForgeInstaller.supports(loader, minecraft),
+        supported,
+        reason: '${loader.name} $minecraft',
+      );
+    }
+
+    mojang.addVersion('1.6.4');
+    mojang.requests.clear();
+    await expectLater(
+      ForgeInstaller.install(
+        LoaderType.forge,
+        '1.6.4',
+        '9.11.1.1345',
+        folder,
+        shared,
+        java: (_) async => 'java',
+      ),
+      throwsA(
+        isA<UnsupportedLoaderError>().having(
+          (e) => e.minecraft,
+          'minecraft',
+          '1.6.4',
+        ),
+      ),
+    );
+    expect(mojang.requests, isEmpty);
+  });
+
   test('a loader version it does not have', () async {
     await expectLater(
       GameInstaller.install(manifest(LoaderType.forge, '1.0.0'), folder),

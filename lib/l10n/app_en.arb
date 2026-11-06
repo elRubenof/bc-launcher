@@ -129,6 +129,8 @@
   "@installFailedTitle": {"placeholders": {"name": {"type": "String"}}},
   "downloadOfflineDesc": "Check your internet connection and try again. What's already downloaded won't be downloaded again.",
   "downloadFailedDesc": "Something went wrong. Try again; what's already downloaded won't be downloaded again.",
+  "loaderNotSupportedDesc": "{name} uses {loader} for Minecraft {minecraft}, which this launcher can't install.",
+  "@loaderNotSupportedDesc": {"placeholders": {"name": {"type": "String"}, "loader": {"type": "String"}, "minecraft": {"type": "String"}}},
   "gameFilesFailedDesc": "The game files (Minecraft, its loader and Java) couldn't be prepared. Try again later.",
   "notEnoughSpaceTitle": "Not enough space",
   "notEnoughSpaceDesc": "{name} needs {needed} MB and there are only {available} MB free on the disk. Free up some space and try again.",

@@ -679,6 +679,12 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.'**
   String get downloadFailedDesc;
 
+  /// No description provided for @loaderNotSupportedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} uses {loader} for Minecraft {minecraft}, which this launcher can\'t install.'**
+  String loaderNotSupportedDesc(String name, String loader, String minecraft);
+
   /// No description provided for @gameFilesFailedDesc.
   ///
   /// In en, this message translates to:

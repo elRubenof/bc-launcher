@@ -364,6 +364,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Algo ha fallado. Vuelve a intentarlo; lo que ya se ha descargado no se vuelve a bajar.';
 
   @override
+  String loaderNotSupportedDesc(String name, String loader, String minecraft) {
+    return '$name usa $loader para Minecraft $minecraft, que este launcher no puede instalar.';
+  }
+
+  @override
   String get gameFilesFailedDesc =>
       'No se han podido preparar los archivos del juego (Minecraft, su loader y Java). Vuelve a intentarlo más tarde.';
 
