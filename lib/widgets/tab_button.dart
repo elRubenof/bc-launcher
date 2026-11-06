@@ -57,6 +57,7 @@ class _TabButtonState extends State<TabButton> {
               child: Opacity(
                 opacity: (selected || _hover) ? 1 : 0.7,
                 child: InkWell(
+                  mouseCursor: SystemMouseCursors.click,
                   onTapDown: (d) => selectedTab.value = widget.tab,
                   onHover: (value) => setState(() => _hover = value),
                   child: Row(

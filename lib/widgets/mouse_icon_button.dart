@@ -35,6 +35,7 @@ class _MouseIconButtonState extends State<MouseIconButton> {
       ),
       message: widget.toolTip ?? "",
       child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
         onTap: () => widget.onTap(),
         onHover: (value) => setState(() => hover = value),
         child: Container(
