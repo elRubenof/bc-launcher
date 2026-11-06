@@ -3,6 +3,7 @@ import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
+import 'package:bc_launcher/widgets/launcher_menu.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -198,36 +199,23 @@ class _InstanceCardState extends State<InstanceCard> {
 
     return ValueListenableBuilder(
       valueListenable: Utility.isPlaying,
-      // Without the ripple Material puts behind the button.
-      builder: (context, playing, _) => Theme(
-        data: Theme.of(context).copyWith(
-          splashFactory: NoSplash.splashFactory,
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-        ),
-        child: PopupMenuButton<VoidCallback>(
+      builder: (context, playing, _) => LauncherMenu.withoutRipple(
+        context,
+        PopupMenuButton<VoidCallback>(
           tooltip: "",
           padding: EdgeInsets.zero,
-          popUpAnimationStyle: const AnimationStyle(
-            duration: Duration(milliseconds: 150),
-          ),
+          popUpAnimationStyle: LauncherMenu.animation,
           offset: const Offset(0, 34),
-          color: const Color(0xFF2F2037),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(
-              width: 0.5,
-              color: Colors.white.withValues(alpha: 0.18),
-            ),
-          ),
+          color: LauncherMenu.color,
+          shape: LauncherMenu.shape,
           onSelected: (action) => action(),
           itemBuilder: (context) => [
-            _menuItem(
+            LauncherMenu.item(
               Icons.folder_outlined,
               InstanceActions.openFolderLabel(l),
               () => InstanceActions.openFolder(key, instance.id),
             ),
-            _menuItem(
+            LauncherMenu.item(
               CupertinoIcons.delete,
               l.deleteFromComputer,
               () => InstanceActions.delete(
@@ -257,29 +245,6 @@ class _InstanceCardState extends State<InstanceCard> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  PopupMenuItem<VoidCallback> _menuItem(
-    IconData icon,
-    String text,
-    VoidCallback action, {
-    Color color = Constants.textColor,
-    bool enabled = true,
-  }) {
-    final shown = enabled ? color : color.withValues(alpha: 0.4);
-    return PopupMenuItem(
-      value: action,
-      enabled: enabled,
-      height: 40,
-      mouseCursor: SystemMouseCursors.click,
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: shown),
-          const SizedBox(width: 10),
-          Text(text, style: TextStyle(color: shown, fontSize: 13)),
-        ],
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:bc_launcher/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 /// The launcher's text button: filled with [color] (the main color by
-/// default) or outlined.
+/// default) or outlined, in [color] if given.
 class CustomButton extends StatelessWidget {
   final String text;
   final bool filled;
@@ -42,8 +42,8 @@ class CustomButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Constants.textColor,
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+        foregroundColor: color ?? Constants.textColor,
+        side: BorderSide(color: color ?? Colors.white.withValues(alpha: 0.25)),
         shape: shape,
         padding: padding,
         textStyle: textStyle,

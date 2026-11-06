@@ -1,16 +1,23 @@
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_store.dart';
+import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/launcher_menu.dart';
 import 'package:bc_launcher/widgets/organization_logo.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// The column of added organizations on the left, shown only with two or
 /// more. Greyed-out ones carry a lock (no access) or a warning
-/// (incompatible).
+/// (incompatible). A right click on one offers to remove it.
 class OrganizationRail extends StatelessWidget {
   static const width = 84.0;
 
-  const OrganizationRail({super.key});
+  /// Asks before removing an organization.
+  final void Function(Organization organization) onRemove;
+
+  const OrganizationRail({super.key, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +34,14 @@ class OrganizationRail extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 24),
           children: [
             for (final organization in OrganizationStore.organizations.value)
-              _item(organization),
+              _item(context, organization),
           ],
         ),
       ),
     );
   }
 
-  Widget _item(Organization organization) {
+  Widget _item(BuildContext context, Organization organization) {
     final selected = OrganizationStore.selected.value == organization.key;
     final view = InstanceCatalog.viewOf(organization.key);
 
@@ -67,12 +74,33 @@ class OrganizationRail extends StatelessWidget {
                 label: organization.name,
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () => OrganizationStore.select(organization.key),
-                    child: OrganizationLogo(
-                      organization: organization,
-                      size: 44,
-                      greyedOut: view.greyedOut,
+                  // The menu takes the theme without Material's ripple.
+                  child: LauncherMenu.withoutRipple(
+                    context,
+                    Builder(
+                      builder: (context) => GestureDetector(
+                        onTap: () => OrganizationStore.select(organization.key),
+                        onSecondaryTapUp: (details) => LauncherMenu.showAt(
+                          context,
+                          details.globalPosition,
+                          [
+                            LauncherMenu.item(
+                              CupertinoIcons.delete,
+                              Utility.getLocalizations(context)
+                                  .removeOrganization,
+                              () => onRemove(organization),
+                              color: Constants.dangerTextColor,
+                              // It deletes the instances' folders, the game's too.
+                              enabled: !Utility.isPlaying.value,
+                            ),
+                          ],
+                        ),
+                        child: OrganizationLogo(
+                          organization: organization,
+                          size: 44,
+                          greyedOut: view.greyedOut,
+                        ),
+                      ),
                     ),
                   ),
                 ),

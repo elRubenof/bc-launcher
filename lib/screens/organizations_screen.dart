@@ -8,6 +8,7 @@ import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/custom_button.dart';
@@ -195,7 +196,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (showRail) const OrganizationRail(),
+              if (showRail) OrganizationRail(onRemove: _confirmRemove),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -278,8 +279,14 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
         description: l.lostAccessDesc,
         buttons: [
           CustomButton(
+            InstanceActions.openFolderLabel(l),
+            filled: false,
+            onPressed: () => _openFolder(organization),
+          ),
+          CustomButton(
             l.removeOrganization,
             filled: false,
+            color: Constants.dangerTextColor,
             onPressed: () => _confirmRemove(organization),
           ),
         ],
@@ -294,8 +301,14 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
             onPressed: () => launchUrl(Uri.parse(Constants.releasesUrl)),
           ),
           CustomButton(
+            InstanceActions.openFolderLabel(l),
+            filled: false,
+            onPressed: () => _openFolder(organization),
+          ),
+          CustomButton(
             l.removeOrganization,
             filled: false,
+            color: Constants.dangerTextColor,
             onPressed: () => _confirmRemove(organization),
           ),
         ],
@@ -439,6 +452,14 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
         ),
       ),
     );
+  }
+
+  /// Opens the folder with the organization's instances, so the player can
+  /// keep their worlds before removing it.
+  Future<void> _openFolder(Organization organization) async {
+    final folder = await InstanceManager.organizationFolder(organization.key);
+    await folder.create(recursive: true);
+    await launchUrl(Uri.file(folder.path));
   }
 
   Future<void> _confirmRemove(Organization organization) async {

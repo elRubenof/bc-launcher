@@ -36,7 +36,8 @@ lib/
   screens/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
-                                can't be shown (no access, incompatible, offline); remove an organization;
+                                can't be shown (no access, incompatible, offline); remove an organization (from
+                                those screens or a right click on its logo in the column);
                                 entering an instance (by click, or the last one used on start without showing
                                 the list, unless turned off in Settings) opens MainScreen; installed instances
                                 it no longer serves are listed last, greyed out, newest installation first
@@ -102,7 +103,8 @@ lib/
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
                                 full-screen error message, add-organization dialog opened by links,
-                                organization logo and rail, instance card with its menu, instance actions (open
+                                organization logo and rail, the launcher's dropdown menus (LauncherMenu), instance
+                                card with its menu, instance actions (open
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
