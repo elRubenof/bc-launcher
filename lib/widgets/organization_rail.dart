@@ -69,23 +69,10 @@ class OrganizationRail extends StatelessWidget {
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: () => OrganizationStore.select(organization.key),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          width: 2,
-                          color: selected
-                              ? Colors.white.withValues(
-                                  alpha: view.greyedOut ? 0.6 : 1,
-                                )
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: OrganizationLogo(
-                        organization: organization,
-                        size: 44,
-                        greyedOut: view.greyedOut,
-                      ),
+                    child: OrganizationLogo(
+                      organization: organization,
+                      size: 44,
+                      greyedOut: view.greyedOut,
                     ),
                   ),
                 ),
