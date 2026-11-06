@@ -112,7 +112,7 @@ Widget account(Organization organization) {
                   width: 25,
                   margin: const EdgeInsets.only(right: 14),
                   child: Image.network(
-                    "https://mc-heads.net/avatar/${value.name}",
+                    "https://crafthead.net/avatar/${value.uuid}",
                   ),
                 ),
                 Container(
