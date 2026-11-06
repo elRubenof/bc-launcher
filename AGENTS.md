@@ -30,8 +30,10 @@ The API base URL is still hardcoded in `lib/utils/constants.dart` (`Constants.ap
 
 ```
 lib/
-  main.dart                     entry: load settings → update check → auth → InstancesScreen
+  main.dart                     entry: load settings → update check → client ID check → auth → InstancesScreen
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
+  models/                       API v1 models with fromJson/toJson: organization (from discovery), instance,
+                                instance_colors, web_tab, manifest (+ its files), news
   screens/
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     instances_screen.dart       list of servers/instances returned by the API, install on first open
@@ -39,6 +41,9 @@ lib/
     update_screen.dart          launcher self-update prompt (legacy, Windows-only)
     tabs/                       home (news), map (webview_all), settings
   services/
+    api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
+                                instances, manifest, news; token, retries, 401 renewal
+    api_error.dart              ApiError with a type (offline, notMember, upgradeRequired, …) and the API's code
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
     file_downloader.dart        parallel downloads to .part files with sha1 check
@@ -49,7 +54,8 @@ lib/
     utility.dart                settings persistence, instance install/unzip, file sync, self-update, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
-  widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons)
+  widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
+                                full-screen error message)
 assets/img/                     logo.svg, logo.png, background.png
 ```
 
@@ -130,9 +136,9 @@ Agent docs like this file being committed is fine. The rule is about commits, au
 
 The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifier`s, a global `navigatorKey` used to get l10n inside utils) and passes `Map<String, dynamic>` everywhere. New code should move toward:
 
-- **Layers:** `lib/models/` (typed models with `freezed` + `json_serializable`), `lib/services/` (`ApiClient`, `AuthService`, `OrganizationRegistry`/discovery, `SyncEngine`, `LoaderInstaller`, `JavaManager`, `GameLauncher`, `UpdateService`), and `lib/screens/` + `lib/widgets/` for UI only.
+- **Layers:** `lib/models/` (typed models with hand-written `fromJson`/`toJson`), `lib/services/` (`ApiClient`, `AuthService`, `OrganizationRegistry`/discovery, `SyncEngine`, `LoaderInstaller`, `JavaManager`, `GameLauncher`, `UpdateService`), and `lib/screens/` + `lib/widgets/` for UI only.
 - **State management: Riverpod.** Services never touch `BuildContext` or l10n; they return results or typed errors and the UI translates them.
-- **One HTTP client** (Dio) per organization, with base URL, timeouts, retries and an auth interceptor.
+- **One HTTP client** (Dio) per organization, with base URL, timeouts, retries and the token (done: `ApiClient`). The rest of the launcher gets models or an `ApiError`, never HTTP status codes or JSON.
 - **Per-instance theming** from the instance's colors and background, instead of `Constants` colors.
 - **Sync engine:**
   1. Fetch the manifest (`If-None-Match` with the `contentVersion`) and compute a plan (add, update, delete).
