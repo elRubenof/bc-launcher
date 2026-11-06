@@ -2,6 +2,7 @@ import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
+import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -12,6 +13,8 @@ import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DeepLinks.listen();
+  DeepLinks.register();
   _setUpWindow();
 
   await Utility.loadSettings();

@@ -55,6 +55,7 @@ dependencies:
   window_manager: ^0.6.0
   webview_all: ^1.4.12
   flutter_secure_storage: ^10.3.4
+  app_links: ^7.2.2
 
 dev_dependencies:
   flutter_test:
