@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/services/api_client.dart';
 import 'package:bc_launcher/services/token_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +51,28 @@ class OrganizationStore {
       list[index] = organization;
     }
     await _write(list);
+  }
+
+  /// Refreshes every saved organization with its discovery (name, logo,
+  /// links, API version…).
+  static Future<void> refresh() async {
+    final fresh = await Future.wait([
+      for (final organization in organizations.value) _discover(organization),
+    ]);
+
+    for (final organization in fresh) {
+      if (organization == null || byKey(organization.key) == null) continue;
+      await save(organization);
+    }
+  }
+
+  static Future<Organization?> _discover(Organization organization) async {
+    try {
+      return await ApiClient.discovery(organization.url);
+    } catch (e) {
+      log("Could not refresh ${organization.key}: $e");
+      return null;
+    }
   }
 
   /// Removes [organization] and its token.

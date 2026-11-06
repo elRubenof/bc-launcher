@@ -23,6 +23,7 @@ void main() async {
 
   await Utility.loadSettings();
   await OrganizationStore.load();
+  OrganizationStore.refresh();
 
   final updated = await Utility.isUpdated();
   runApp(
