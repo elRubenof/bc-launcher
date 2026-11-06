@@ -30,11 +30,13 @@ The API base URL is still hardcoded in `lib/utils/constants.dart` (`Constants.ap
 
 ```
 lib/
-  main.dart                     entry: load settings → update check → client ID check → auth → InstancesScreen
+  main.dart                     entry: link listener → load settings and organizations → update check → client ID
+                                check → auth → NoOrganizationsScreen (none added) or InstancesScreen
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
   models/                       API v1 models with fromJson/toJson: organization (from discovery), instance,
                                 instance_colors, web_tab, manifest (+ its files), news
   screens/
+    no_organizations_screen.dart  shown until an organization is added (only through its link)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     instances_screen.dart       list of servers/instances returned by the API, install on first open
     main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
@@ -44,18 +46,22 @@ lib/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
                                 instances, manifest, news; token, retries, 401 renewal; ApiError
                                 with a type (offline, notMember, upgradeRequired, …) and the API's code
+    deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
+    organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key
+    token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
+    organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
     file_downloader.dart        parallel downloads to .part files with sha1 check
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
-    constants.dart              colors, sizes, defaults, API URL, Azure app values from .env
+    constants.dart              colors, sizes, defaults, API URL, releases URL, Azure app values from .env
     settings.dart               static user settings (RAM, resolution, …)
     utility.dart                settings persistence, instance install/unzip, file sync, self-update, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
-                                full-screen error message)
+                                full-screen error message, add-organization dialog opened by links)
 assets/img/                     logo.svg, logo.png, background.png
 ```
 
@@ -103,7 +109,7 @@ Agent docs like this file being committed is fine. The rule is about commits, au
 
 ## Architecture decisions (agreed, not all implemented yet)
 
-1. **Generic, multi-organization launcher.** One signed executable for everyone, like Discord with servers. Each server deployment is one **organization** (a developer or organizer of series and events) with N **instances** (series, events, servers). Organizations are added **only with the deep link** `bclauncher://add?server=<url>` from the organization's download page (`https://` is added if missing); there is no field to type an address. Without organizations the launcher shows a screen asking the player to open their organization's link. The link **always asks for confirmation** ("Add <name>?", with its logo; whether the host is shown is decided with the mockup) before anything is saved, because any website can fire it. The launcher registers the `bclauncher` scheme itself (macOS through `Info.plist`; Windows and Linux on start, so it works without an installer) and runs as a single instance: a link opened while it is running goes to the open window. Download buttons point to the official generic installer; after installing, the player clicks the link again. Adding an organization means trusting it: every instance it creates and opens to the player **appears automatically** (the launcher refreshes `GET /instances` on start and when returning to the app). The organization selector is shown **only when 2+ organizations are added**. With one organization the UI goes straight to it. There is **no "lock" mode**. UI wording: "organization", never "community".
+1. **Generic, multi-organization launcher.** One signed executable for everyone, like Discord with servers. Each server deployment is one **organization** (a developer or organizer of series and events) with N **instances** (series, events, servers). Organizations are added **only with the deep link** `bclauncher://add?server=<url>` from the organization's download page (`https://` is added if missing); there is no field to type an address. Without organizations the launcher shows a screen asking the player to open their organization's link. The link **always asks for confirmation** ("Add <name>?", with its logo; the host is not shown) before anything is saved, because any website can fire it. The launcher registers the `bclauncher` scheme itself (macOS through `Info.plist`; Windows and Linux on start, so it works without an installer) and runs as a single instance: a link opened while it is running goes to the open window. Download buttons point to the official generic installer; after installing, the player clicks the link again. Adding an organization means trusting it: every instance it creates and opens to the player **appears automatically** (the launcher refreshes `GET /instances` on start and when returning to the app). The organization selector is shown **only when 2+ organizations are added**. With one organization the UI goes straight to it. There is **no "lock" mode**. UI wording: "organization", never "community".
 2. **Discovery document.** Each server exposes `GET /.well-known/bc-launcher`: `discoveryVersion`, `visibility` (`public` | `private`), name, description, logo (the organization's only image), global links (Discord, web), `serverVersion`, `apiVersions`, `minLauncherVersion` and `capabilities`. It is the same for public and private organizations. The organization has **no colors or background**: those belong to each instance. Its format must never break (`discoveryVersion`).
    - `capabilities` are the optional features that server has, added to an API version after its release (e.g. `server-status`, `optional-mods`, `manifest-delta`), or ones its admin can turn off. Everything else in the API version is the baseline and is never announced. The launcher shows or uses a feature only when its capability is announced, hides it silently otherwise (no error, no probing for `404`, no `serverVersion` checks), and ignores capabilities it doesn't know. They describe the whole server; per-instance data (web tabs, news) comes from the instance's own fields. The rules for adding one are in `bc-launcher-server/AGENTS.md` → "Capabilities".
 3. **API version negotiation.** The launcher ships `supportedApiVersions` and uses the highest version both sides share.

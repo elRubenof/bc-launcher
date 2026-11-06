@@ -158,4 +158,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reinstallDialogDescription => 'Do you want to reinstall';
+
+  @override
+  String get noOrganizationsTitle => 'You don\'t have any organization yet';
+
+  @override
+  String get noOrganizationsDesc =>
+      'Open your organization\'s link from its website and it will be added here.';
+
+  @override
+  String addOrganizationQuestion(String name) {
+    return 'Add $name?';
+  }
+
+  @override
+  String get addOrganizationDesc =>
+      'You\'ll be able to see and play its instances from the launcher.';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get connecting => 'Connecting…';
+
+  @override
+  String get signingIn => 'Signing in…';
+
+  @override
+  String get organizationOfflineTitle => 'Couldn\'t connect';
+
+  @override
+  String get organizationOfflineDesc =>
+      'The organization isn\'t responding. Check your internet connection and try again.';
+
+  @override
+  String organizationNoAccessTitle(String name) {
+    return 'You don\'t have access to $name';
+  }
+
+  @override
+  String get organizationNoAccessDesc =>
+      'If you think you should, ask whoever runs the organization for access.';
+
+  @override
+  String organizationIncompatibleTitle(String name) {
+    return '$name isn\'t compatible';
+  }
+
+  @override
+  String get organizationIncompatibleDesc =>
+      'This organization uses a server version your launcher doesn\'t support. Try updating the launcher or let the organization know.';
+
+  @override
+  String get launcherOutdatedTitle => 'Update BC Launcher';
+
+  @override
+  String launcherOutdatedDesc(String name, String required, String current) {
+    return '$name needs launcher version $required or later. You have $current.';
+  }
+
+  @override
+  String get downloadNewVersion => 'Download the new version';
+
+  @override
+  String get organizationSignInErrorTitle => 'Couldn\'t sign in';
+
+  @override
+  String get organizationSignInErrorDesc =>
+      'Something went wrong signing in to the organization. Try again.';
+
+  @override
+  String get minecraftSessionRejectedTitle =>
+      'Minecraft didn\'t accept your session';
+
+  @override
+  String get minecraftSessionRejectedDesc =>
+      'Sign out and sign in again with your Microsoft account.';
 }

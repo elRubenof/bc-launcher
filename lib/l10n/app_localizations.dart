@@ -385,6 +385,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Do you want to reinstall'**
   String get reinstallDialogDescription;
+
+  /// No description provided for @noOrganizationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any organization yet'**
+  String get noOrganizationsTitle;
+
+  /// No description provided for @noOrganizationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your organization\'s link from its website and it will be added here.'**
+  String get noOrganizationsDesc;
+
+  /// No description provided for @addOrganizationQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {name}?'**
+  String addOrganizationQuestion(String name);
+
+  /// No description provided for @addOrganizationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll be able to see and play its instances from the launcher.'**
+  String get addOrganizationDesc;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @connecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get connecting;
+
+  /// No description provided for @signingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in…'**
+  String get signingIn;
+
+  /// No description provided for @organizationOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect'**
+  String get organizationOfflineTitle;
+
+  /// No description provided for @organizationOfflineDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The organization isn\'t responding. Check your internet connection and try again.'**
+  String get organizationOfflineDesc;
+
+  /// No description provided for @organizationNoAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have access to {name}'**
+  String organizationNoAccessTitle(String name);
+
+  /// No description provided for @organizationNoAccessDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'If you think you should, ask whoever runs the organization for access.'**
+  String get organizationNoAccessDesc;
+
+  /// No description provided for @organizationIncompatibleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} isn\'t compatible'**
+  String organizationIncompatibleTitle(String name);
+
+  /// No description provided for @organizationIncompatibleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This organization uses a server version your launcher doesn\'t support. Try updating the launcher or let the organization know.'**
+  String get organizationIncompatibleDesc;
+
+  /// No description provided for @launcherOutdatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update BC Launcher'**
+  String get launcherOutdatedTitle;
+
+  /// No description provided for @launcherOutdatedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} needs launcher version {required} or later. You have {current}.'**
+  String launcherOutdatedDesc(String name, String required, String current);
+
+  /// No description provided for @downloadNewVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the new version'**
+  String get downloadNewVersion;
+
+  /// No description provided for @organizationSignInErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign in'**
+  String get organizationSignInErrorTitle;
+
+  /// No description provided for @organizationSignInErrorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong signing in to the organization. Try again.'**
+  String get organizationSignInErrorDesc;
+
+  /// No description provided for @minecraftSessionRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Minecraft didn\'t accept your session'**
+  String get minecraftSessionRejectedTitle;
+
+  /// No description provided for @minecraftSessionRejectedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and sign in again with your Microsoft account.'**
+  String get minecraftSessionRejectedDesc;
 }
 
 class _AppLocalizationsDelegate

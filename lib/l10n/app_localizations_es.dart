@@ -159,4 +159,86 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get reinstallDialogDescription =>
       '¿Estás seguro que deseas reinstalar';
+
+  @override
+  String get noOrganizationsTitle => 'Aún no tienes ninguna organización';
+
+  @override
+  String get noOrganizationsDesc =>
+      'Abre el enlace de tu organización desde su página web y se añadirá aquí.';
+
+  @override
+  String addOrganizationQuestion(String name) {
+    return '¿Añadir $name?';
+  }
+
+  @override
+  String get addOrganizationDesc =>
+      'Podrás ver y jugar sus instancias desde el launcher.';
+
+  @override
+  String get add => 'Añadir';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get retry => 'Reintentar';
+
+  @override
+  String get connecting => 'Conectando…';
+
+  @override
+  String get signingIn => 'Iniciando sesión…';
+
+  @override
+  String get organizationOfflineTitle => 'No se ha podido conectar';
+
+  @override
+  String get organizationOfflineDesc =>
+      'La organización no responde. Revisa tu conexión a internet y vuelve a intentarlo.';
+
+  @override
+  String organizationNoAccessTitle(String name) {
+    return 'No tienes acceso a $name';
+  }
+
+  @override
+  String get organizationNoAccessDesc =>
+      'Si crees que deberías tenerlo, pide acceso a quien gestiona la organización.';
+
+  @override
+  String organizationIncompatibleTitle(String name) {
+    return '$name no es compatible';
+  }
+
+  @override
+  String get organizationIncompatibleDesc =>
+      'Esta organización usa una versión del servidor que tu launcher no admite. Prueba a actualizar el launcher o avisa a la organización.';
+
+  @override
+  String get launcherOutdatedTitle => 'Actualiza BC Launcher';
+
+  @override
+  String launcherOutdatedDesc(String name, String required, String current) {
+    return '$name necesita la versión $required o posterior del launcher. Tienes la $current.';
+  }
+
+  @override
+  String get downloadNewVersion => 'Descargar la nueva versión';
+
+  @override
+  String get organizationSignInErrorTitle => 'No se ha podido iniciar sesión';
+
+  @override
+  String get organizationSignInErrorDesc =>
+      'Algo ha fallado al iniciar sesión en la organización. Vuelve a intentarlo.';
+
+  @override
+  String get minecraftSessionRejectedTitle =>
+      'Minecraft no ha aceptado tu sesión';
+
+  @override
+  String get minecraftSessionRejectedDesc =>
+      'Cierra sesión y vuelve a entrar con tu cuenta de Microsoft.';
 }

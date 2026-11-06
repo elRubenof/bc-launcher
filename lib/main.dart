@@ -1,11 +1,14 @@
 import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
+import 'package:bc_launcher/screens/no_organizations_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
+import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/organization_dialog.dart';
 import 'package:bc_launcher/widgets/fatal_error_message.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +17,12 @@ import 'package:window_manager/window_manager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DeepLinks.listen();
+  OrganizationDialog.listen();
   DeepLinks.register();
   _setUpWindow();
 
   await Utility.loadSettings();
+  await OrganizationStore.load();
 
   final updated = await Utility.isUpdated();
   runApp(
@@ -69,7 +74,12 @@ class MyApp extends StatelessWidget {
           return const LoginScreen();
         }
 
-        return const InstancesScreen();
+        return ValueListenableBuilder(
+          valueListenable: OrganizationStore.organizations,
+          builder: (context, organizations, _) => organizations.isEmpty
+              ? const NoOrganizationsScreen()
+              : const InstancesScreen(),
+        );
       },
     );
   }
