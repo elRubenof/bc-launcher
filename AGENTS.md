@@ -37,8 +37,8 @@ lib/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
                                 can't be shown (no access, incompatible, offline); remove an organization;
-                                entering an instance (by click, or the last one used on start, without showing
-                                the list) opens MainScreen
+                                entering an instance (by click, or the last one used on start without showing
+                                the list, unless turned off in Settings) opens MainScreen
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server

@@ -30,6 +30,16 @@
   "fullscreen": "Pantalla completa",
   "memoryAllocation": "Memoria Asignada",
   "resetSettings": "Reiniciar ajustes",
+  "openLastInstance": "Abrir directamente la última instancia",
+  "openLastInstanceDesc": "Al abrir el launcher entrarás en la última instancia que usaste. Si lo desactivas, empezarás siempre en la lista de instancias.",
+  "keepLauncherOpen": "Mantener el launcher abierto",
+  "keepLauncherOpenDesc": "Mientras juegas, el launcher sigue a la vista. Si lo desactivas, se oculta y se cierra al salir del juego.",
+  "gameLogs": "Registros de partidas",
+  "gameLogsDesc": "Lo que pasó en cada partida. Si algo falla, expórtalos y envíalos a la organización.",
+  "openFolder": "Abrir carpeta",
+  "export": "Exportar",
+  "noLogsTitle": "Todavía no hay registros",
+  "noLogsDesc": "Se guardan al jugar: vuelve aquí después de tu primera partida.",
 
 
   "close": "Cerrar",

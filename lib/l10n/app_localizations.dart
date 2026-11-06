@@ -254,6 +254,66 @@ abstract class AppLocalizations {
   /// **'Reset settings'**
   String get resetSettings;
 
+  /// No description provided for @openLastInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the last instance directly'**
+  String get openLastInstance;
+
+  /// No description provided for @openLastInstanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'When you open the launcher you\'ll go into the last instance you used. If you turn it off, you\'ll always start at the list of instances.'**
+  String get openLastInstanceDesc;
+
+  /// No description provided for @keepLauncherOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the launcher open'**
+  String get keepLauncherOpen;
+
+  /// No description provided for @keepLauncherOpenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'While you play, the launcher stays in view. If you turn it off, it hides and closes when you leave the game.'**
+  String get keepLauncherOpenDesc;
+
+  /// No description provided for @gameLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Game logs'**
+  String get gameLogs;
+
+  /// No description provided for @gameLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened in each game. If something goes wrong, export them and send them to the organization.'**
+  String get gameLogsDesc;
+
+  /// No description provided for @openFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open folder'**
+  String get openFolder;
+
+  /// No description provided for @export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export;
+
+  /// No description provided for @noLogsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet'**
+  String get noLogsTitle;
+
+  /// No description provided for @noLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'They\'re saved when you play: come back after your first game.'**
+  String get noLogsDesc;
+
   /// No description provided for @close.
   ///
   /// In en, this message translates to:

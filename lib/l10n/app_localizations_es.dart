@@ -91,6 +91,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get resetSettings => 'Reiniciar ajustes';
 
   @override
+  String get openLastInstance => 'Abrir directamente la última instancia';
+
+  @override
+  String get openLastInstanceDesc =>
+      'Al abrir el launcher entrarás en la última instancia que usaste. Si lo desactivas, empezarás siempre en la lista de instancias.';
+
+  @override
+  String get keepLauncherOpen => 'Mantener el launcher abierto';
+
+  @override
+  String get keepLauncherOpenDesc =>
+      'Mientras juegas, el launcher sigue a la vista. Si lo desactivas, se oculta y se cierra al salir del juego.';
+
+  @override
+  String get gameLogs => 'Registros de partidas';
+
+  @override
+  String get gameLogsDesc =>
+      'Lo que pasó en cada partida. Si algo falla, expórtalos y envíalos a la organización.';
+
+  @override
+  String get openFolder => 'Abrir carpeta';
+
+  @override
+  String get export => 'Exportar';
+
+  @override
+  String get noLogsTitle => 'Todavía no hay registros';
+
+  @override
+  String get noLogsDesc =>
+      'Se guardan al jugar: vuelve aquí después de tu primera partida.';
+
+  @override
   String get close => 'Cerrar';
 
   @override

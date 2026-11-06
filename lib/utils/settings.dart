@@ -5,4 +5,5 @@ class Settings {
   static late int gameHeight;
   static late bool fullscreen;
   static late bool keepLauncherOpen;
+  static late bool openLastInstance;
 }

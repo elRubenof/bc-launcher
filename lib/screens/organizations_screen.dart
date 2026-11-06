@@ -6,6 +6,7 @@ import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
@@ -38,7 +39,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   /// While it may still enter the last instance by itself, the loading
   /// screen stays instead of the list, so the list doesn't flash.
-  bool _waitingToEnter = !_autoEntered;
+  bool _waitingToEnter = !_autoEntered && Settings.openLastInstance;
 
   @override
   void initState() {
@@ -66,6 +67,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   /// list is loaded, if it is still there.
   Future<void> _autoEnter() async {
     if (_autoEntered) return;
+    if (!Settings.openLastInstance) return _showList();
     final organization = OrganizationStore.byKey(
       OrganizationStore.selected.value ?? "",
     );

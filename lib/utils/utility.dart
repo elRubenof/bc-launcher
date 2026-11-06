@@ -32,6 +32,9 @@ class Utility {
     Settings.keepLauncherOpen =
         preferences.getBool("keepLauncherOpen") ??
         Constants.defaultKeepLauncherOpen;
+    Settings.openLastInstance =
+        preferences.getBool("openLastInstance") ??
+        Constants.defaultOpenLastInstance;
   }
 
   static Future<void> resetSettings() async {
@@ -43,6 +46,7 @@ class Utility {
     Settings.gameHeight = Constants.defaultGameHeight;
     Settings.fullscreen = Constants.defaultFullscreen;
     Settings.keepLauncherOpen = Constants.defaultKeepLauncherOpen;
+    Settings.openLastInstance = Constants.defaultOpenLastInstance;
 
     preferences.remove("autoConnect");
     preferences.remove("allocatedRAM");
@@ -50,6 +54,7 @@ class Utility {
     preferences.remove("gameHeight");
     preferences.remove("fullscreen");
     preferences.remove("keepLauncherOpen");
+    preferences.remove("openLastInstance");
   }
 
   static Future<void> setAutoConnect(bool value) async {

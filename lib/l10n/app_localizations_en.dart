@@ -91,6 +91,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetSettings => 'Reset settings';
 
   @override
+  String get openLastInstance => 'Open the last instance directly';
+
+  @override
+  String get openLastInstanceDesc =>
+      'When you open the launcher you\'ll go into the last instance you used. If you turn it off, you\'ll always start at the list of instances.';
+
+  @override
+  String get keepLauncherOpen => 'Keep the launcher open';
+
+  @override
+  String get keepLauncherOpenDesc =>
+      'While you play, the launcher stays in view. If you turn it off, it hides and closes when you leave the game.';
+
+  @override
+  String get gameLogs => 'Game logs';
+
+  @override
+  String get gameLogsDesc =>
+      'What happened in each game. If something goes wrong, export them and send them to the organization.';
+
+  @override
+  String get openFolder => 'Open folder';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get noLogsTitle => 'No logs yet';
+
+  @override
+  String get noLogsDesc =>
+      'They\'re saved when you play: come back after your first game.';
+
+  @override
   String get close => 'Close';
 
   @override

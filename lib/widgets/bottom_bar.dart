@@ -274,18 +274,12 @@ class _BottomBarState extends State<BottomBar> {
 
   /// Saves the last game's logs where the player chooses.
   Future<void> exportLog() async {
+    final l = Utility.getLocalizations(context);
     final instance = widget.instance;
-    final zip = await LogExport.zip(
+    await LogExport.export(
+      instance,
       widget.folder,
-      await LogExport.info(instance),
-    );
-    if (zip == null || !mounted) return;
-
-    final date = DateTime.now().toIso8601String().substring(0, 10);
-    await LogExport.save(
-      zip,
-      "${Utility.getLocalizations(context).logsFileName(instance.id, date)}"
-      ".zip",
+      (date) => l.logsFileName(instance.id, date),
     );
   }
 

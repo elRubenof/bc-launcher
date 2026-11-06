@@ -39,7 +39,7 @@ class _MainPageState extends State<MainScreen> {
     selectedTab.value = 0;
     tabs = {
       0: const HomeScreen(news: null),
-      2: SettingsScreen(directory: widget.folder.path),
+      2: SettingsScreen(instance: widget.instance, folder: widget.folder),
     };
   }
 

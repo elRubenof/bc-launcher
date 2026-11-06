@@ -50,6 +50,22 @@ class LogExport {
     return ZipEncoder().encodeBytes(archive);
   }
 
+  /// Zips the last game's logs of [instance], in [folder], and asks where to
+  /// save them, named by [fileName] with today's date. Returns false if it
+  /// has no games yet.
+  static Future<bool> export(
+    Instance instance,
+    Directory folder,
+    String Function(String date) fileName,
+  ) async {
+    final logs = await zip(folder, await info(instance));
+    if (logs == null) return false;
+
+    final date = DateTime.now().toIso8601String().substring(0, 10);
+    await save(logs, "${fileName(date)}.zip");
+    return true;
+  }
+
   /// What the organization needs to know about this launcher and [instance].
   static Future<Map<String, String>> info(Instance instance) async => {
     "launcher": (await PackageInfo.fromPlatform()).version,

@@ -15,6 +15,7 @@ class Constants {
   static const defaultGameHeight = 480;
   static const defaultFullscreen = true;
   static const defaultKeepLauncherOpen = false;
+  static const defaultOpenLastInstance = true;
 
   static const releasesUrl =
       "https://github.com/elRubenof/bc-launcher/releases/latest";
