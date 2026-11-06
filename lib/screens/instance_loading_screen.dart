@@ -33,6 +33,9 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
   static const _megabyte = 1024 * 1024;
 
   EntryStep? _step;
+
+  /// Whether checking found files to change.
+  bool _changing = false;
   SyncProgress? _sync;
   double? _install;
 
@@ -48,6 +51,7 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
     setState(() {
       _sync = null;
       _install = null;
+      _changing = false;
     });
 
     try {
@@ -59,10 +63,18 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
           if (mounted) setState(() => _step = step);
         },
         onSyncProgress: (progress) {
-          if (mounted) setState(() => _sync = progress);
+          if (!mounted) return;
+          setState(() {
+            _sync = progress;
+            _changing |= progress.totalFiles > 0;
+          });
         },
         onInstallProgress: (progress) {
-          if (mounted) setState(() => _install = progress);
+          if (!mounted) return;
+          setState(() {
+            _install = progress;
+            _changing |= progress < 1;
+          });
         },
       );
       await OrganizationStore.setLastInstance(organization.key, instance.id);
@@ -80,11 +92,13 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
   }
 
   /// The status line, the detail under it and the bar's value.
-  (String, String?, double) _progress() {
+  (String, String?, double?) _progress() {
     final l = Utility.getLocalizations(context);
     final name = widget.instance.name;
     final sync = _sync;
     final install = _install;
+
+    if (_step == EntryStep.checking && !_changing) return ("", null, null);
 
     final preparing = _step == EntryStep.installing || install != null;
     final fraction = preparing ? (install ?? 0) : (sync?.fraction ?? 0);
@@ -92,7 +106,8 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
 
     final status = switch (_step) {
       EntryStep.installing => l.installingInstance(name, percent),
-      EntryStep.updating => l.updatingInstance(name, percent),
+      EntryStep.updating ||
+      EntryStep.checking => l.updatingInstance(name, percent),
       _ => l.downloadingInstance(name, percent),
     };
 
@@ -106,7 +121,7 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
               "${instance.loaderType.displayName} ${instance.loaderVersion ?? ""}"
                   .trim(),
             );
-    } else if (sync != null) {
+    } else if (sync != null && sync.totalFiles > 0) {
       detail = l.syncProgress(
         sync.files,
         sync.totalFiles,
@@ -123,7 +138,7 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
     final name = widget.instance.name;
     final failedTitle = switch (_step) {
       EntryStep.installing => l.installFailedTitle(name),
-      EntryStep.updating => l.updateFailedTitle(name),
+      EntryStep.updating || EntryStep.checking => l.updateFailedTitle(name),
       _ => l.downloadFailedTitle(name),
     };
 

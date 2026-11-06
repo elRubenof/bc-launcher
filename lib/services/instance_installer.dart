@@ -11,7 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 
-enum EntryStep { downloading, installing, updating }
+enum EntryStep { downloading, installing, updating, checking }
 
 /// The game files (Minecraft, loader, Java) could not be prepared.
 class GameFilesError implements Exception {
@@ -33,7 +33,8 @@ class InstanceInstaller {
   )
   prepareGame = _prepareGame;
 
-  /// Does what [instance] needs: nothing when it is up to date. Throws
+  /// Does what [instance] needs: installs it, updates it, or checks it and
+  /// repairs whatever the player changed or deleted. Throws
   /// [NotEnoughSpaceError], [GameFilesError], [ApiError] or the download's
   /// error; what was done is kept, so trying again resumes.
   static Future<void> enter(
@@ -43,31 +44,42 @@ class InstanceInstaller {
     void Function(EntryStep step)? onStep,
     void Function(SyncProgress progress)? onSyncProgress,
     void Function(double progress)? onInstallProgress,
-  }) => _run(
-    client,
-    organizationKey,
-    instance,
-    repair: false,
-    onStep: onStep,
-    onSyncProgress: onSyncProgress,
-    onInstallProgress: onInstallProgress,
-  );
+  }) async {
+    try {
+      await _run(
+        client,
+        organizationKey,
+        instance,
+        onStep: onStep,
+        onSyncProgress: onSyncProgress,
+        onInstallProgress: onInstallProgress,
+      );
+    } catch (e) {
+      final cause = e is GameFilesError ? e.cause : e;
+      if (!isOffline(cause)) rethrow;
 
-  /// Before playing: syncs even when [instance] is up to date, which repairs
-  /// whatever the player changed or deleted, applies any update and checks
-  /// the game files. Returns the version to launch. Throws like [enter].
+      final state = await InstanceManager.readState(
+        organizationKey,
+        instance.id,
+      );
+      final status = InstanceManager.statusOf(instance, state);
+      if (status != InstallStatus.upToDate) rethrow;
+    }
+  }
+
+  /// Before playing: like [enter], but without connection it always fails,
+  /// so the game never starts unrepaired. Returns the version to launch.
   static Future<String> play(
     ApiClient client,
     String organizationKey,
     Instance instance,
-  ) async => (await _run(client, organizationKey, instance, repair: true))!;
+  ) => _run(client, organizationKey, instance);
 
-  /// Returns the version to launch, or `null` when nothing was done.
-  static Future<String?> _run(
+  /// Returns the version to launch.
+  static Future<String> _run(
     ApiClient client,
     String organizationKey,
     Instance instance, {
-    required bool repair,
     void Function(EntryStep step)? onStep,
     void Function(SyncProgress progress)? onSyncProgress,
     void Function(double progress)? onInstallProgress,
@@ -75,7 +87,6 @@ class InstanceInstaller {
     final id = instance.id;
     final state = await InstanceManager.readState(organizationKey, id);
     final status = InstanceManager.statusOf(instance, state);
-    if (status == InstallStatus.upToDate && !repair) return null;
 
     final firstTime = status == InstallStatus.notInstalled;
     var serverEntry = state?.serverEntryAddress;
@@ -93,8 +104,10 @@ class InstanceInstaller {
           serverEntryAddress: serverEntry,
         ),
       );
-    } else {
+    } else if (status == InstallStatus.updateAvailable) {
       onStep?.call(EntryStep.updating);
+    } else {
+      onStep?.call(EntryStep.checking);
     }
 
     final manifest = await SyncEngine.sync(

@@ -39,7 +39,8 @@ lib/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
                                 can't be shown (no access, incompatible, offline); remove an organization;
-                                entering an instance (by click, or the last one used on start) opens MainScreen
+                                entering an instance (by click, or the last one used on start, without showing
+                                the list) opens MainScreen
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
@@ -62,9 +63,10 @@ lib/
                                 folders, files the launcher installed), protected player files, unsafe paths
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
                                 deletions, installed.json; fetches the manifest again when its URLs expire
-    instance_installer.dart     entering an instance: first time (download, then install the game files), update
-                                or nothing; before playing, always sync (repairs) and check the game files;
-                                state.json, servers.dat entry (created once, address moved)
+    instance_installer.dart     entering an instance and playing it: first time (download, then install the game
+                                files), update, or check (sync and check the game files, which repairs); offline, an
+                                installed instance is entered as it is but never played; state.json, servers.dat
+                                entry (created once, address moved)
     server_list.dart            the game's servers.dat (NBT): create it, move one entry's address
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)

@@ -26,6 +26,9 @@ class FakeServer implements HttpClientAdapter {
   final requests = <RequestOptions>[];
   int manifests = 0;
 
+  /// Every request fails as if there were no connection.
+  bool offline = false;
+
   static String hash(String contents) =>
       sha256.convert(utf8.encode(contents)).toString();
 
@@ -36,6 +39,12 @@ class FakeServer implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requests.add(options);
+    if (offline) {
+      throw DioException.connectionError(
+        requestOptions: options,
+        reason: 'offline',
+      );
+    }
     final uri = options.uri;
 
     if (uri.path.endsWith('/manifest')) {

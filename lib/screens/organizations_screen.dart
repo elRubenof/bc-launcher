@@ -1,4 +1,3 @@
-
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/screens/instance_loading_screen.dart';
@@ -9,6 +8,7 @@ import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
+import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/custom_button.dart';
 import 'package:bc_launcher/widgets/organization_logo.dart';
 import 'package:bc_launcher/widgets/organization_rail.dart';
@@ -36,12 +36,23 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   DateTime _lastRefresh = DateTime.now();
   bool _entering = false;
 
+  /// While it may still enter the last instance by itself, the loading
+  /// screen stays instead of the list, so the list doesn't flash.
+  bool _waitingToEnter = !_autoEntered;
+
   @override
   void initState() {
     super.initState();
     InstanceCatalog.refreshAll();
     _lifecycle = AppLifecycleListener(onResume: _refreshOnReturn);
     InstanceCatalog.organizations.addListener(_autoEnter);
+
+    if (_waitingToEnter) {
+      final key = OrganizationStore.selected.value ?? "";
+      OrganizationStore.lastInstance(key).then((last) {
+        if (last == null) _showList();
+      });
+    }
   }
 
   @override
@@ -54,52 +65,51 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   /// Enters the last instance used in the selected organization, once its
   /// list is loaded, if it is still there.
   Future<void> _autoEnter() async {
+    if (_autoEntered) return;
     final organization = OrganizationStore.byKey(
       OrganizationStore.selected.value ?? "",
     );
-    if (_autoEntered || organization == null) return;
+    if (organization == null) return _showList();
 
     final view = InstanceCatalog.viewOf(organization.key);
     if (view.status == OrganizationStatus.loading) return;
     _autoEntered = true;
-    if (view.status != OrganizationStatus.ready) return;
 
     final last = await OrganizationStore.lastInstance(organization.key);
-    for (final instance in view.instances) {
-      if (instance.id == last) return _enter(organization, instance);
+    final instance = view.status == OrganizationStatus.ready
+        ? view.instances.where((instance) => instance.id == last).firstOrNull
+        : null;
+    if (instance == null || !await _enter(organization, instance)) {
+      _showList();
     }
   }
 
-  /// Downloads, installs or updates [instance] when it needs it, then opens
-  /// it.
-  Future<void> _enter(Organization organization, Instance instance) async {
-    if (_entering || !mounted) return;
+  void _showList() {
+    _autoEntered = true;
+    if (mounted && _waitingToEnter) setState(() => _waitingToEnter = false);
+  }
+
+  Future<bool> _enter(Organization organization, Instance instance) async {
+    if (_entering || !mounted) return false;
     _entering = true;
     try {
-      final status = await InstanceManager.status(organization.key, instance);
-      if (!mounted) return;
-
-      if (status != InstallStatus.upToDate) {
-        final ready = await Navigator.push<bool>(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, _, _) => InstanceLoadingScreen(
-              organization: organization,
-              instance: instance,
-            ),
-            transitionDuration: Duration.zero,
+      final ready = await Navigator.push<bool>(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, _, _) => InstanceLoadingScreen(
+            organization: organization,
+            instance: instance,
           ),
-        );
-        if (ready != true) return;
-      } else {
-        await OrganizationStore.setLastInstance(organization.key, instance.id);
-      }
+          transitionDuration: Duration.zero,
+        ),
+      );
+      if (ready != true) return false;
 
       final folder = await InstanceManager.instanceFolder(
         organization.key,
         instance.id,
       );
-      if (!mounted) return;
+      if (!mounted) return false;
       Utility.pushReplacement(
         context,
         MainScreen(
@@ -108,6 +118,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
           folder: folder,
         ),
       );
+      return true;
     } finally {
       _entering = false;
     }
@@ -121,6 +132,8 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_waitingToEnter) return const LoadingScreen();
+
     return Scaffold(
       backgroundColor: Constants.backgroundColor,
       body: ListenableBuilder(

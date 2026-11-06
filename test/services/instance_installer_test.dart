@@ -92,13 +92,16 @@ void main() {
       expect(saved.loaderVersion, '0.16.5');
     });
 
-    test('an instance up to date does nothing', () async {
+    test('an instance up to date is checked and repaired', () async {
       await enter(instance());
-      final requests = server.requests.length;
+      final mod = File(join(folder.path, 'mods', 'a.jar'));
+      await mod.writeAsString('tampered');
 
-      expect(await enter(instance()), isEmpty);
-      expect(server.requests.length, requests);
-      expect(prepared, hasLength(1));
+      expect(await enter(instance()), [EntryStep.checking]);
+      expect(await mod.readAsString(), 'mod a');
+      // The manifest hadn't changed: 304, nothing sent again but the mod.
+      expect(server.manifests, 1);
+      expect(prepared, hasLength(2));
     });
 
     test('a new content version is one update step', () async {
@@ -123,6 +126,46 @@ void main() {
       await enter(instance());
 
       expect((await state())!.contentVersion, 2);
+    });
+  });
+
+  group('offline', () {
+    test('an instance installed and up to date is entered as it is', () async {
+      await enter(instance());
+      server.offline = true;
+
+      await enter(instance());
+
+      expect((await state())!.complete, isTrue);
+    });
+
+    test('an instance that is not installed fails', () async {
+      server.offline = true;
+
+      await expectLater(
+        enter(instance()),
+        throwsA(predicate(InstanceInstaller.isOffline)),
+      );
+    });
+
+    test('an instance with an update fails', () async {
+      await enter(instance());
+      server.offline = true;
+
+      await expectLater(
+        enter(instance(contentVersion: 2)),
+        throwsA(predicate(InstanceInstaller.isOffline)),
+      );
+    });
+
+    test('playing fails, so the game never starts unrepaired', () async {
+      await enter(instance());
+      server.offline = true;
+
+      await expectLater(
+        InstanceInstaller.play(client, 'example.com', instance()),
+        throwsA(predicate(InstanceInstaller.isOffline)),
+      );
     });
   });
 
