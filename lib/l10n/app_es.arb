@@ -51,6 +51,7 @@
 
   "userNotAuthorized": "Usuario no autorizado",
   "serverNotResponding": "Servidor no responde",
+  "missingClientId": "Falta MS_CLIENT_ID: ejecuta o compila con --dart-define-from-file=.env",
 
   "versionErrorDialogTitle": "Versión incorrecta",
   "versionErrorDialogDescription": "Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar",

@@ -143,6 +143,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverNotResponding => 'Server not responding';
 
   @override
+  String get missingClientId =>
+      'Missing MS_CLIENT_ID: run or build with --dart-define-from-file=.env';
+
+  @override
   String get versionErrorDialogTitle => 'Incorrect version';
 
   @override

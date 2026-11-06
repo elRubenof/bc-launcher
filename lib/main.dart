@@ -2,8 +2,10 @@ import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/screens/instances_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/update_screen.dart';
+import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/fatal_error_message.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
@@ -44,6 +46,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Constants.clientID.isEmpty) {
+      return Scaffold(
+        backgroundColor: Constants.backgroundColor,
+        body: FatalErrorMessage(
+          message: Utility.getLocalizations(context).missingClientId,
+        ),
+      );
+    }
+
     return FutureBuilder(
       future: Minecraft.authenticateOauth2(),
       builder: (context, snapshot) {

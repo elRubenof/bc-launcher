@@ -4,6 +4,7 @@ import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/fatal_error_message.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
@@ -57,47 +58,10 @@ class _InstancesScreenState extends State<InstancesScreen> {
               if (data['error'] != null) {
                 final l = Utility.getLocalizations(context);
 
-                return Stack(
-                  children: [
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 20,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          border: Border.all(
-                            width: 0.5,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          data['statusCode'] == 401
-                              ? l.userNotAuthorized.toUpperCase()
-                              : l.serverNotResponding.toUpperCase(),
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: Constants.topBarHeight,
-                      child: DragToMoveArea(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: Constants.horizontalPadding,
-                          ),
-                          alignment: Alignment.centerRight,
-                          child: const WindowButtons(
-                            enableSettings: false,
-                            darkMode: true,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                return FatalErrorMessage(
+                  message: data['statusCode'] == 401
+                      ? l.userNotAuthorized.toUpperCase()
+                      : l.serverNotResponding.toUpperCase(),
                 );
               }
 

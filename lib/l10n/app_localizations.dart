@@ -356,6 +356,12 @@ abstract class AppLocalizations {
   /// **'Server not responding'**
   String get serverNotResponding;
 
+  /// No description provided for @missingClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing MS_CLIENT_ID: run or build with --dart-define-from-file=.env'**
+  String get missingClientId;
+
   /// No description provided for @versionErrorDialogTitle.
   ///
   /// In en, this message translates to:
