@@ -134,7 +134,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     if (view.instances.isNotEmpty &&
         (view.status == OrganizationStatus.loading ||
             view.status == OrganizationStatus.ready)) {
-      return _instances(view.instances);
+      return _instances(organization.key, view.instances);
     }
 
     return switch (view.status) {
@@ -190,7 +190,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   /// The instances in a grid that fits as many columns as the window allows
   /// and scrolls only when they don't fit; the title stays on top.
-  Widget _instances(List<Instance> instances) {
+  Widget _instances(String organizationKey, List<Instance> instances) {
     final l = Utility.getLocalizations(context);
     return Column(
       children: [
@@ -225,6 +225,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
                       children: [
                         for (final instance in instances)
                           InstanceCard(
+                            organizationKey: organizationKey,
                             instance: instance,
                             // Opening an instance comes with the sync.
                             onTap: () => log("Open ${instance.id}"),

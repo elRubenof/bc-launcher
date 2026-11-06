@@ -292,4 +292,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remove => 'Remove';
+
+  @override
+  String get installed => 'Installed';
+
+  @override
+  String get notInstalled => 'Not installed';
+
+  @override
+  String get updateAvailable => 'Update available';
 }

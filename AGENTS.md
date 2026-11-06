@@ -51,8 +51,10 @@ lib/
     deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
     organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, and the
                                 selected one
-    instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/,
-                                and deleting an organization's instances; never sync, install or launch
+    instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/:
+                                .bc-launcher/state.json (what is installed), its status against the server
+                                (not installed, update available, up to date), deleting an organization's
+                                instances; never sync, install or launch
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()

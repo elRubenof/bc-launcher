@@ -102,5 +102,9 @@
   "removeOrganizationQuestion": "Remove {name}?",
   "@removeOrganizationQuestion": {"placeholders": {"name": {"type": "String"}}},
   "removeOrganizationDesc": "It will no longer show up in the launcher, and its instances will be deleted from this computer, including worlds and screenshots. To add it again you'll have to open its link.",
-  "remove": "Remove"
+  "remove": "Remove",
+
+  "installed": "Installed",
+  "notInstalled": "Not installed",
+  "updateAvailable": "Update available"
 }

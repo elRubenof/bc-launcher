@@ -93,5 +93,9 @@
   "removeOrganization": "Eliminar organización",
   "removeOrganizationQuestion": "¿Eliminar {name}?",
   "removeOrganizationDesc": "Dejará de aparecer en el launcher y se borrarán de este equipo sus instancias, incluidos los mundos y las capturas de pantalla. Para volver a añadirla tendrás que abrir su enlace.",
-  "remove": "Eliminar"
+  "remove": "Eliminar",
+
+  "installed": "Instalada",
+  "notInstalled": "Sin instalar",
+  "updateAvailable": "Actualización disponible"
 }
