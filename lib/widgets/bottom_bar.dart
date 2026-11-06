@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
-import 'package:bc_launcher/services/game_installer.dart';
 import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_installer.dart';
@@ -316,10 +315,6 @@ class _BottomBarState extends State<BottomBar> {
       ApiError(type: ApiErrorType.notFound) => (
         l.instanceGoneTitle(name),
         l.instanceGoneDesc,
-      ),
-      GameFilesError(cause: UnsupportedLoaderError(:final loader)) => (
-        l.launchError,
-        l.loaderNotSupportedDesc(name, loader.displayName),
       ),
       _ when cause != null && InstanceInstaller.isOffline(cause) => (
         l.organizationUnreachableTitle(widget.organization.name),

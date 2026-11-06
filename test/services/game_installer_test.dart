@@ -16,6 +16,7 @@ import 'package:path/path.dart';
 /// Mojang's servers: the version manifest, one version JSON and its files.
 class FakeMojang implements HttpClientAdapter {
   final files = <String, String>{};
+  final binaries = <String, List<int>>{};
   final requests = <String>[];
   bool offline = false;
 
@@ -139,6 +140,9 @@ class FakeMojang implements HttpClientAdapter {
         reason: 'offline',
       );
     }
+
+    final bytes = binaries[url];
+    if (bytes != null) return ResponseBody.fromBytes(bytes, 200);
 
     final body = files[url];
     if (body == null) return ResponseBody.fromString('', 404);
@@ -401,21 +405,6 @@ void main() {
       GameInstaller.versionIdOf(manifest(loader: LoaderType.quilt)),
       'quilt-loader-0.16.5-1.21.1',
     );
-  });
-
-  test('loaders it can not install yet', () async {
-    for (final loader in [LoaderType.forge, LoaderType.neoforge]) {
-      await expectLater(
-        GameInstaller.install(manifest(loader: loader), folder),
-        throwsA(
-          isA<UnsupportedLoaderError>().having(
-            (e) => e.loader,
-            'loader',
-            loader,
-          ),
-        ),
-      );
-    }
   });
 
   test('offline before anything is installed', () async {

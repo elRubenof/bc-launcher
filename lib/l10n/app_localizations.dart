@@ -679,12 +679,6 @@ abstract class AppLocalizations {
   /// **'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.'**
   String get downloadFailedDesc;
 
-  /// No description provided for @loaderNotSupportedDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} uses {loader}, which this version of the launcher can\'t install yet.'**
-  String loaderNotSupportedDesc(String name, String loader);
-
   /// No description provided for @gameFilesFailedDesc.
   ///
   /// In en, this message translates to:

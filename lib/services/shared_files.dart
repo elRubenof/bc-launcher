@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:bc_launcher/services/forge_installer.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
 import 'package:path/path.dart';
 
@@ -41,6 +42,11 @@ class SharedFiles {
             ),
           );
         }
+      }
+
+      // What the Forge and NeoForge processors made.
+      for (final String path in data[ForgeInstaller.generatedKey] ?? []) {
+        libraries.add(normalize(joinAll([root, ...posix.split(path)])));
       }
 
       final index = data['assetIndex']?['id'];

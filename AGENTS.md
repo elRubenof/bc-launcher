@@ -70,9 +70,14 @@ lib/
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
                                 libraries, client jar, natives, assets and Java; Fabric/Quilt profile from their
-                                meta APIs; Forge/NeoForge not yet
+                                meta APIs; Forge/NeoForge through ForgeInstaller
+    forge_installer.dart        Forge 1.13+ and NeoForge with their official installer: its version JSON and
+                                libraries, then its client processors run with Java; the files they make in the
+                                shared libraries/ are listed in the saved version JSON (bcLauncherGenerated), so
+                                the cleaning keeps them and a missing one installs it again
     asset_manager.dart          the game's assets from Mojang (index and objects by hash), shared by every instance
-    shared_files.dart           deletes the shared libraries and assets no installed instance uses
+    shared_files.dart           deletes the shared libraries and assets no installed instance uses (Forge's
+                                generated files included)
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
                                 (libraries optionally in the shared folder)
@@ -190,7 +195,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch** (done, `GameProcess`): game output in a log file, crash detection, the launcher hidden while playing unless it stays open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta), cleaning the shared files (`SharedFiles`) running the game (`GameProcess`, against a fake process) and zipping its logs (`LogExport`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`) running the game (`GameProcess`, against a fake process) and zipping its logs (`LogExport`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 

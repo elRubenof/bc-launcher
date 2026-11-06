@@ -5,6 +5,7 @@ import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/manifest.dart';
 import 'package:bc_launcher/services/asset_manager.dart';
 import 'package:bc_launcher/services/file_downloader.dart';
+import 'package:bc_launcher/services/forge_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/services/library_manager.dart';
@@ -23,17 +24,7 @@ class UnknownMinecraftVersionError implements Exception {
   String toString() => "UnknownMinecraftVersionError($version)";
 }
 
-/// The instance's loader can't be installed by this launcher yet.
-class UnsupportedLoaderError implements Exception {
-  final LoaderType loader;
-
-  const UnsupportedLoaderError(this.loader);
-
-  @override
-  String toString() => "UnsupportedLoaderError(${loader.name})";
-}
-
-/// Fabric or Quilt don't have [version] of their loader for this Minecraft.
+/// The loader doesn't have [version] for this Minecraft version.
 class UnknownLoaderVersionError implements Exception {
   final LoaderType loader;
   final String? version;
@@ -72,18 +63,34 @@ class GameInstaller {
     void Function(double progress)? onProgress,
   }) async {
     final loader = manifest.loaderType;
-    if (loader != LoaderType.vanilla && !loaderMeta.containsKey(loader)) {
-      throw UnsupportedLoaderError(loader);
-    }
+    final forge =
+        !loaderMeta.containsKey(loader) && loader != LoaderType.vanilla;
 
-    const steps = 3;
+    // Forge and NeoForge first run their installer.
+    final steps = forge ? 4 : 3;
+    final first = forge ? 1 : 0;
     void Function(double) step(int index) =>
-        (progress) => onProgress?.call((index + progress) / steps);
+        (progress) => onProgress?.call((first + index + progress) / steps);
 
     await _ensureVersionJson(manifest.minecraftVersion, folder);
 
     final versionId = versionIdOf(manifest);
-    if (loader != LoaderType.vanilla) {
+    final shared = await InstanceManager.sharedFolder();
+    if (forge) {
+      final version = manifest.loaderVersion;
+      if (version == null) throw UnknownLoaderVersionError(loader, version);
+
+      await ForgeInstaller.install(
+        loader,
+        manifest.minecraftVersion,
+        version,
+        folder,
+        shared,
+        java: (versionData) =>
+            ensureJava(versionData, Directory(join(shared.path, "runtime"))),
+        onProgress: (progress) => onProgress?.call(progress / steps),
+      );
+    } else if (loader != LoaderType.vanilla) {
       await _ensureLoaderProfile(manifest, versionId, folder);
     }
 
@@ -92,7 +99,6 @@ class GameInstaller {
       folder.path,
     );
 
-    final shared = await InstanceManager.sharedFolder();
     await LibraryManager.ensureLibraries(
       versionData,
       folder,
@@ -117,13 +123,23 @@ class GameInstaller {
     return versionId;
   }
 
-  /// The version to launch: Minecraft's, or the loader's profile, named as
-  /// Fabric and Quilt name it (`fabric-loader-0.16.5-1.21.1`).
-  static String versionIdOf(Manifest manifest) =>
-      manifest.loaderType == LoaderType.vanilla
-      ? manifest.minecraftVersion
-      : "${manifest.loaderType.name}-loader-${manifest.loaderVersion}-"
-            "${manifest.minecraftVersion}";
+  /// The version to launch: Minecraft's, or the loader's, named as its
+  /// installer names it (`fabric-loader-0.16.5-1.21.1`, `1.20.1-forge-47.3.0`,
+  /// `neoforge-21.1.77`).
+  static String versionIdOf(Manifest manifest) {
+    final loader = manifest.loaderType;
+    final minecraft = manifest.minecraftVersion;
+    final version = manifest.loaderVersion;
+    return switch (loader) {
+      LoaderType.vanilla => minecraft,
+      LoaderType.forge || LoaderType.neoforge => ForgeInstaller.versionId(
+        loader,
+        minecraft,
+        version ?? "",
+      ),
+      _ => "${loader.name}-loader-$version-$minecraft",
+    };
+  }
 
   /// Saves the loader's profile as `versions/<id>/<id>.json` unless it is
   /// already there.
