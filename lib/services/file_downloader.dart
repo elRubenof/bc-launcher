@@ -3,18 +3,20 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 
-/// A file to download to [path], optionally checked against its [sha1] and
-/// [size].
+/// A file to download to [path], optionally checked against its [sha1] or
+/// [sha256] and [size].
 class DownloadTask {
   final String path;
   final String url;
   final String? sha1;
+  final String? sha256;
   final int? size;
 
   const DownloadTask({
     required this.path,
     required this.url,
     this.sha1,
+    this.sha256,
     this.size,
   });
 
@@ -45,9 +47,11 @@ class FileDownloader {
 
   /// Downloads [tasks]. [onProgress] gets a value from 0 to 1 and is only
   /// called when there is something to download.
+  /// [onDownloaded] is called after each file is in place.
   static Future<void> downloadAll(
     List<DownloadTask> tasks, {
     void Function(double progress)? onProgress,
+    void Function(DownloadTask task)? onDownloaded,
   }) async {
     if (tasks.isEmpty) return;
 
@@ -64,6 +68,7 @@ class FileDownloader {
       while (queue.moveNext()) {
         final task = queue.current;
         await _download(task);
+        onDownloaded?.call(task);
 
         doneBytes += task.size ?? 0;
         doneTasks++;
@@ -81,7 +86,10 @@ class FileDownloader {
     await part.parent.create(recursive: true);
     await dio.download(task.url, part.path);
 
-    if (task.sha1 != null && await sha1Of(part) != task.sha1) {
+    final mismatch =
+        (task.sha1 != null && await sha1Of(part) != task.sha1) ||
+        (task.sha256 != null && await sha256Of(part) != task.sha256);
+    if (mismatch) {
       await part.delete();
       throw FileSystemException('Hash mismatch', task.path);
     }
@@ -91,5 +99,9 @@ class FileDownloader {
 
   static Future<String> sha1Of(File file) async {
     return (await file.openRead().transform(sha1).first).toString();
+  }
+
+  static Future<String> sha256Of(File file) async {
+    return (await file.openRead().transform(sha256).first).toString();
   }
 }
