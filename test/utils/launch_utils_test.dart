@@ -354,6 +354,109 @@ void main() {
       );
     });
 
+    test('fullscreen, or the resolution in a window', () async {
+      final data = {
+        ...vanilla,
+        'arguments': {
+          'game': [
+            '--username',
+            '\${auth_player_name}',
+            {
+              'rules': [
+                {
+                  'action': 'allow',
+                  'features': {'has_custom_resolution': true},
+                },
+              ],
+              'value': [
+                '--width',
+                '\${resolution_width}',
+                '--height',
+                '\${resolution_height}',
+              ],
+            },
+          ],
+          'jvm': ['-cp', '\${classpath}'],
+        },
+      };
+
+      final fullscreen = await MinecraftLauncherCore.getMinecraftCommand(
+        data,
+        root.path,
+        {'fullscreen': true},
+      );
+      expect(fullscreen, contains('--fullscreen'));
+      expect(fullscreen, isNot(contains('--width')));
+
+      final window = await MinecraftLauncherCore.getMinecraftCommand(
+        data,
+        root.path,
+        {
+          'customResolution': true,
+          'resolutionWidth': '1280',
+          'resolutionHeight': '720',
+        },
+      );
+      expect(window, isNot(contains('--fullscreen')));
+      expect(
+        window,
+        containsAllInOrder(['--width', '1280', '--height', '720']),
+      );
+    });
+
+    test('Quick Play joins the server where the version has it', () {
+      final quickPlay = {
+        ...vanilla,
+        'arguments': {
+          'game': [
+            {
+              'rules': [
+                {
+                  'action': 'allow',
+                  'features': {'is_quick_play_multiplayer': true},
+                },
+              ],
+              'value': ['--quickPlayMultiplayer', '\${quickPlayMultiplayer}'],
+            },
+          ],
+        },
+      };
+
+      expect(
+        MinecraftLauncherCore.serverOptions(quickPlay, 'play.example.com'),
+        {'quickPlayMultiplayer': 'play.example.com'},
+      );
+      expect(
+        MinecraftLauncherCore.serverOptions(vanilla, 'play.example.com:25566'),
+        {'server': 'play.example.com', 'port': '25566'},
+      );
+      expect(
+        MinecraftLauncherCore.serverOptions({
+          'minecraftArguments': '--username \${auth_player_name}',
+        }, 'play.example.com'),
+        {'server': 'play.example.com'},
+      );
+    });
+
+    test('server addresses split into host and port', () {
+      expect(MinecraftLauncherCore.splitAddress('example.com'), (
+        'example.com',
+        null,
+      ));
+      expect(MinecraftLauncherCore.splitAddress('example.com:25566'), (
+        'example.com',
+        '25566',
+      ));
+      expect(MinecraftLauncherCore.splitAddress('[2001:db8::1]:25566'), (
+        '2001:db8::1',
+        '25566',
+      ));
+      expect(MinecraftLauncherCore.splitAddress('2001:db8::1'), (
+        '2001:db8::1',
+        null,
+      ));
+    });
+
     test('the command line of a legacy version with a server', () async {
       final command = await MinecraftLauncherCore.getMinecraftCommand(
         {

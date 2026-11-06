@@ -192,6 +192,31 @@ class MinecraftLauncherCore {
     return argList;
   }
 
+  /// The options that join the server at [address] on start: Quick Play
+  /// where the version has it (1.20+), `--server` and `--port` before.
+  static Map<String, String> serverOptions(Map versionData, String address) {
+    final game = versionData["arguments"]?["game"];
+    if (jsonEncode(game ?? []).contains("is_quick_play_multiplayer")) {
+      return {"quickPlayMultiplayer": address};
+    }
+
+    final (host, port) = splitAddress(address);
+    return {"server": host, "port": ?port};
+  }
+
+  /// The host and port of a server address.
+  static (String, String?) splitAddress(String address) {
+    final bracketed = RegExp(r"^\[(.+)\](?::(\d+))?$").firstMatch(address);
+    if (bracketed != null) return (bracketed[1]!, bracketed[2]);
+
+    final parts = address.split(":");
+    if (parts.length == 2 && int.tryParse(parts[1]) != null) {
+      return (parts[0], parts[1]);
+    }
+
+    return (address, null);
+  }
+
   /// Reads the JSON of [version] and merges it with the version it inherits
   /// from, if any.
   static Future<Map> loadVersionData(String version, String path) async {
@@ -269,6 +294,10 @@ class MinecraftLauncherCore {
         command.add("--port");
         command.add(options["port"]);
       }
+    }
+
+    if (options['fullscreen'] ?? false) {
+      command.add("--fullscreen");
     }
 
     if (options['disableMultiplayer'] ?? false) {

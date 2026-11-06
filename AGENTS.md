@@ -192,11 +192,7 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
 ## Known issues (fix when touching the area; don't copy these patterns)
 
-**Critical**
-- Fullscreen and resolution settings are never applied (no `--fullscreen`, `customResolution` never set).
-
 **Important**
-- Auto-connect uses Quick Play only (1.20+); older versions need `--server`/`--port`.
 - The game process: the launcher calls `exit(0)` on the first stdout line, no logs are kept, and the pipes are not drained when staying open.
 - XSTS error codes are not handled.
 

@@ -170,9 +170,17 @@ class Minecraft {
       'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
       'sharedRoot': sharedFolder.path,
       if (Settings.autoConnect && instance.serverAddress != null)
-        'quickPlayMultiplayer': instance.serverAddress,
-      if (!Settings.fullscreen) 'resolutionWidth': "${Settings.gameWidth}",
-      if (!Settings.fullscreen) 'resolutionHeight': "${Settings.gameHeight}",
+        ...MinecraftLauncherCore.serverOptions(
+          versionData,
+          instance.serverAddress!,
+        ),
+      if (Settings.fullscreen)
+        'fullscreen': true
+      else ...{
+        'customResolution': true,
+        'resolutionWidth': "${Settings.gameWidth}",
+        'resolutionHeight': "${Settings.gameHeight}",
+      },
     };
 
     List<String> cmd = await MinecraftLauncherCore.getMinecraftCommand(
