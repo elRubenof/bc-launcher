@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "id": "n1",
+      "title": "Empieza la temporada 3",
+      "body": "Texto en **markdown**",
+      "imageUrl": "https://example.com/api/v1/assets/dddd",
+      "link": "https://example.com/temporada-3",
+      "pinned": true,
+      "publishedAt": "2026-11-01T18:00:00.000Z"
+    },
+    {
+      "id": "n2",
+      "title": "Mantenimiento",
+      "body": "Sin imagen ni enlace",
+      "imageUrl": null,
+      "link": null,
+      "pinned": false,
+      "publishedAt": "2026-10-20T09:30:00.000Z"
+    }
+  ],
+  "nextCursor": "cursor-2"
+}

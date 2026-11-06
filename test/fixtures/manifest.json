@@ -1,0 +1,23 @@
+{
+  "contentVersion": 3,
+  "minecraft": { "version": "1.21.1" },
+  "loader": { "type": "fabric", "version": "0.16.5" },
+  "server": { "address": "play.example.com" },
+  "managedDirs": ["mods"],
+  "files": [
+    {
+      "path": "mods/sodium.jar",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "size": 1234567,
+      "policy": "always",
+      "url": "https://example.com/api/v1/blobs/1111111111111111111111111111111111111111111111111111111111111111?exp=1&sig=a"
+    },
+    {
+      "path": "options.txt",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "size": 42,
+      "policy": "once",
+      "url": "https://example.com/api/v1/blobs/2222222222222222222222222222222222222222222222222222222222222222?exp=1&sig=b"
+    }
+  ]
+}

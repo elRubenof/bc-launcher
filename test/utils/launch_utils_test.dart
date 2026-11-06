@@ -1,0 +1,352 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
+import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart';
+
+/// This machine's name in version JSON rules, and one that isn't.
+final thisOs = Platform.isWindows
+    ? 'windows'
+    : Platform.isMacOS
+    ? 'osx'
+    : 'linux';
+final otherOs = thisOs == 'linux' ? 'windows' : 'linux';
+
+void main() {
+  group('rules', () {
+    bool allowed(List rules, [Map options = const {}]) =>
+        MinecraftLauncherHelper.parseRuleList(rules, options);
+
+    test('allow without conditions', () {
+      expect(
+        allowed([
+          {'action': 'allow'},
+        ]),
+        isTrue,
+      );
+    });
+
+    test('allow only on an OS', () {
+      expect(
+        allowed([
+          {
+            'action': 'allow',
+            'os': {'name': thisOs},
+          },
+        ]),
+        isTrue,
+      );
+      expect(
+        allowed([
+          {
+            'action': 'allow',
+            'os': {'name': otherOs},
+          },
+        ]),
+        isFalse,
+      );
+    });
+
+    test('disallow on an OS', () {
+      expect(
+        allowed([
+          {'action': 'allow'},
+          {
+            'action': 'disallow',
+            'os': {'name': thisOs},
+          },
+        ]),
+        isFalse,
+      );
+      expect(
+        allowed([
+          {'action': 'allow'},
+          {
+            'action': 'disallow',
+            'os': {'name': otherOs},
+          },
+        ]),
+        isTrue,
+      );
+    });
+
+    test('features need their option', () {
+      final rule = [
+        {
+          'action': 'allow',
+          'features': {'has_custom_resolution': true},
+        },
+      ];
+      expect(allowed(rule), isFalse);
+      expect(allowed(rule, {'customResolution': true}), isTrue);
+
+      final quickPlay = [
+        {
+          'action': 'allow',
+          'features': {'is_quick_play_multiplayer': true},
+        },
+      ];
+      expect(allowed(quickPlay), isFalse);
+      expect(
+        allowed(quickPlay, {'quickPlayMultiplayer': 'play.example.com'}),
+        isTrue,
+      );
+    });
+
+    test('an empty list allows', () {
+      expect(allowed([]), isTrue);
+    });
+  });
+
+  group('libraries', () {
+    final root = join('mc');
+
+    test('path of a Maven name', () {
+      expect(
+        MinecraftLauncherHelper.getLibraryPath('org.lwjgl:lwjgl:3.3.3', root),
+        join(
+          root,
+          'libraries',
+          'org',
+          'lwjgl',
+          'lwjgl',
+          '3.3.3',
+          'lwjgl-3.3.3.jar',
+        ),
+      );
+    });
+
+    test('path with a classifier', () {
+      expect(
+        MinecraftLauncherHelper.getLibraryPath(
+          'org.lwjgl:lwjgl:3.3.3:natives-macos-arm64',
+          root,
+        ),
+        join(
+          root,
+          'libraries',
+          'org',
+          'lwjgl',
+          'lwjgl',
+          '3.3.3',
+          'lwjgl-3.3.3-natives-macos-arm64.jar',
+        ),
+      );
+    });
+
+    test('path with another extension', () {
+      expect(
+        MinecraftLauncherHelper.getLibraryPath(
+          'com.example:pack:1.0@zip',
+          root,
+        ),
+        join(
+          root,
+          'libraries',
+          'com',
+          'example',
+          'pack',
+          '1.0',
+          'pack-1.0.zip',
+        ),
+      );
+    });
+
+    test('natives of this OS', () {
+      final natives = MinecraftLauncherHelper.getNatives({
+        'natives': {
+          'windows': 'natives-windows-\${arch}',
+          'osx': 'natives-osx',
+          'linux': 'natives-linux',
+        },
+      });
+      expect(
+        natives,
+        startsWith('natives-${thisOs == 'osx' ? 'osx' : thisOs}'),
+      );
+      expect(natives, isNot(contains('\${arch}')));
+      expect(MinecraftLauncherHelper.getNatives({'name': 'a:b:1'}), '');
+    });
+
+    test('classpath separator of this OS', () {
+      expect(
+        MinecraftLauncherHelper.getClasspathSeparator(),
+        Platform.isWindows ? ';' : ':',
+      );
+    });
+
+    test(
+      'classpath skips libraries for other OSes and ends with the client jar',
+      () {
+        final classpath = MinecraftLauncherCore.getLibraries({
+          'id': '1.21.1',
+          'libraries': [
+            {'name': 'com.google.code.gson:gson:2.10'},
+            {
+              'name': 'org.example:other-os:1.0',
+              'rules': [
+                {
+                  'action': 'allow',
+                  'os': {'name': otherOs},
+                },
+              ],
+            },
+          ],
+        }, root);
+        final entries = classpath.split(
+          MinecraftLauncherHelper.getClasspathSeparator(),
+        );
+
+        expect(entries, [
+          MinecraftLauncherHelper.getLibraryPath(
+            'com.google.code.gson:gson:2.10',
+            root,
+          ),
+          join(root, 'versions', '1.21.1', '1.21.1.jar'),
+        ]);
+      },
+    );
+  });
+
+  group('versions', () {
+    late Directory root;
+
+    setUp(() async {
+      root = await Directory.systemTemp.createTemp('launch_utils_test');
+    });
+    tearDown(() => root.delete(recursive: true));
+
+    Future<void> writeVersion(String id, Map json) async {
+      final file = File(join(root.path, 'versions', id, '$id.json'));
+      await file.create(recursive: true);
+      await file.writeAsString(jsonEncode(json));
+    }
+
+    final vanilla = {
+      'id': '1.21.1',
+      'type': 'release',
+      'mainClass': 'net.minecraft.client.main.Main',
+      'assets': '17',
+      'libraries': [
+        {'name': 'com.google.code.gson:gson:2.10'},
+        {'name': 'org.lwjgl:lwjgl:3.3.3'},
+      ],
+      'arguments': {
+        'game': ['--username', '\${auth_player_name}'],
+        'jvm': ['-cp', '\${classpath}'],
+      },
+    };
+    final fabric = {
+      'id': 'fabric-loader-0.16.5-1.21.1',
+      'inheritsFrom': '1.21.1',
+      'mainClass': 'net.fabricmc.loader.impl.launch.knot.KnotClient',
+      'libraries': [
+        {'name': 'net.fabricmc:fabric-loader:0.16.5'},
+        {'name': 'com.google.code.gson:gson:2.11'},
+      ],
+      'arguments': {
+        'game': ['--fabric'],
+      },
+    };
+
+    test('a version that is not installed is an error', () {
+      expect(
+        MinecraftLauncherCore.loadVersionData('1.21.1', root.path),
+        throwsException,
+      );
+    });
+
+    test('inheritsFrom merges the loader onto vanilla', () async {
+      await writeVersion('1.21.1', vanilla);
+      await writeVersion('fabric-loader-0.16.5-1.21.1', fabric);
+
+      final data = await MinecraftLauncherCore.loadVersionData(
+        'fabric-loader-0.16.5-1.21.1',
+        root.path,
+      );
+
+      expect(data['id'], 'fabric-loader-0.16.5-1.21.1');
+      expect(data['mainClass'], fabric['mainClass']);
+      expect(data['assets'], '17');
+      // The loader's libraries win; vanilla only adds the ones it lacks.
+      expect(
+        [for (final lib in data['libraries']) lib['name']],
+        [
+          'net.fabricmc:fabric-loader:0.16.5',
+          'com.google.code.gson:gson:2.11',
+          'org.lwjgl:lwjgl:3.3.3',
+        ],
+      );
+      expect(data['arguments']['game'], [
+        '--username',
+        '\${auth_player_name}',
+        '--fabric',
+      ]);
+      expect(data['arguments']['jvm'], ['-cp', '\${classpath}']);
+    });
+
+    test('the command line of a modern version', () async {
+      await writeVersion('1.21.1', vanilla);
+      final data = await MinecraftLauncherCore.loadVersionData(
+        '1.21.1',
+        root.path,
+      );
+
+      final command = await MinecraftLauncherCore.getMinecraftCommand(
+        data,
+        root.path,
+        {
+          'executablePath': 'java',
+          'jvmArguments': ['-Xmx4G'],
+          'username': 'Nyxar',
+        },
+      );
+
+      expect(command.first, 'java');
+      expect(command[1], '-Xmx4G');
+      expect(
+        command,
+        containsAllInOrder(['-cp', isNot(contains('\${classpath}'))]),
+      );
+      expect(
+        command,
+        containsAllInOrder([data['mainClass'], '--username', 'Nyxar']),
+      );
+    });
+
+    test('the command line of a legacy version with a server', () async {
+      final command = await MinecraftLauncherCore.getMinecraftCommand(
+        {
+          'id': '1.12.2',
+          'type': 'release',
+          'mainClass': 'net.minecraft.client.main.Main',
+          'libraries': [],
+          'minecraftArguments':
+              '--username \${auth_player_name} --version \${version_name}',
+        },
+        root.path,
+        {'username': 'Nyxar', 'server': 'play.example.com', 'port': '25565'},
+      );
+
+      expect(
+        command,
+        containsAllInOrder(['-cp', 'net.minecraft.client.main.Main']),
+      );
+      expect(
+        command.sublist(command.indexOf('net.minecraft.client.main.Main') + 1),
+        [
+          '--username',
+          'Nyxar',
+          '--version',
+          '1.12.2',
+          '--server',
+          'play.example.com',
+          '--port',
+          '25565',
+        ],
+      );
+    });
+  });
+}

@@ -17,7 +17,7 @@ This repo contains **only the launcher app**. The backend (`bc-launcher-server`:
 ```bash
 flutter pub get                 # also regenerates l10n (flutter: generate: true)
 flutter analyze                 # must pass with no issues before committing
-flutter test                    # no tests yet (see Target architecture → Tests)
+flutter test                    # unit tests in test/ (see Target architecture → Tests)
 flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 ```
@@ -63,6 +63,8 @@ lib/
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
                                 full-screen error message, add-organization dialog opened by links)
 assets/img/                     logo.svg, logo.png, background.png
+test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1
+                                responses shaped like the server's openapi.json, read with fixture()
 ```
 
 ## Conventions
@@ -156,7 +158,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
-- **Tests:** unit-test the pure logic first: `launch_utils` (rules, library paths, `inheritJson`), version negotiation and sync planning.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Next: sync planning. Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
