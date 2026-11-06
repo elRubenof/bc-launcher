@@ -115,6 +115,13 @@ class OrganizationStore {
     await preferences.setString(_lastInstanceKey(key), instanceId);
   }
 
+  /// Forgets the last instance of the organization with [key], so the
+  /// launcher opens on its list next time.
+  static Future<void> clearLastInstance(String key) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_lastInstanceKey(key));
+  }
+
   static String _lastInstanceKey(String key) => "lastInstance.$key";
 
   static Future<void> _write(List<Organization> list) async {

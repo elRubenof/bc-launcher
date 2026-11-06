@@ -154,6 +154,15 @@ void main() {
       expect(await OrganizationStore.lastInstance('a.com'), isNull);
       expect(await OrganizationStore.lastInstance('b.com'), 'two');
     });
+
+    test('switching instances forgets it', () async {
+      await OrganizationStore.save(organization('https://a.com'));
+      await OrganizationStore.setLastInstance('a.com', 'one');
+
+      await OrganizationStore.clearLastInstance('a.com');
+
+      expect(await OrganizationStore.lastInstance('a.com'), isNull);
+    });
   });
 
   group('TokenStore', () {

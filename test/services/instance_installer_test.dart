@@ -126,6 +126,47 @@ void main() {
     });
   });
 
+  group('play', () {
+    test('repairs an instance that is up to date', () async {
+      await enter(instance());
+      final mod = File(join(folder.path, 'mods', 'a.jar'));
+      await mod.writeAsString('tampered');
+
+      final version = await InstanceInstaller.play(
+        client,
+        'example.com',
+        instance(),
+      );
+
+      expect(version, 'fabric-loader-0.16.5-1.21.1');
+      expect(await mod.readAsString(), 'mod a');
+      expect(prepared, hasLength(2));
+    });
+
+    test('applies an update and saves it', () async {
+      await enter(instance());
+      server
+        ..contentVersion = 2
+        ..etag = '"2"'
+        ..files = {'mods/b.jar': 'mod b'};
+
+      await InstanceInstaller.play(client, 'example.com', instance());
+
+      expect(await File(join(folder.path, 'mods', 'b.jar')).exists(), isTrue);
+      expect((await state())!.contentVersion, 2);
+    });
+
+    test('fails like entering', () async {
+      await enter(instance());
+      prepareError = Exception('no network');
+
+      await expectLater(
+        InstanceInstaller.play(client, 'example.com', instance()),
+        throwsA(isA<GameFilesError>()),
+      );
+    });
+  });
+
   group('failures', () {
     test('the state is incomplete until the installation ends', () async {
       prepareError = Exception('Version not found');

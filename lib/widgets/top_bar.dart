@@ -1,4 +1,7 @@
+import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
+import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -7,13 +10,13 @@ import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 class TopBar extends StatefulWidget {
-  final Map<String, dynamic> server;
+  final Organization organization;
+  final Instance instance;
 
-  const TopBar({super.key, required this.server});
+  const TopBar({super.key, required this.organization, required this.instance});
 
   @override
   State<TopBar> createState() => _TopBarState();
@@ -40,7 +43,12 @@ class _TopBarState extends State<TopBar> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [logo(), tabs(), account(), const WindowButtons()],
+              children: [
+                logo(),
+                tabs(),
+                account(widget.organization),
+                const WindowButtons(),
+              ],
             ),
           ),
         ],
@@ -48,32 +56,34 @@ class _TopBarState extends State<TopBar> {
     );
   }
 
+  /// The instance's icon, or the organization's logo when it has none.
   Widget logo() {
+    final url = widget.instance.iconUrl ?? widget.organization.logoUrl;
     return Container(
       height: Constants.topBarHeight,
       width: 100,
       alignment: Alignment.center,
-      child: Image.network(
-        "${Constants.api}/server/logo?id=${widget.server['id']}",
-        height: Constants.topBarHeight * 0.75,
-        errorBuilder: (context, error, stackTrace) => Container(),
-      ),
+      child: url == null
+          ? null
+          : Image.network(
+              url,
+              height: Constants.topBarHeight * 0.75,
+              errorBuilder: (context, error, stackTrace) => Container(),
+            ),
     );
   }
 
   Widget tabs() {
     final l = Utility.getLocalizations(context);
-    final tabsNumber = widget.server['map'] != null ? 3 : 2;
+    const tabsNumber = 2;
 
     return Container(
       width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
-      constraints: BoxConstraints(minWidth: 120.0 * tabsNumber),
+      constraints: const BoxConstraints(minWidth: 120.0 * tabsNumber),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TabButton(label: l.home, icon: Icons.home, tab: 0),
-          if (widget.server['map'] != null)
-            TabButton(label: l.map, icon: Icons.map, tab: 1),
           TabButton(label: l.settings, icon: Icons.settings, tab: 2),
         ],
       ),
@@ -81,7 +91,7 @@ class _TopBarState extends State<TopBar> {
   }
 }
 
-Widget account() {
+Widget account(Organization organization) {
   return ValueListenableBuilder(
     valueListenable: Minecraft.profile,
     builder: (context, value, child) {
@@ -128,8 +138,7 @@ Widget account() {
               hoverColor: Colors.white.withValues(alpha: 0.7),
               size: 18.0,
               onTap: () async {
-                final preferences = await SharedPreferences.getInstance();
-                await preferences.remove('savedInstance');
+                await OrganizationStore.clearLastInstance(organization.key);
 
                 Utility.pushReplacement(context, const OrganizationsScreen());
               },

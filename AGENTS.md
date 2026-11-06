@@ -39,14 +39,14 @@ lib/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
                                 can't be shown (no access, incompatible, offline); remove an organization;
-                                entering an instance (by click, or the last one used on start)
+                                entering an instance (by click, or the last one used on start) opens MainScreen
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
-    instances_screen.dart       legacy list of the old API's servers (still used by the main screen's reinstall)
-    main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
+    main_screen.dart            an installed instance: tabs (home, settings) + top & bottom bars; Play repairs,
+                                updates and launches it (still with the launcher's look; its theme is phase 5)
     update_screen.dart          launcher self-update prompt (legacy, Windows-only)
-    tabs/                       home (news), map (webview_all), settings
+    tabs/                       home (news, empty until phase 5), map (webview_all, unused until phase 5), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
                                 instances, manifest, news; token, retries, 401 renewal, 426 renegotiation; ApiError
@@ -63,7 +63,8 @@ lib/
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
                                 deletions, installed.json; fetches the manifest again when its URLs expire
     instance_installer.dart     entering an instance: first time (download, then install the game files), update
-                                or nothing; state.json, servers.dat entry (created once, address moved)
+                                or nothing; before playing, always sync (repairs) and check the game files;
+                                state.json, servers.dat entry (created once, address moved)
     server_list.dart            the game's servers.dat (NBT): create it, move one entry's address
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
@@ -199,9 +200,7 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
 **Important**
 - Instance zip: fully loaded into memory, extracted synchronously on the UI isolate, no zip-slip check. Server-provided file paths aren't sanitized.
-- Install result is ignored. A partial install is treated as installed. Downloads go straight to the final path with no post-download hash check.
 - File download URLs interpolate the path without encoding.
-- Reinstall deletes the whole instance directory, including saves and options.
 - Auto-connect uses Quick Play only (1.20+); older versions need `--server`/`--port`.
 - The game process: the launcher calls `exit(0)` on the first stdout line, no logs are kept, and the pipes are not drained when staying open.
 - Legacy updater runs a downloaded `.exe` with no signature/hash check.

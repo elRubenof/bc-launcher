@@ -7,7 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  /// The instance's folder.
+  final String directory;
+
+  const SettingsScreen({super.key, required this.directory});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -35,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           title(l.gameSettings),
           section(l.directory, l.directoryDesc),
-          input(text: Settings.minecraftDirectory.path),
+          input(text: widget.directory),
           section(l.resolution, l.resolutionDesc),
           resolutionInput(),
           section(l.memoryAllocation),
@@ -51,10 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: const EdgeInsets.only(bottom: 33),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Constants.textColor,
-          fontSize: 20.5,
-        ),
+        style: const TextStyle(color: Constants.textColor, fontSize: 20.5),
       ),
     );
   }
@@ -67,10 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           margin: EdgeInsets.only(bottom: description != null ? 3 : 18),
           child: Text(
             title,
-            style: const TextStyle(
-              color: Constants.textColor,
-              fontSize: 17,
-            ),
+            style: const TextStyle(color: Constants.textColor, fontSize: 17),
           ),
         ),
         if (description != null)
@@ -78,18 +75,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             margin: const EdgeInsets.only(bottom: 20),
             child: Text(
               description,
-              style: TextStyle(
-                color: greyColor,
-                fontSize: 11,
-              ),
+              style: TextStyle(color: greyColor, fontSize: 11),
             ),
-          )
+          ),
       ],
     );
   }
 
-  Widget input(
-      {String? text, TextEditingController? controller, bool? isWidth}) {
+  Widget input({
+    String? text,
+    TextEditingController? controller,
+    bool? isWidth,
+  }) {
     final l = Utility.getLocalizations(context);
 
     return Container(
@@ -124,9 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     cursor: SystemMouseCursors.click,
                     child: CupertinoButton(
                       padding: EdgeInsets.zero,
-                      onPressed: () => launchUrl(
-                        Uri.file(text),
-                      ),
+                      onPressed: () => launchUrl(Uri.file(text)),
                       child: Container(
                         padding: const EdgeInsets.only(
                           left: 15,
@@ -214,13 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           input(controller: resolutionWith, isWidth: true),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Text(
-              "X",
-              style: TextStyle(
-                color: greyColor,
-                fontSize: 12,
-              ),
-            ),
+            child: Text("X", style: TextStyle(color: greyColor, fontSize: 12)),
           ),
           input(controller: resoulutionHeight, isWidth: false),
           Padding(
@@ -241,10 +230,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          Text(
-            l.fullscreen,
-            style: TextStyle(color: greyColor),
-          ),
+          Text(l.fullscreen, style: TextStyle(color: greyColor)),
         ],
       ),
     );
@@ -302,13 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
-            Text(
-              "GB",
-              style: TextStyle(
-                color: greyColor,
-                fontSize: 11,
-              ),
-            ),
+            Text("GB", style: TextStyle(color: greyColor, fontSize: 11)),
           ],
         ),
       ),
@@ -331,9 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           decoration: BoxDecoration(
             //color: const Color(0xFF683D1D),
-            border: Border.all(
-              color: Theme.of(context).primaryColor,
-            ),
+            border: Border.all(color: Theme.of(context).primaryColor),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -395,17 +373,9 @@ class _RectSliderThumbShape extends SliderComponentShape {
     assert(sliderTheme.thumbColor != null);
     final thumbColor = sliderTheme.thumbColor!;
 
-    final outterRect = Rect.fromCenter(
-      center: center,
-      width: 18,
-      height: 18,
-    );
+    final outterRect = Rect.fromCenter(center: center, width: 18, height: 18);
 
-    final innerRect = Rect.fromCenter(
-      center: center,
-      width: 15,
-      height: 15,
-    );
+    final innerRect = Rect.fromCenter(center: center, width: 15, height: 15);
 
     context.canvas.drawRRect(
       RRect.fromRectAndRadius(outterRect, const Radius.circular(2)),

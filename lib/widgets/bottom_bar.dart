@@ -1,7 +1,15 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:bc_launcher/screens/instances_screen.dart';
+import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/services/api_client.dart';
+import 'package:bc_launcher/services/game_installer.dart';
+import 'package:bc_launcher/services/instance_catalog.dart';
+import 'package:bc_launcher/services/instance_installer.dart';
+import 'package:bc_launcher/services/instance_manager.dart';
+import 'package:bc_launcher/services/organization_auth.dart';
+import 'package:bc_launcher/services/sync_engine.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
@@ -16,9 +24,16 @@ import 'package:path/path.dart' show join;
 import 'package:url_launcher/url_launcher_string.dart';
 
 class BottomBar extends StatefulWidget {
-  final Map<String, dynamic> server;
+  final Organization organization;
+  final Instance instance;
+  final Directory folder;
 
-  const BottomBar({super.key, required this.server});
+  const BottomBar({
+    super.key,
+    required this.organization,
+    required this.instance,
+    required this.folder,
+  });
 
   @override
   State<BottomBar> createState() => _BottomBarState();
@@ -38,16 +53,15 @@ class _BottomBarState extends State<BottomBar> {
           children: [
             ValueListenableBuilder(
               valueListenable: Utility.isLaunching,
-              builder:
-                  (context, value, child) => SizedBox(
-                    height: value ? 5 : 0,
-                    width: MediaQuery.of(context).size.width,
-                    child: LinearProgressIndicator(
-                      color: Constants.backgroundColor,
-                      backgroundColor: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+              builder: (context, value, child) => SizedBox(
+                height: value ? 5 : 0,
+                width: MediaQuery.of(context).size.width,
+                child: LinearProgressIndicator(
+                  color: Constants.backgroundColor,
+                  backgroundColor: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
             Container(
               height: Constants.topBarHeight,
@@ -70,32 +84,7 @@ class _BottomBarState extends State<BottomBar> {
           width: 210,
           color: Constants.mainColor,
           secondaryColor: Constants.mainColorDarked,
-          onPressed: () async {
-            if (Utility.isLaunching.value) return;
-            Utility.isLaunching.value = true;
-
-            try {
-              await Utility.checkFiles(widget.server['id']);
-              await Minecraft.launch(
-                widget.server,
-                onStartFailed: onLaunchFailed,
-                onPrepareProgress: (step, progress) {
-                  Utility.isLoading.value = true;
-                  Utility.loadingState.value = step == PrepareStep.java
-                      ? l.downloadingJava
-                      : l.downloadingLibraries;
-                  Utility.loadingProgress.value = progress;
-                },
-              );
-            } catch (e) {
-              log("Launch failed: $e");
-              onLaunchFailed();
-            } finally {
-              Utility.isLoading.value = false;
-              Utility.loadingState.value = null;
-              Utility.loadingProgress.value = null;
-            }
-          },
+          onPressed: play,
         ),
       ],
     );
@@ -151,27 +140,15 @@ class _BottomBarState extends State<BottomBar> {
           backgroundColor: Colors.white.withValues(alpha: 0.12),
           onTap: () async {
             Directory screenshotsDir = Directory(
-              join(Settings.minecraftDirectory.path, "screenshots"),
+              join(widget.folder.path, "screenshots"),
             );
 
             await screenshotsDir.create();
             launchUrlString("file://${screenshotsDir.path}");
           },
         ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 15),
-          child: MouseIconButton(
-            icon: Icons.autorenew,
-            size: 17.0,
-            toolTip: l.reinstall,
-            color: Constants.textColor,
-            hoverColor: Colors.white.withValues(alpha: 0.5),
-            backgroundSize: 35.0,
-            backgroundColor: Colors.white.withValues(alpha: 0.12),
-            onTap: showReinstallDialog,
-          ),
-        ),
-        if (widget.server['ip'] != null)
+        const SizedBox(width: 15),
+        if (widget.instance.serverAddress != null)
           Container(
             height: 35,
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -217,54 +194,78 @@ class _BottomBarState extends State<BottomBar> {
     );
   }
 
-  /// Re-enables Play and tells the user the game couldn't be started.
-  void onLaunchFailed() {
+  /// Repairs and updates the instance, checks its game files and starts
+  /// the game, while the bar above shows it is working.
+  Future<void> play() async {
+    if (Utility.isLaunching.value) return;
+    Utility.isLaunching.value = true;
+
+    final organization = widget.organization;
+    final instance = widget.instance;
+    try {
+      final versionId = await InstanceInstaller.play(
+        OrganizationAuth.clientFor(organization),
+        organization.key,
+        instance,
+      );
+      await Minecraft.launch(
+        instance,
+        widget.folder,
+        versionId,
+        await InstanceManager.sharedFolder(),
+        onStartFailed: () => onLaunchFailed(null),
+      );
+    } catch (e) {
+      log("Launch of ${instance.id} failed: $e");
+      onLaunchFailed(e);
+    }
+  }
+
+  /// Re-enables Play and tells the user why the game couldn't be started.
+  void onLaunchFailed(Object? error) {
     Utility.isLaunching.value = false;
     if (!mounted) return;
 
     final l = Utility.getLocalizations(context);
+    final name = widget.instance.name;
+    final cause = error is GameFilesError ? error.cause : error;
+    if (error is ApiError && !InstanceInstaller.isOffline(error)) {
+      InstanceCatalog.refresh(widget.organization);
+    }
+
+    final (title, description) = switch (error) {
+      null => (l.launchError, l.launchErrorDesc),
+      NotEnoughSpaceError(:final needed, :final available) => (
+        l.notEnoughSpaceTitle,
+        l.notEnoughSpaceDesc(
+          name,
+          (needed / (1024 * 1024)).ceil(),
+          (available / (1024 * 1024)).floor(),
+        ),
+      ),
+      ApiError(type: ApiErrorType.notFound) => (
+        l.instanceGoneTitle(name),
+        l.instanceGoneDesc,
+      ),
+      GameFilesError(cause: UnsupportedLoaderError(:final loader)) => (
+        l.launchError,
+        l.loaderNotSupportedDesc(name, loader.displayName),
+      ),
+      _ when cause != null && InstanceInstaller.isOffline(cause) => (
+        l.organizationUnreachableTitle(widget.organization.name),
+        l.organizationUnreachableDesc,
+      ),
+      _ => (l.launchError, l.launchErrorDesc),
+    };
+
     showDialog(
       context: context,
       builder: (context) {
         return CustomDialog(
-          title: l.launchError,
-          description: l.launchErrorDesc,
+          title: title,
+          description: description,
           mainButtonText: l.close,
           mainButtonOnPressed: () => Navigator.pop(context),
-        );
-      },
-    );
-  }
-
-  Future<void> showReinstallDialog() async {
-    final l = Utility.getLocalizations(context);
-
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return CustomDialog(
-          title: l.reinstallDialogTitle,
-          description:
-              "${l.reinstallDialogDescription} ${widget.server['name']}?",
-          mainButtonText: l.yes,
-          secondaryButtonText: l.no,
-          mainButtonOnPressed: () async {
-            Navigator.pop(context);
-            Utility.isLoading.value = true;
-
-            if (await Settings.minecraftDirectory.exists()) {
-              await Settings.minecraftDirectory.delete(recursive: true);
-            }
-
-            Utility.isLoading.value = false;
-            Utility.pushReplacement(
-              context,
-              InstancesScreen(server: widget.server),
-            );
-          },
-          secondaryButtonOnPressed: () {
-            Navigator.pop(context);
-          },
         );
       },
     );

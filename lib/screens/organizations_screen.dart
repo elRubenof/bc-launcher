@@ -1,8 +1,8 @@
-import 'dart:developer';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/screens/instance_loading_screen.dart';
+import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
@@ -70,7 +70,8 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     }
   }
 
-  /// Downloads, installs or updates [instance] when it needs it.
+  /// Downloads, installs or updates [instance] when it needs it, then opens
+  /// it.
   Future<void> _enter(Organization organization, Instance instance) async {
     if (_entering || !mounted) return;
     _entering = true;
@@ -94,8 +95,19 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
         await OrganizationStore.setLastInstance(organization.key, instance.id);
       }
 
-      // The instance screen moves to the API v1 with its theme.
-      log("Open ${instance.id}");
+      final folder = await InstanceManager.instanceFolder(
+        organization.key,
+        instance.id,
+      );
+      if (!mounted) return;
+      Utility.pushReplacement(
+        context,
+        MainScreen(
+          organization: organization,
+          instance: instance,
+          folder: folder,
+        ),
+      );
     } finally {
       _entering = false;
     }

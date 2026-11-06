@@ -43,11 +43,39 @@ class InstanceInstaller {
     void Function(EntryStep step)? onStep,
     void Function(SyncProgress progress)? onSyncProgress,
     void Function(double progress)? onInstallProgress,
+  }) => _run(
+    client,
+    organizationKey,
+    instance,
+    repair: false,
+    onStep: onStep,
+    onSyncProgress: onSyncProgress,
+    onInstallProgress: onInstallProgress,
+  );
+
+  /// Before playing: syncs even when [instance] is up to date, which repairs
+  /// whatever the player changed or deleted, applies any update and checks
+  /// the game files. Returns the version to launch. Throws like [enter].
+  static Future<String> play(
+    ApiClient client,
+    String organizationKey,
+    Instance instance,
+  ) async => (await _run(client, organizationKey, instance, repair: true))!;
+
+  /// Returns the version to launch, or `null` when nothing was done.
+  static Future<String?> _run(
+    ApiClient client,
+    String organizationKey,
+    Instance instance, {
+    required bool repair,
+    void Function(EntryStep step)? onStep,
+    void Function(SyncProgress progress)? onSyncProgress,
+    void Function(double progress)? onInstallProgress,
   }) async {
     final id = instance.id;
     final state = await InstanceManager.readState(organizationKey, id);
     final status = InstanceManager.statusOf(instance, state);
-    if (status == InstallStatus.upToDate) return;
+    if (status == InstallStatus.upToDate && !repair) return null;
 
     final firstTime = status == InstallStatus.notInstalled;
     var serverEntry = state?.serverEntryAddress;
@@ -115,6 +143,7 @@ class InstanceInstaller {
         serverEntryAddress: serverEntry,
       ),
     );
+    return GameInstaller.versionIdOf(manifest);
   }
 
   static bool isOffline(Object error) => switch (error) {
