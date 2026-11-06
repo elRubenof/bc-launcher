@@ -8,6 +8,7 @@ import 'package:bc_launcher/services/asset_manager.dart';
 import 'package:bc_launcher/services/file_downloader.dart';
 import 'package:bc_launcher/services/game_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
+import 'package:bc_launcher/services/java_manager.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -172,12 +173,11 @@ void main() {
     mojang = FakeMojang()..addVersion('1.21.1');
     FileDownloader.dio.httpClientAdapter = mojang;
     javaIn = [];
-    GameInstaller.ensureJava = (versionData, runtimesDir, {onProgress}) async {
+    GameInstaller.planJava = (versionData, runtimesDir) async {
       javaIn.add(
         '${versionData['javaVersion']['component']} in ${runtimesDir.path}',
       );
-      onProgress?.call(1);
-      return join(runtimesDir.path, 'java');
+      return JavaPlan.ready(join(runtimesDir.path, 'java'));
     };
   });
   tearDown(() => shared.delete(recursive: true));
@@ -278,6 +278,23 @@ void main() {
       'https://piston-meta.example/v1/1.21.1.json',
       'https://client.example/1.21.1.jar',
     ]);
+  });
+
+  test('the bar follows only what is missing', () async {
+    await GameInstaller.install(manifest(), folder);
+    final progress = <double>[];
+
+    await GameInstaller.install(
+      manifest(),
+      Directory(join(shared.path, 'example.com', 'other')),
+      onProgress: progress.add,
+    );
+
+    // Only the client jar is missing: it fills the whole bar, with no jump
+    // for libraries, assets and Java that are already there.
+    expect(progress.first, 0);
+    expect(progress.last, 1);
+    expect(progress.every((p) => p == 0 || p == 1), isTrue);
   });
 
   test('old versions get their assets by name', () async {

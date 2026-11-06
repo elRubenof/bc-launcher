@@ -156,12 +156,13 @@ class SyncEngine {
             size: file.size,
           ),
       ],
-      onDownloaded: (task) {
-        files++;
-        bytes += task.size ?? 0;
+      onBytes: (received) {
+        bytes = received;
         report();
       },
+      onDownloaded: (_) => files++,
     );
+    report();
 
     for (final path in plan.deletions) {
       try {

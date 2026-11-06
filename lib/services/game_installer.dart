@@ -48,14 +48,10 @@ class GameInstaller {
     LoaderType.quilt: "https://meta.quiltmc.org/v3/versions/loader",
   };
 
-  /// Installs Java (tests replace it).
+  /// What Java needs to download (tests replace it).
   @visibleForTesting
-  static Future<String> Function(
-    Map versionData,
-    Directory runtimesDir, {
-    void Function(double progress)? onProgress,
-  })
-  ensureJava = JavaManager.ensureRuntime;
+  static Future<JavaPlan> Function(Map versionData, Directory runtimesDir)
+  planJava = JavaManager.planRuntime;
 
   static Future<String> install(
     Manifest manifest,
@@ -66,29 +62,30 @@ class GameInstaller {
     final forge =
         !loaderMeta.containsKey(loader) && loader != LoaderType.vanilla;
 
-    // Forge and NeoForge first run their installer.
-    final steps = forge ? 4 : 3;
-    final first = forge ? 1 : 0;
-    void Function(double) step(int index) =>
-        (progress) => onProgress?.call((first + index + progress) / steps);
-
     await _ensureVersionJson(manifest.minecraftVersion, folder);
 
     final versionId = versionIdOf(manifest);
     final shared = await InstanceManager.sharedFolder();
+    final runtimes = Directory(join(shared.path, "runtime"));
+
+    // Running the Forge and NeoForge installer takes the first half of the
+    // bar, when it has to run.
+    var installerShare = 0.0;
     if (forge) {
       final version = manifest.loaderVersion;
       if (version == null) throw UnknownLoaderVersionError(loader, version);
 
+      if (!await ForgeInstaller.isInstalled(versionId, folder, shared)) {
+        installerShare = 0.5;
+      }
       await ForgeInstaller.install(
         loader,
         manifest.minecraftVersion,
         version,
         folder,
         shared,
-        java: (versionData) =>
-            ensureJava(versionData, Directory(join(shared.path, "runtime"))),
-        onProgress: (progress) => onProgress?.call(progress / steps),
+        java: (versionData) => _ensureJava(versionData, runtimes),
+        onProgress: (progress) => onProgress?.call(progress * installerShare),
       );
     } else if (loader != LoaderType.vanilla) {
       await _ensureLoaderProfile(manifest, versionId, folder);
@@ -99,28 +96,32 @@ class GameInstaller {
       folder.path,
     );
 
-    await LibraryManager.ensureLibraries(
-      versionData,
-      folder,
-      sharedRoot: shared,
-      onProgress: step(0),
+    // Libraries, client jar, assets and Java in one download, so the bar
+    // follows the bytes that are really missing.
+    final parts = [
+      await LibraryManager.plan(versionData, folder, sharedRoot: shared),
+      await AssetManager.plan(versionData, shared, folder),
+      await planJava(versionData, runtimes),
+    ];
+    await FileDownloader.downloadAll(
+      [for (final part in parts) ...part.tasks],
+      onProgress: (progress) =>
+          onProgress?.call(installerShare + (1 - installerShare) * progress),
     );
-
-    await AssetManager.ensureAssets(
-      versionData,
-      shared,
-      folder,
-      onProgress: step(1),
-    );
-
-    await ensureJava(
-      versionData,
-      Directory(join(shared.path, "runtime")),
-      onProgress: step(2),
-    );
+    for (final part in parts) {
+      await part.finish();
+    }
 
     onProgress?.call(1);
     return versionId;
+  }
+
+  /// Java for the Forge and NeoForge processors.
+  static Future<String> _ensureJava(Map versionData, Directory runtimes) async {
+    final java = await planJava(versionData, runtimes);
+    await FileDownloader.downloadAll(java.tasks);
+    await java.finish();
+    return java.executable;
   }
 
   /// The version to launch: Minecraft's, or the loader's, named as its

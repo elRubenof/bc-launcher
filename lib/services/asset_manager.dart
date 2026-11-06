@@ -15,8 +15,20 @@ class AssetManager {
     Directory gameDir, {
     void Function(double progress)? onProgress,
   }) async {
+    final pending = await plan(versionData, sharedRoot, gameDir);
+    await FileDownloader.downloadAll(pending.tasks, onProgress: onProgress);
+    await pending.finish();
+  }
+
+  /// What [ensureAssets] downloads (it gets the small asset index first),
+  /// and copying them where old versions look for them after.
+  static Future<PendingDownloads> plan(
+    Map versionData,
+    Directory sharedRoot,
+    Directory gameDir,
+  ) async {
     final assetIndex = versionData['assetIndex'] as Map?;
-    if (assetIndex == null) return;
+    if (assetIndex == null) return const PendingDownloads.none();
 
     final assets = join(sharedRoot.path, "assets");
     final indexTask = DownloadTask(
@@ -25,7 +37,7 @@ class AssetManager {
       sha1: assetIndex['sha1'],
       size: assetIndex['size'],
     );
-    
+
     if (await indexTask.isMissing(verifyHash: true)) {
       await FileDownloader.downloadAll([indexTask]);
     }
@@ -49,27 +61,31 @@ class AssetManager {
       if (await task.isMissing()) pending.add(task);
     }
 
-    await FileDownloader.downloadAll(pending, onProgress: onProgress);
-
     final copyTo = index['map_to_resources'] == true
         ? join(gameDir.path, "resources")
         : index['virtual'] == true
         ? join(assets, "virtual", "legacy")
         : null;
-    if (copyTo == null) return;
 
-    for (final MapEntry(key: name, value: object) in objects.entries) {
-      final target = normalize(joinAll([copyTo, ...posix.split(name)]));
-      if (!isWithin(copyTo, target)) continue;
+    return PendingDownloads(
+      pending,
+      finish: () async {
+        if (copyTo == null) return;
 
-      final file = File(target);
-      if (await file.exists() && await file.length() == object['size']) {
-        continue;
-      }
+        for (final MapEntry(key: name, value: object) in objects.entries) {
+          final target = normalize(joinAll([copyTo, ...posix.split(name)]));
+          if (!isWithin(copyTo, target)) continue;
 
-      await file.parent.create(recursive: true);
-      await File(objectPath(sharedRoot, object['hash'])).copy(target);
-    }
+          final file = File(target);
+          if (await file.exists() && await file.length() == object['size']) {
+            continue;
+          }
+
+          await file.parent.create(recursive: true);
+          await File(objectPath(sharedRoot, object['hash'])).copy(target);
+        }
+      },
+    );
   }
 
   /// Where the object with [hash] is kept.

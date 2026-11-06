@@ -26,6 +26,21 @@ class LibraryManager {
     Directory? sharedRoot,
     void Function(double progress)? onProgress,
   }) async {
+    final pending = await plan(
+      versionData,
+      minecraftDir,
+      sharedRoot: sharedRoot,
+    );
+    await FileDownloader.downloadAll(pending.tasks, onProgress: onProgress);
+    await pending.finish();
+  }
+
+  /// What [ensureLibraries] downloads, and the natives it extracts after.
+  static Future<PendingDownloads> plan(
+    Map versionData,
+    Directory minecraftDir, {
+    Directory? sharedRoot,
+  }) async {
     final path = minecraftDir.path;
     final librariesRoot = sharedRoot?.path ?? path;
     final tasks = <DownloadTask>[];
@@ -75,14 +90,18 @@ class LibraryManager {
     for (final task in tasks) {
       if (seen.add(task.path) && await task.isMissing()) pending.add(task);
     }
-    await FileDownloader.downloadAll(pending, onProgress: onProgress);
 
-    final nativesDir = Directory(
-      MinecraftLauncherCore.nativesDirectory(versionData, path),
+    return PendingDownloads(
+      pending,
+      finish: () async {
+        final nativesDir = Directory(
+          MinecraftLauncherCore.nativesDirectory(versionData, path),
+        );
+        for (final entry in nativeJars.entries) {
+          await _extractNatives(File(entry.key), nativesDir, entry.value);
+        }
+      },
     );
-    for (final entry in nativeJars.entries) {
-      await _extractNatives(File(entry.key), nativesDir, entry.value);
-    }
   }
 
   /// The main jar of [library]. Mojang libraries list it under

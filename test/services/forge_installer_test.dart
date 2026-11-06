@@ -8,6 +8,7 @@ import 'package:bc_launcher/services/file_downloader.dart';
 import 'package:bc_launcher/services/forge_installer.dart';
 import 'package:bc_launcher/services/game_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
+import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/services/shared_files.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -135,8 +136,8 @@ void main() {
           installer(ForgeInstaller.versionId(loader, '1.21.1', version));
     }
     FileDownloader.dio.httpClientAdapter = mojang;
-    GameInstaller.ensureJava = (versionData, runtimesDir, {onProgress}) async =>
-        join(runtimesDir.path, 'java');
+    GameInstaller.planJava = (versionData, runtimesDir) async =>
+        JavaPlan.ready(join(runtimesDir.path, 'java'));
 
     processors = [];
     exitCode = 0;

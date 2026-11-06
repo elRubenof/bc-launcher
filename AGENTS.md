@@ -71,8 +71,10 @@ lib/
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
-                                libraries, client jar, natives, assets and Java; Fabric/Quilt profile from their
-                                meta APIs; Forge/NeoForge through ForgeInstaller
+                                libraries, client jar, natives, assets and Java in one download (each manager's
+                                plan of what is missing), so the bar follows the missing bytes; Fabric/Quilt
+                                profile from their meta APIs; Forge/NeoForge through ForgeInstaller (the first
+                                half of the bar when its installer has to run)
     forge_installer.dart        Forge 1.7.10+ and NeoForge 1.20.2+ with their official installer: its version JSON
                                 and libraries, then its client processors (1.13+) run with Java; the files it puts
                                 in the shared libraries/ (Forge's jar before 1.13, what the processors make) are
@@ -84,7 +86,9 @@ lib/
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
                                 (libraries optionally in the shared folder)
-    file_downloader.dart        parallel downloads to .part files with sha1 or sha256 check
+    file_downloader.dart        parallel downloads to .part files with sha1 or sha256 check; progress by the bytes
+                                received, at most every 100 ms; PendingDownloads, a part's missing files and what
+                                it does after
     game_process.dart           runs the game: its output to .bc-launcher/logs/<date>.log and its crash report
                                 beside it, without the token (the 20 newest kept); how it ended (never started,
                                 crashed by exit code or a new crash report)
