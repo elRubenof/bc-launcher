@@ -56,23 +56,41 @@ class Organization {
     );
   }
 
-  /// Reads an organization saved with [toJson].
+  /// Reads an organization saved with [toJson]. Only [url] is required: the
+  /// rest is a cache that the next discovery refreshes, so a field missing
+  /// (saved by an older launcher) or unknown falls back to a default.
   factory Organization.fromJson(Map<String, dynamic> json) {
+    final apiVersion = json['apiVersion'] is int ? json['apiVersion'] : 1;
     return Organization(
-      url: json['url'],
-      apiVersion: json['apiVersion'],
-      name: json['name'],
-      description: json['description'],
-      logoUrl: json['logoUrl'],
-      discordUrl: json['discordUrl'],
-      webUrl: json['webUrl'],
-      visibility: OrganizationVisibility.values.byName(json['visibility']),
-      apiVersions: List<int>.from(json['apiVersions']),
-      minLauncherVersion: json['minLauncherVersion'],
-      capabilities: List<String>.from(json['capabilities']),
-      authType: AuthType.values.byName(json['authType']),
+      url: json['url'] as String,
+      apiVersion: apiVersion,
+      name: json['name'] is String ? json['name'] : Uri.parse(json['url']).host,
+      description: _string(json['description']),
+      logoUrl: _string(json['logoUrl']),
+      discordUrl: _string(json['discordUrl']),
+      webUrl: _string(json['webUrl']),
+      visibility:
+          OrganizationVisibility.values.asNameMap()[json['visibility']] ??
+          OrganizationVisibility.public,
+      apiVersions: json['apiVersions'] is List
+          ? List<int>.from(json['apiVersions'])
+          : [apiVersion],
+      minLauncherVersion: _string(json['minLauncherVersion']),
+      capabilities: json['capabilities'] is List
+          ? List<String>.from(json['capabilities'])
+          : const [],
+      authType:
+          AuthType.values.asNameMap()[json['authType']] ??
+          AuthType.mojangSession,
     );
   }
+
+  /// Identifies the organization in the launcher (its token, its folder):
+  /// the host and port of [url], with `_` instead of `:` so it is a valid
+  /// folder name everywhere.
+  String get key => Uri.parse(url).authority.replaceAll(':', '_');
+
+  static String? _string(Object? value) => value is String ? value : null;
 
   Map<String, dynamic> toJson() => {
     'url': url,
