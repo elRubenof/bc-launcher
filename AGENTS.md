@@ -38,7 +38,10 @@ lib/
   screens/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
-                                can't be shown (no access, incompatible, offline); remove an organization
+                                can't be shown (no access, incompatible, offline); remove an organization;
+                                entering an instance (by click, or the last one used on start)
+    instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
+                                LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     instances_screen.dart       legacy list of the old API's servers (still used by the main screen's reinstall)
     main_screen.dart            tabs shell (home / map / settings) + top & bottom bars
@@ -49,8 +52,8 @@ lib/
                                 instances, manifest, news; token, retries, 401 renewal, 426 renegotiation; ApiError
                                 with a type (offline, notMember, upgradeRequired, …) and the API's code
     deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
-    organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, and the
-                                selected one
+    organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, the
+                                selected one and each one's last used instance
     instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/:
                                 .bc-launcher/state.json (what is installed), its status against the server
                                 (not installed, update available, up to date), deleting an organization's
@@ -59,6 +62,9 @@ lib/
                                 folders, files the launcher installed), protected player files, unsafe paths
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
                                 deletions, installed.json; fetches the manifest again when its URLs expire
+    instance_installer.dart     entering an instance: first time (download, then install the game files), update
+                                or nothing; state.json, servers.dat entry (created once, address moved)
+    server_list.dart            the game's servers.dat (NBT): create it, move one entry's address
     instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
@@ -74,10 +80,12 @@ lib/
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
                                 full-screen error message, add-organization dialog opened by links,
-                                organization logo and rail, instance card, CustomButton)
+                                organization logo and rail, instance card, CustomButton, LoadingScreen with its own
+                                or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
 test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1
-                                responses shaped like the server's openapi.json, read with fixture()
+                                responses shaped like the server's openapi.json, read with fixture();
+                                services/fake_server.dart is an organization's server for sync tests
 ```
 
 ## Conventions
@@ -171,7 +179,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered. Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`) and `ServerList`. Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 

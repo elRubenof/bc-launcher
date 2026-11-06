@@ -5,8 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:window_manager/window_manager.dart';
 
+/// The launcher's loading screen. Shows [status], [detail] and [progress]
+/// when [status] is given, or [Utility.loadingState] and
+/// [Utility.loadingProgress] otherwise.
 class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
+  final String? status;
+  final String? detail;
+  final double? progress;
+
+  const LoadingScreen({super.key, this.status, this.detail, this.progress});
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
@@ -34,29 +41,20 @@ class _LoadingScreenState extends State<LoadingScreen> {
               colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: ValueListenableBuilder(
-                  valueListenable: Utility.loadingState,
-                  builder: (context, value, child) => Text(
-                    value ?? "",
-                    style: TextStyle(color: color),
-                  ),
-                ),
+          if (widget.status != null)
+            _bottom(widget.status, widget.detail, widget.progress)
+          else
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                Utility.loadingState,
+                Utility.loadingProgress,
+              ]),
+              builder: (context, _) => _bottom(
+                Utility.loadingState.value,
+                null,
+                Utility.loadingProgress.value,
               ),
-              ValueListenableBuilder(
-                valueListenable: Utility.loadingProgress,
-                builder: (context, value, child) => LinearProgressIndicator(
-                  value: value,
-                  color: color,
-                  backgroundColor: Colors.transparent,
-                ),
-              ),
-            ],
-          ),
+            ),
           SizedBox(
             height: Constants.topBarHeight,
             child: DragToMoveArea(
@@ -74,6 +72,38 @@ class _LoadingScreenState extends State<LoadingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _bottom(String? status, String? detail, double? progress) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(status ?? "", style: TextStyle(color: color)),
+              if (detail != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  detail,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        LinearProgressIndicator(
+          value: progress,
+          color: color,
+          backgroundColor: Colors.transparent,
+        ),
+      ],
     );
   }
 }

@@ -33,6 +33,13 @@ class _InstanceCardState extends State<InstanceCard> {
   void initState() {
     super.initState();
     _loadStatus();
+    InstanceManager.changes.addListener(_loadStatus);
+  }
+
+  @override
+  void dispose() {
+    InstanceManager.changes.removeListener(_loadStatus);
+    super.dispose();
   }
 
   @override
@@ -179,16 +186,8 @@ class _InstanceCardState extends State<InstanceCard> {
     );
   }
 
-  static String _version(Instance instance) {
-    final loader = switch (instance.loaderType) {
-      LoaderType.vanilla => "Vanilla",
-      LoaderType.fabric => "Fabric",
-      LoaderType.quilt => "Quilt",
-      LoaderType.forge => "Forge",
-      LoaderType.neoforge => "NeoForge",
-    };
-    return "${instance.minecraftVersion} · $loader";
-  }
+  static String _version(Instance instance) =>
+      "${instance.minecraftVersion} · ${instance.loaderType.displayName}";
 
   Widget _statusChip(InstallStatus status) {
     final l = Utility.getLocalizations(context);

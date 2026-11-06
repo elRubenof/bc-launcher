@@ -302,4 +302,86 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateAvailable => 'Actualización disponible';
+
+  @override
+  String downloadingInstance(String name, int percent) {
+    return 'Descargando $name · $percent %';
+  }
+
+  @override
+  String installingInstance(String name, int percent) {
+    return 'Instalando $name · $percent %';
+  }
+
+  @override
+  String updatingInstance(String name, int percent) {
+    return 'Actualizando $name · $percent %';
+  }
+
+  @override
+  String syncProgress(
+    int files,
+    int totalFiles,
+    int megabytes,
+    int totalMegabytes,
+  ) {
+    return '$files de $totalFiles archivos · $megabytes MB de $totalMegabytes MB';
+  }
+
+  @override
+  String gameFiles(String version) {
+    return 'Archivos del juego (Minecraft $version)';
+  }
+
+  @override
+  String gameFilesWithLoader(String version, String loader) {
+    return 'Archivos del juego (Minecraft $version y $loader)';
+  }
+
+  @override
+  String downloadFailedTitle(String name) {
+    return 'No se ha podido descargar $name';
+  }
+
+  @override
+  String updateFailedTitle(String name) {
+    return 'No se ha podido actualizar $name';
+  }
+
+  @override
+  String installFailedTitle(String name) {
+    return 'No se ha podido instalar $name';
+  }
+
+  @override
+  String get downloadOfflineDesc =>
+      'Revisa tu conexión a internet y vuelve a intentarlo. Lo que ya se ha descargado no se vuelve a bajar.';
+
+  @override
+  String get downloadFailedDesc =>
+      'Algo ha fallado. Vuelve a intentarlo; lo que ya se ha descargado no se vuelve a bajar.';
+
+  @override
+  String get gameFilesFailedDesc =>
+      'No se han podido preparar los archivos del juego (Minecraft, su loader y Java). Vuelve a intentarlo más tarde.';
+
+  @override
+  String get notEnoughSpaceTitle => 'No hay espacio suficiente';
+
+  @override
+  String notEnoughSpaceDesc(String name, int needed, int available) {
+    return '$name necesita $needed MB y solo quedan $available MB libres en el disco. Libera espacio y vuelve a intentarlo.';
+  }
+
+  @override
+  String instanceGoneTitle(String name) {
+    return '$name ya no está disponible';
+  }
+
+  @override
+  String get instanceGoneDesc =>
+      'Puede que la organización la haya quitado o que ya no tengas acceso.';
+
+  @override
+  String get backToInstances => 'Volver a las instancias';
 }

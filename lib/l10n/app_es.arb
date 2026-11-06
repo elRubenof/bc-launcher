@@ -97,5 +97,23 @@
 
   "installed": "Instalada",
   "notInstalled": "Sin instalar",
-  "updateAvailable": "Actualización disponible"
+  "updateAvailable": "Actualización disponible",
+
+  "downloadingInstance": "Descargando {name} · {percent} %",
+  "installingInstance": "Instalando {name} · {percent} %",
+  "updatingInstance": "Actualizando {name} · {percent} %",
+  "syncProgress": "{files} de {totalFiles} archivos · {megabytes} MB de {totalMegabytes} MB",
+  "gameFiles": "Archivos del juego (Minecraft {version})",
+  "gameFilesWithLoader": "Archivos del juego (Minecraft {version} y {loader})",
+  "downloadFailedTitle": "No se ha podido descargar {name}",
+  "updateFailedTitle": "No se ha podido actualizar {name}",
+  "installFailedTitle": "No se ha podido instalar {name}",
+  "downloadOfflineDesc": "Revisa tu conexión a internet y vuelve a intentarlo. Lo que ya se ha descargado no se vuelve a bajar.",
+  "downloadFailedDesc": "Algo ha fallado. Vuelve a intentarlo; lo que ya se ha descargado no se vuelve a bajar.",
+  "gameFilesFailedDesc": "No se han podido preparar los archivos del juego (Minecraft, su loader y Java). Vuelve a intentarlo más tarde.",
+  "notEnoughSpaceTitle": "No hay espacio suficiente",
+  "notEnoughSpaceDesc": "{name} necesita {needed} MB y solo quedan {available} MB libres en el disco. Libera espacio y vuelve a intentarlo.",
+  "instanceGoneTitle": "{name} ya no está disponible",
+  "instanceGoneDesc": "Puede que la organización la haya quitado o que ya no tengas acceso.",
+  "backToInstances": "Volver a las instancias"
 }

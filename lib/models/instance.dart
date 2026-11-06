@@ -1,7 +1,18 @@
 import 'package:bc_launcher/models/instance_colors.dart';
 import 'package:bc_launcher/models/web_tab.dart';
 
-enum LoaderType { vanilla, fabric, quilt, forge, neoforge }
+enum LoaderType {
+  vanilla("Vanilla"),
+  fabric("Fabric"),
+  quilt("Quilt"),
+  forge("Forge"),
+  neoforge("NeoForge");
+
+  /// How it is written to the player.
+  final String displayName;
+
+  const LoaderType(this.displayName);
+}
 
 /// An instance the player can play (`GET /api/v1/instances`).
 class Instance {

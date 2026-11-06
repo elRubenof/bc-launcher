@@ -138,6 +138,24 @@ void main() {
     });
   });
 
+  group('last instance', () {
+    test('is kept per organization and forgotten on removal', () async {
+      final a = organization('https://a.com');
+      await OrganizationStore.save(a);
+      await OrganizationStore.save(organization('https://b.com'));
+      expect(await OrganizationStore.lastInstance('a.com'), isNull);
+
+      await OrganizationStore.setLastInstance('a.com', 'one');
+      await OrganizationStore.setLastInstance('b.com', 'two');
+      expect(await OrganizationStore.lastInstance('a.com'), 'one');
+      expect(await OrganizationStore.lastInstance('b.com'), 'two');
+
+      await OrganizationStore.remove(a);
+      expect(await OrganizationStore.lastInstance('a.com'), isNull);
+      expect(await OrganizationStore.lastInstance('b.com'), 'two');
+    });
+  });
+
   group('TokenStore', () {
     // TokenStore keeps what it read in memory; these keys are not reused by
     // other tests, so the cache can't hide a missing write.

@@ -613,6 +613,113 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update available'**
   String get updateAvailable;
+
+  /// No description provided for @downloadingInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {name} · {percent}%'**
+  String downloadingInstance(String name, int percent);
+
+  /// No description provided for @installingInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing {name} · {percent}%'**
+  String installingInstance(String name, int percent);
+
+  /// No description provided for @updatingInstance.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating {name} · {percent}%'**
+  String updatingInstance(String name, int percent);
+
+  /// No description provided for @syncProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{files} of {totalFiles} files · {megabytes} MB of {totalMegabytes} MB'**
+  String syncProgress(
+    int files,
+    int totalFiles,
+    int megabytes,
+    int totalMegabytes,
+  );
+
+  /// No description provided for @gameFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Game files (Minecraft {version})'**
+  String gameFiles(String version);
+
+  /// No description provided for @gameFilesWithLoader.
+  ///
+  /// In en, this message translates to:
+  /// **'Game files (Minecraft {version} and {loader})'**
+  String gameFilesWithLoader(String version, String loader);
+
+  /// No description provided for @downloadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t download {name}'**
+  String downloadFailedTitle(String name);
+
+  /// No description provided for @updateFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update {name}'**
+  String updateFailedTitle(String name);
+
+  /// No description provided for @installFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t install {name}'**
+  String installFailedTitle(String name);
+
+  /// No description provided for @downloadOfflineDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again. What\'s already downloaded won\'t be downloaded again.'**
+  String get downloadOfflineDesc;
+
+  /// No description provided for @downloadFailedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.'**
+  String get downloadFailedDesc;
+
+  /// No description provided for @gameFilesFailedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The game files (Minecraft, its loader and Java) couldn\'t be prepared. Try again later.'**
+  String get gameFilesFailedDesc;
+
+  /// No description provided for @notEnoughSpaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough space'**
+  String get notEnoughSpaceTitle;
+
+  /// No description provided for @notEnoughSpaceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} needs {needed} MB and there are only {available} MB free on the disk. Free up some space and try again.'**
+  String notEnoughSpaceDesc(String name, int needed, int available);
+
+  /// No description provided for @instanceGoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is no longer available'**
+  String instanceGoneTitle(String name);
+
+  /// No description provided for @instanceGoneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The organization may have removed it, or you no longer have access to it.'**
+  String get instanceGoneDesc;
+
+  /// No description provided for @backToInstances.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the instances'**
+  String get backToInstances;
 }
 
 class _AppLocalizationsDelegate

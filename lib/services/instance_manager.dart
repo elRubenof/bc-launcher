@@ -60,6 +60,9 @@ class InstanceManager {
   static Future<Directory> Function() supportDirectory =
       getApplicationSupportDirectory;
 
+  /// Changes every time a state is written, so the UI can read it again.
+  static final changes = ValueNotifier<int>(0);
+
   static Future<Directory> organizationFolder(String organizationKey) async {
     final support = await supportDirectory();
     return Directory(join(support.path, organizationKey));
@@ -110,6 +113,7 @@ class InstanceManager {
     final part = File("${file.path}.part");
     await part.writeAsString(jsonEncode(state.toJson()));
     await part.rename(file.path);
+    changes.value++;
   }
 
   static Future<InstallStatus> status(

@@ -93,14 +93,29 @@ class OrganizationStore {
     }
   }
 
-  /// Removes [organization] and its token.
+  /// Removes [organization], its token and its last used instance.
   static Future<void> remove(Organization organization) async {
     await _write([
       for (final saved in organizations.value)
         if (saved.key != organization.key) saved,
     ]);
     await TokenStore.delete(organization.key);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_lastInstanceKey(organization.key));
   }
+
+  /// The instance of the organization with [key] entered last, if any.
+  static Future<String?> lastInstance(String key) async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getString(_lastInstanceKey(key));
+  }
+
+  static Future<void> setLastInstance(String key, String instanceId) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_lastInstanceKey(key), instanceId);
+  }
+
+  static String _lastInstanceKey(String key) => "lastInstance.$key";
 
   static Future<void> _write(List<Organization> list) async {
     final preferences = await SharedPreferences.getInstance();

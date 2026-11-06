@@ -301,4 +301,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateAvailable => 'Update available';
+
+  @override
+  String downloadingInstance(String name, int percent) {
+    return 'Downloading $name · $percent%';
+  }
+
+  @override
+  String installingInstance(String name, int percent) {
+    return 'Installing $name · $percent%';
+  }
+
+  @override
+  String updatingInstance(String name, int percent) {
+    return 'Updating $name · $percent%';
+  }
+
+  @override
+  String syncProgress(
+    int files,
+    int totalFiles,
+    int megabytes,
+    int totalMegabytes,
+  ) {
+    return '$files of $totalFiles files · $megabytes MB of $totalMegabytes MB';
+  }
+
+  @override
+  String gameFiles(String version) {
+    return 'Game files (Minecraft $version)';
+  }
+
+  @override
+  String gameFilesWithLoader(String version, String loader) {
+    return 'Game files (Minecraft $version and $loader)';
+  }
+
+  @override
+  String downloadFailedTitle(String name) {
+    return 'Couldn\'t download $name';
+  }
+
+  @override
+  String updateFailedTitle(String name) {
+    return 'Couldn\'t update $name';
+  }
+
+  @override
+  String installFailedTitle(String name) {
+    return 'Couldn\'t install $name';
+  }
+
+  @override
+  String get downloadOfflineDesc =>
+      'Check your internet connection and try again. What\'s already downloaded won\'t be downloaded again.';
+
+  @override
+  String get downloadFailedDesc =>
+      'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.';
+
+  @override
+  String get gameFilesFailedDesc =>
+      'The game files (Minecraft, its loader and Java) couldn\'t be prepared. Try again later.';
+
+  @override
+  String get notEnoughSpaceTitle => 'Not enough space';
+
+  @override
+  String notEnoughSpaceDesc(String name, int needed, int available) {
+    return '$name needs $needed MB and there are only $available MB free on the disk. Free up some space and try again.';
+  }
+
+  @override
+  String instanceGoneTitle(String name) {
+    return '$name is no longer available';
+  }
+
+  @override
+  String get instanceGoneDesc =>
+      'The organization may have removed it, or you no longer have access to it.';
+
+  @override
+  String get backToInstances => 'Back to the instances';
 }

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/screens/instance_loading_screen.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
@@ -28,20 +29,76 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   /// Coming back to the launcher refreshes the instances, at most this often.
   static const _refreshInterval = Duration(seconds: 30);
 
+  /// The last used instance is entered by itself only once per run.
+  static bool _autoEntered = false;
+
   late final AppLifecycleListener _lifecycle;
   DateTime _lastRefresh = DateTime.now();
+  bool _entering = false;
 
   @override
   void initState() {
     super.initState();
     InstanceCatalog.refreshAll();
     _lifecycle = AppLifecycleListener(onResume: _refreshOnReturn);
+    InstanceCatalog.organizations.addListener(_autoEnter);
   }
 
   @override
   void dispose() {
+    InstanceCatalog.organizations.removeListener(_autoEnter);
     _lifecycle.dispose();
     super.dispose();
+  }
+
+  /// Enters the last instance used in the selected organization, once its
+  /// list is loaded, if it is still there.
+  Future<void> _autoEnter() async {
+    final organization = OrganizationStore.byKey(
+      OrganizationStore.selected.value ?? "",
+    );
+    if (_autoEntered || organization == null) return;
+
+    final view = InstanceCatalog.viewOf(organization.key);
+    if (view.status == OrganizationStatus.loading) return;
+    _autoEntered = true;
+    if (view.status != OrganizationStatus.ready) return;
+
+    final last = await OrganizationStore.lastInstance(organization.key);
+    for (final instance in view.instances) {
+      if (instance.id == last) return _enter(organization, instance);
+    }
+  }
+
+  /// Downloads, installs or updates [instance] when it needs it.
+  Future<void> _enter(Organization organization, Instance instance) async {
+    if (_entering || !mounted) return;
+    _entering = true;
+    try {
+      final status = await InstanceManager.status(organization.key, instance);
+      if (!mounted) return;
+
+      if (status != InstallStatus.upToDate) {
+        final ready = await Navigator.push<bool>(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, _, _) => InstanceLoadingScreen(
+              organization: organization,
+              instance: instance,
+            ),
+            transitionDuration: Duration.zero,
+          ),
+        );
+        if (ready != true) return;
+      } else {
+        await OrganizationStore.setLastInstance(organization.key, instance.id);
+      }
+
+      // The instance screen moves to the API v1 with its theme.
+      log("Open ${instance.id}");
+    } finally {
+      _entering = false;
+    }
   }
 
   void _refreshOnReturn() {
@@ -134,7 +191,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     if (view.instances.isNotEmpty &&
         (view.status == OrganizationStatus.loading ||
             view.status == OrganizationStatus.ready)) {
-      return _instances(organization.key, view.instances);
+      return _instances(organization, view.instances);
     }
 
     return switch (view.status) {
@@ -190,7 +247,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   /// The instances in a grid that fits as many columns as the window allows
   /// and scrolls only when they don't fit; the title stays on top.
-  Widget _instances(String organizationKey, List<Instance> instances) {
+  Widget _instances(Organization organization, List<Instance> instances) {
     final l = Utility.getLocalizations(context);
     return Column(
       children: [
@@ -225,10 +282,9 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
                       children: [
                         for (final instance in instances)
                           InstanceCard(
-                            organizationKey: organizationKey,
+                            organizationKey: organization.key,
                             instance: instance,
-                            // Opening an instance comes with the sync.
-                            onTap: () => log("Open ${instance.id}"),
+                            onTap: () => _enter(organization, instance),
                           ),
                       ],
                     ),
