@@ -55,6 +55,7 @@ dependencies:
   webview_all: ^1.4.12
   flutter_secure_storage: ^10.3.4
   app_links: ^7.2.2
+  file_selector: ^1.1.0
 
 dev_dependencies:
   flutter_test:
