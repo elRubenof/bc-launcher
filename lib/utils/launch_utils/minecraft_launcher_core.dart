@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_helper.dart';
 import 'package:path/path.dart';
 
 class MinecraftLauncherCore {
-  static String getLibraries(Map data, String path) {
+  static String getLibraries(Map data, String path, {String? sharedRoot}) {
+    final librariesRoot = sharedRoot ?? path;
     final classpathSeparator = MinecraftLauncherHelper.getClasspathSeparator();
 
     String libstr = "";
@@ -18,7 +20,10 @@ class MinecraftLauncherCore {
       final downloads = item["downloads"];
       if (downloads == null || downloads["artifact"] != null) {
         libstr +=
-            MinecraftLauncherHelper.getLibraryPath(item["name"], path) +
+            MinecraftLauncherHelper.getLibraryPath(
+              item["name"],
+              librariesRoot,
+            ) +
             classpathSeparator;
       }
       final native = MinecraftLauncherHelper.getNatives(item);
@@ -27,7 +32,7 @@ class MinecraftLauncherCore {
         if (classifier?["path"] != null) {
           libstr +=
               joinAll([
-                path,
+                librariesRoot,
                 "libraries",
                 ...posix.split(classifier["path"]),
               ]) +
@@ -36,7 +41,7 @@ class MinecraftLauncherCore {
           libstr +=
               MinecraftLauncherHelper.getLibraryPath(
                 "${item['name']}-$native",
-                path,
+                librariesRoot,
               ) +
               classpathSeparator;
         }
@@ -62,6 +67,7 @@ class MinecraftLauncherCore {
     Map options,
     String classpath,
   ) {
+    final sharedRoot = options["sharedRoot"] as String? ?? path;
     return argstr
         .replaceAll(r"${natives_directory}", options["nativesDirectory"])
         .replaceAll(
@@ -73,7 +79,7 @@ class MinecraftLauncherCore {
         .replaceAll(r"${auth_player_name}", options["username"] ?? "{username}")
         .replaceAll(r"${version_name}", versionData["id"])
         .replaceAll(r"${game_directory}", options["gameDirectory"] ?? path)
-        .replaceAll(r"${assets_root}", join(path, "assets"))
+        .replaceAll(r"${assets_root}", join(sharedRoot, "assets"))
         .replaceAll(
           r"${assets_index_name}",
           versionData["assets"] ?? versionData["id"],
@@ -90,10 +96,10 @@ class MinecraftLauncherCore {
         )
         .replaceAll(
           r"${game_assets}",
-          join(path, "assets", "virtual", "legacy"),
+          join(sharedRoot, "assets", "virtual", "legacy"),
         )
         .replaceAll(r"${auth_session}", options["token"] ?? "{token}")
-        .replaceAll(r"${library_directory}", join(path, "libraries"))
+        .replaceAll(r"${library_directory}", join(sharedRoot, "libraries"))
         .replaceAll(
           r"${classpath_separator}",
           MinecraftLauncherHelper.getClasspathSeparator(),
@@ -193,9 +199,7 @@ class MinecraftLauncherCore {
       throw Exception("Version not found");
     }
 
-    final versionFile = File(
-      join(path, "versions", version, "$version.json"),
-    );
+    final versionFile = File(join(path, "versions", version, "$version.json"));
 
     var data = jsonDecode(await versionFile.readAsString());
     if (data["inheritsFrom"] != null) {
@@ -212,7 +216,11 @@ class MinecraftLauncherCore {
   ) async {
     options["nativesDirectory"] =
         options['nativesDirectory'] ?? nativesDirectory(data, path);
-    final classPath = getLibraries(data, path);
+    final classPath = getLibraries(
+      data,
+      path,
+      sharedRoot: options["sharedRoot"] as String?,
+    );
 
     List<String> command = [options["executablePath"] ?? "java"];
     if (options.containsKey("jvmArguments")) {

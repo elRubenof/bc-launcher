@@ -16,13 +16,18 @@ class LibraryManager {
   /// version it inherits from) is missing under [minecraftDir], then extracts
   /// the natives of versions before 1.19.
   ///
+  /// Libraries go under [sharedRoot] (the folder holding `libraries/`) when
+  /// given; the client jar and natives always go under [minecraftDir].
+  ///
   /// [onProgress] is only called when files have to be downloaded.
   static Future<void> ensureLibraries(
     Map versionData,
     Directory minecraftDir, {
+    Directory? sharedRoot,
     void Function(double progress)? onProgress,
   }) async {
     final path = minecraftDir.path;
+    final librariesRoot = sharedRoot?.path ?? path;
     final tasks = <DownloadTask>[];
     final nativeJars = <String, List<String>>{};
 
@@ -44,13 +49,13 @@ class LibraryManager {
         continue;
       }
 
-      final artifact = _artifactTask(library, path);
+      final artifact = _artifactTask(library, librariesRoot);
       if (artifact != null) tasks.add(artifact);
 
       final native = MinecraftLauncherHelper.getNatives(library);
       final classifier = library['downloads']?['classifiers']?[native];
       if (native.isNotEmpty && classifier != null) {
-        final jarPath = _libraryFile(path, classifier['path']);
+        final jarPath = _libraryFile(librariesRoot, classifier['path']);
         tasks.add(
           DownloadTask(
             path: jarPath,

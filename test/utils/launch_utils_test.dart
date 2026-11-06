@@ -316,6 +316,44 @@ void main() {
       );
     });
 
+    test('libraries and assets can come from a shared folder', () async {
+      await writeVersion('1.21.1', {
+        ...vanilla,
+        'arguments': {
+          'game': ['--assetsDir', '\${assets_root}'],
+          'jvm': ['-cp', '\${classpath}'],
+        },
+      });
+      final data = await MinecraftLauncherCore.loadVersionData(
+        '1.21.1',
+        root.path,
+      );
+      final shared = join(root.path, 'shared');
+
+      final command = await MinecraftLauncherCore.getMinecraftCommand(
+        data,
+        root.path,
+        {'sharedRoot': shared},
+      );
+
+      final classpath = command[command.indexOf('-cp') + 1].split(
+        MinecraftLauncherHelper.getClasspathSeparator(),
+      );
+      expect(classpath, [
+        MinecraftLauncherHelper.getLibraryPath(
+          'com.google.code.gson:gson:2.10',
+          shared,
+        ),
+        MinecraftLauncherHelper.getLibraryPath('org.lwjgl:lwjgl:3.3.3', shared),
+        // The client jar stays in the instance.
+        join(root.path, 'versions', '1.21.1', '1.21.1.jar'),
+      ]);
+      expect(
+        command,
+        containsAllInOrder(['--assetsDir', join(shared, 'assets')]),
+      );
+    });
+
     test('the command line of a legacy version with a server', () async {
       final command = await MinecraftLauncherCore.getMinecraftCommand(
         {

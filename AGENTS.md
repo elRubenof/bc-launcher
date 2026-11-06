@@ -57,7 +57,7 @@ lib/
     instance_manager.dart       what is on disk per instance, <AppSupport>/<organization key>/<instance id>/:
                                 .bc-launcher/state.json (what is installed), its status against the server
                                 (not installed, update available, up to date), deleting an organization's
-                                instances; never sync, install or launch
+                                instances (and cleaning the shared files); never sync, install or launch
     sync_plan.dart              what a sync does, without touching the disk: downloads, deletions (managed
                                 folders, files the launcher installed), protected player files, unsafe paths
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
@@ -69,9 +69,12 @@ lib/
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
-                                libraries, client jar, natives and Java; loaders other than vanilla not yet
+                                libraries, client jar, natives, assets and Java; loaders other than vanilla not yet
+    asset_manager.dart          the game's assets from Mojang (index and objects by hash), shared by every instance
+    shared_files.dart           deletes the shared libraries and assets no installed instance uses
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
+                                (libraries optionally in the shared folder)
     file_downloader.dart        parallel downloads to .part files with sha1 or sha256 check
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
@@ -158,6 +161,7 @@ Agent docs like this file being committed is fine. The rule is about commits, au
    - Blacklists win over whitelists and public access. Bans can expire.
 9. **Instances carry their own look and content.** Each instance has its background and colors (`primary`, `primaryDark`, `background`, `text`; new instances start with BC Launcher's defaults), its web tabs (up to 5 between Home and Settings, each with a label, an http(s) URL where the launcher replaces `{uuid}` and `{name}` with the signed-in player's, one of 10 icons and `openIn`: `launcher` shows it in a webview, `browser` opens the system browser without switching screens; they replace the old map), Discord and web links (falling back to the organization's), its news (there is no organization-wide news), its Minecraft version and loader, and a `contentVersion` counter. The launcher themes the UI with the selected instance's colors and uses its own neutral theme elsewhere.
 10. **Content sync, no zip.** Installing = syncing the manifest into an empty folder (`<AppSupport>/<organization>/<instance id>/`); the instance `id` is readable and immutable.
+    - Each instance folder holds its content, the player's files, its version JSONs, client jar and natives. Mojang's **libraries and assets are shared** in `<AppSupport>/libraries` and `<AppSupport>/assets` (they are stored by Maven path or hash, so the same path is always the same file), and so is Java (`<AppSupport>/runtime`). Removing an organization deletes the shared files no remaining instance uses; anything missing is downloaded again on the next installation.
     - The manifest lists `{path, sha256, size, policy, url}`, the managed dirs, the Minecraft version and the loader. Files are content-addressed and downloaded from short-lived signed URLs.
     - **The launcher installs the loader itself** from `loader {type, version}`: Fabric/Quilt from their meta APIs, Forge/NeoForge by running the official installer's processors, cached per loader version. The server never serves loader or vanilla files.
     - Managed dirs (set per instance, e.g. `mods/`): anything not in the manifest is deleted, including mods the player added. Elsewhere, the launcher keeps a local list of the files it installed and deletes only those removed from the manifest.
@@ -178,10 +182,10 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
   4. Apply a policy per file: `always` (the server wins, restored on every launch) or `once` (copied only if missing, then the player's).
   5. Clean managed dirs, and delete files that were in the previous manifest but not in the new one (tracked in a local list).
   6. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
-- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives and the client jar are done (`LibraryManager`); assets are not yet. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
+- **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch:** capture game stdout/stderr to a log file, detect crashes, and add an option to keep the launcher open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` and installing the game files (`GameInstaller`, against a fake Mojang). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang) and cleaning the shared files (`SharedFiles`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 

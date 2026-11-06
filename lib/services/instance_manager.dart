@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/services/shared_files.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -62,6 +63,9 @@ class InstanceManager {
 
   /// Changes every time a state is written, so the UI can read it again.
   static final changes = ValueNotifier<int>(0);
+
+  /// Where the libraries, assets and Java shared by every instance are kept.
+  static Future<Directory> sharedFolder() => supportDirectory();
 
   static Future<Directory> organizationFolder(String organizationKey) async {
     final support = await supportDirectory();
@@ -134,11 +138,13 @@ class InstanceManager {
     return same ? InstallStatus.upToDate : InstallStatus.updateAvailable;
   }
 
-  /// Deletes every instance of an organization from this computer.
+  /// Deletes every instance of an organization from this computer, and the
+  /// shared libraries and assets no other instance uses.
   static Future<void> deleteOrganization(String organizationKey) async {
     try {
       final folder = await organizationFolder(organizationKey);
       if (await folder.exists()) await folder.delete(recursive: true);
+      await SharedFiles.cleanUnused(await sharedFolder());
     } catch (e) {
       log("Could not delete the folder of $organizationKey: $e");
     }

@@ -4,8 +4,10 @@ import 'dart:typed_data';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/manifest.dart';
+import 'package:bc_launcher/services/asset_manager.dart';
 import 'package:bc_launcher/services/file_downloader.dart';
 import 'package:bc_launcher/services/game_installer.dart';
+import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,10 +19,37 @@ class FakeMojang implements HttpClientAdapter {
   final requests = <String>[];
   bool offline = false;
 
+  /// Asset name → contents, in the version's asset index.
+  Map<String, String> assets = {
+    'minecraft/sounds/a.ogg': 'sound a',
+    'minecraft/textures/b.png': 'texture b',
+    // Same contents as another asset: one object for both.
+    'minecraft/sounds/copy.ogg': 'sound a',
+  };
+
+  /// Extra fields of the asset index (`virtual`, `map_to_resources`).
+  Map<String, Object> assetIndexFlags = {};
+
   static String sha1Of(String contents) =>
       sha1.convert(utf8.encode(contents)).toString();
 
+  static int sizeOf(String contents) => utf8.encode(contents).length;
+
   void addVersion(String id) {
+    for (final contents in assets.values) {
+      final hash = sha1Of(contents);
+      files['${AssetManager.resourcesUrl}/${hash.substring(0, 2)}/$hash'] =
+          contents;
+    }
+    final assetIndex = jsonEncode({
+      ...assetIndexFlags,
+      'objects': {
+        for (final MapEntry(key: name, value: contents) in assets.entries)
+          name: {'hash': sha1Of(contents), 'size': sizeOf(contents)},
+      },
+    });
+    files['https://piston-meta.example/v1/indexes/17.json'] = assetIndex;
+
     files['https://libraries.example/lib/a/1.0/a-1.0.jar'] = 'library a';
     files['https://client.example/$id.jar'] = 'client $id';
     final versionJson = jsonEncode({
@@ -28,6 +57,13 @@ class FakeMojang implements HttpClientAdapter {
       'type': 'release',
       'mainClass': 'net.minecraft.client.main.Main',
       'javaVersion': {'component': 'java-runtime-delta', 'majorVersion': 21},
+      'assets': '17',
+      'assetIndex': {
+        'id': '17',
+        'url': 'https://piston-meta.example/v1/indexes/17.json',
+        'sha1': sha1Of(assetIndex),
+        'size': sizeOf(assetIndex),
+      },
       'downloads': {
         'client': {
           'url': 'https://client.example/$id.jar',
@@ -93,24 +129,27 @@ class FakeMojang implements HttpClientAdapter {
 }
 
 void main() {
+  late Directory shared;
   late Directory folder;
   late FakeMojang mojang;
-  late List<String> javaFor;
+  late List<String> javaIn;
 
   setUp(() async {
-    folder = await Directory.systemTemp.createTemp('game_installer_test');
+    shared = await Directory.systemTemp.createTemp('game_installer_test');
+    InstanceManager.supportDirectory = () async => shared;
+    folder = Directory(join(shared.path, 'example.com', 'test'));
     mojang = FakeMojang()..addVersion('1.21.1');
     FileDownloader.dio.httpClientAdapter = mojang;
-    javaFor = [];
-    GameInstaller.runtimesDirectory = () async =>
-        Directory(join(folder.path, 'runtime'));
+    javaIn = [];
     GameInstaller.ensureJava = (versionData, runtimesDir, {onProgress}) async {
-      javaFor.add(versionData['javaVersion']['component']);
+      javaIn.add(
+        '${versionData['javaVersion']['component']} in ${runtimesDir.path}',
+      );
       onProgress?.call(1);
       return join(runtimesDir.path, 'java');
     };
   });
-  tearDown(() => folder.delete(recursive: true));
+  tearDown(() => shared.delete(recursive: true));
 
   Manifest manifest({
     String version = '1.21.1',
@@ -125,35 +164,49 @@ void main() {
   );
 
   File local(String path) => File(joinAll([folder.path, ...posix.split(path)]));
+  File sharedFile(String path) =>
+      File(joinAll([shared.path, ...posix.split(path)]));
+  File object(String contents) {
+    final hash = FakeMojang.sha1Of(contents);
+    return sharedFile('assets/objects/${hash.substring(0, 2)}/$hash');
+  }
 
-  test('installs the version JSON, libraries, client jar and Java', () async {
-    final progress = <double>[];
+  test(
+    'installs the version JSON, libraries, client jar, assets and Java',
+    () async {
+      final progress = <double>[];
 
-    final id = await GameInstaller.install(
-      manifest(),
-      folder,
-      onProgress: progress.add,
-    );
+      final id = await GameInstaller.install(
+        manifest(),
+        folder,
+        onProgress: progress.add,
+      );
 
-    expect(id, '1.21.1');
-    expect(
-      jsonDecode(
-        await local('versions/1.21.1/1.21.1.json').readAsString(),
-      )['id'],
-      '1.21.1',
-    );
-    expect(
-      await local('libraries/lib/a/1.0/a-1.0.jar').readAsString(),
-      'library a',
-    );
-    expect(
-      await local('versions/1.21.1/1.21.1.jar').readAsString(),
-      'client 1.21.1',
-    );
-    expect(javaFor, ['java-runtime-delta']);
-    expect(progress.last, 1);
-    expect(progress, everyElement(inInclusiveRange(0, 1)));
-  });
+      expect(id, '1.21.1');
+      expect(
+        jsonDecode(
+          await local('versions/1.21.1/1.21.1.json').readAsString(),
+        )['id'],
+        '1.21.1',
+      );
+      expect(
+        await local('versions/1.21.1/1.21.1.jar').readAsString(),
+        'client 1.21.1',
+      );
+      // Shared by every instance.
+      expect(
+        await sharedFile('libraries/lib/a/1.0/a-1.0.jar').readAsString(),
+        'library a',
+      );
+      expect(await sharedFile('assets/indexes/17.json').exists(), isTrue);
+      expect(await object('sound a').readAsString(), 'sound a');
+      expect(await object('texture b').readAsString(), 'texture b');
+      expect(await local('libraries').exists(), isFalse);
+      expect(javaIn, ['java-runtime-delta in ${join(shared.path, 'runtime')}']);
+      expect(progress.last, 1);
+      expect(progress, everyElement(inInclusiveRange(0, 1)));
+    },
+  );
 
   test('an installed instance needs no network', () async {
     await GameInstaller.install(manifest(), folder);
@@ -167,13 +220,59 @@ void main() {
 
   test('a deleted library is downloaded again', () async {
     await GameInstaller.install(manifest(), folder);
-    await local('libraries/lib/a/1.0/a-1.0.jar').delete();
+    await sharedFile('libraries/lib/a/1.0/a-1.0.jar').delete();
+    await object('texture b').delete();
 
     await GameInstaller.install(manifest(), folder);
 
     expect(
-      await local('libraries/lib/a/1.0/a-1.0.jar').readAsString(),
+      await sharedFile('libraries/lib/a/1.0/a-1.0.jar').readAsString(),
       'library a',
+    );
+    expect(await object('texture b').readAsString(), 'texture b');
+  });
+
+  test('a second instance reuses the shared files', () async {
+    await GameInstaller.install(manifest(), folder);
+    mojang.requests.clear();
+
+    await GameInstaller.install(
+      manifest(),
+      Directory(join(shared.path, 'example.com', 'other')),
+    );
+
+    // Only its own version JSON and client jar.
+    expect(mojang.requests, [
+      GameInstaller.versionManifestUrl,
+      'https://piston-meta.example/v1/1.21.1.json',
+      'https://client.example/1.21.1.jar',
+    ]);
+  });
+
+  test('old versions get their assets by name', () async {
+    mojang
+      ..assetIndexFlags = {'virtual': true}
+      ..addVersion('1.21.1');
+
+    await GameInstaller.install(manifest(), folder);
+
+    expect(
+      await sharedFile('assets/virtual/legacy/minecraft/textures/b.png')
+          .readAsString(),
+      'texture b',
+    );
+  });
+
+  test('the oldest versions get them in the instance', () async {
+    mojang
+      ..assetIndexFlags = {'map_to_resources': true}
+      ..addVersion('1.21.1');
+
+    await GameInstaller.install(manifest(), folder);
+
+    expect(
+      await local('resources/minecraft/sounds/copy.ogg').readAsString(),
+      'sound a',
     );
   });
 
