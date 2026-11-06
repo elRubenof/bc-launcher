@@ -42,8 +42,8 @@ lib/
     tabs/                       home (news), map (webview_all), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
-                                instances, manifest, news; token, retries, 401 renewal
-    api_error.dart              ApiError with a type (offline, notMember, upgradeRequired, …) and the API's code
+                                instances, manifest, news; token, retries, 401 renewal; ApiError
+                                with a type (offline, notMember, upgradeRequired, …) and the API's code
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest
     library_manager.dart        missing libraries, client jar and natives for this OS/arch from the version JSON
     file_downloader.dart        parallel downloads to .part files with sha1 check

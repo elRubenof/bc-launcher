@@ -5,8 +5,33 @@ import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/manifest.dart';
 import 'package:bc_launcher/models/news.dart';
 import 'package:bc_launcher/models/organization.dart';
-import 'package:bc_launcher/services/api_error.dart';
 import 'package:dio/dio.dart';
+
+enum ApiErrorType {
+  offline,
+  serverUnavailable,
+  unauthenticated,
+  notMember,
+  notFound,
+  upgradeRequired,
+  incompatible,
+  invalidResponse,
+  other,
+}
+
+class ApiError implements Exception {
+  final ApiErrorType type;
+
+  /// The stable `code` of the API's problem document, when there is one
+  /// (e.g. `invalid_challenge`, `not_joined`, `url_expired`).
+  final String? code;
+  final int? status;
+
+  const ApiError(this.type, {this.code, this.status});
+
+  @override
+  String toString() => "ApiError(${type.name}, code: $code, status: $status)";
+}
 
 /// Talks to one organization's server. Returns models or throws [ApiError];
 /// it never touches the UI.
