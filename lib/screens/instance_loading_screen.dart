@@ -92,13 +92,13 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
   }
 
   /// The status line, the detail under it and the bar's value.
-  (String, String?, double?) _progress() {
+  (String?, String?, double?) _progress() {
     final l = Utility.getLocalizations(context);
     final name = widget.instance.name;
     final sync = _sync;
     final install = _install;
 
-    if (_step == EntryStep.checking && !_changing) return ("", null, null);
+    if (_step == EntryStep.checking && !_changing) return (null, null, null);
 
     final preparing = _step == EntryStep.installing || install != null;
     final fraction = preparing ? (install ?? 0) : (sync?.fraction ?? 0);

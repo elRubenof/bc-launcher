@@ -24,14 +24,12 @@ flutter build windows --dart-define-from-file=.env      # release build (likewis
 
 **Build configuration:** the Azure app's values are compiled in from a `.env` file (ignored by git). Copy `.env.example` to `.env` and fill in `MS_CLIENT_ID` (required to log in) and, optionally, `MS_REDIRECT_URL` (default `http://127.0.0.1`). They are read with `String.fromEnvironment` in `lib/utils/constants.dart` and fixed at build time, so `run` and `build` both need `--dart-define-from-file=.env`; without it the client ID is empty and the Microsoft login fails. `.vscode/` is ignored: any local launch or build configuration has to pass the same flag.
 
-The API base URL is still hardcoded in `lib/utils/constants.dart` (`Constants.api`, a local `wrangler dev` URL) for the legacy API calls.
-
 ## Project layout
 
 ```
 lib/
-  main.dart                     entry: link listener → load settings and organizations → update check → client ID
-                                check → auth → NoOrganizationsScreen (none added) or OrganizationsScreen
+  main.dart                     entry: link listener → load settings and organizations → client ID check → auth
+                                → NoOrganizationsScreen (none added) or OrganizationsScreen
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
   models/                       API v1 models with fromJson/toJson: organization (from discovery), instance,
                                 instance_colors, web_tab, manifest (+ its files), news
@@ -46,7 +44,6 @@ lib/
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     main_screen.dart            an installed instance: tabs (home, settings) + top & bottom bars; Play repairs,
                                 updates and launches it (still with the launcher's look; its theme is phase 5)
-    update_screen.dart          launcher self-update prompt (legacy, Windows-only)
     tabs/                       home (news, empty until phase 5), map (webview_all, unused until phase 5), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
@@ -82,9 +79,9 @@ lib/
     file_downloader.dart        parallel downloads to .part files with sha1 or sha256 check
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
-    constants.dart              colors, sizes, defaults, API URL, releases URL, Azure app values from .env
+    constants.dart              colors, sizes, defaults, releases URL, Azure app values from .env
     settings.dart               static user settings (RAM, resolution, …)
-    utility.dart                settings persistence, instance install/unzip, file sync, self-update, navigation
+    utility.dart                settings persistence, localizations, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
@@ -154,11 +151,11 @@ Agent docs like this file being committed is fine. The rule is about commits, au
    - Ed25519-signed `app-archive.json` → `release.json` → artifact.
    - `supportPolicy` sets the minimum version.
    - The update feed **never** comes from organization servers.
-   - It replaces the legacy `Utility.isUpdated()` / `Utility.update()` (Windows-only, server-driven).
+   - Until then the launcher has no update check (the legacy, server-driven `Utility.isUpdated()` / `Utility.update()` were removed).
    - The macOS install helper must ship from the first release that uses it.
    - The private key lives only in CI secrets plus an offline backup.
 6. **Two repos.** `bc-launcher` (this one) and `bc-launcher-server`, a TypeScript monorepo with a Hono API, a React + Vite + shadcn/ui admin panel (username + password admins; one `owner`, `admin` = everything except acting on the owner, `editor` = instances, content, news and players only), zod contracts exported as OpenAPI, and Drizzle on SQLite/D1. Server deploy targets are **Cloudflare (Workers + D1 + R2)** and **Docker**. Vercel was discarded. The API contract's source of truth is `bc-launcher-server`'s OpenAPI (`packages/contracts/openapi.json`, attached to each server release); launcher models should be generated from or validated against it.
-7. **Auth with organization servers** uses Mojang's `join` / `hasJoined` handshake (implemented on the server; not in the launcher yet): `POST /api/v1/auth/challenge` → the launcher calls Mojang's `join` with the returned `serverId` → `POST /api/v1/auth/verify`, which returns the server's own JWT. The Minecraft token never leaves the client. Discovery's `auth.type` is `mojang-session` or `unverified` (a Cloudflare server without a Mojang session proxy, which trusts the name). Today's `GET /auth?uuid=` is unauthenticated and must not be extended.
+7. **Auth with organization servers** uses Mojang's `join` / `hasJoined` handshake (done, `OrganizationAuth`): `POST /api/v1/auth/challenge` → the launcher calls Mojang's `join` with the returned `serverId` → `POST /api/v1/auth/verify`, which returns the server's own JWT. The Minecraft token never leaves the client. Discovery's `auth.type` is `mojang-session` or `unverified` (a Cloudflare server without a Mojang session proxy, which trusts the name). The old unauthenticated `GET /auth?uuid=` is gone from the launcher.
 8. **Access in two levels.**
    - **Organization:** public (any Minecraft player) or private (only its whitelist). A non-member, or a player on the organization blacklist, gets `403 not_member` ("You don't have access to this organization"), never told it is a ban. Adding is rejected; a saved organization that loses access is greyed out with "You no longer have access" and "Remove organization", and comes back by itself if access returns.
    - **Instance:** `everyone` (all members) or its own whitelist, plus its own blacklist. An instance the player can't play is **invisible**: not listed, and its endpoints answer `404`. Inactive instances are hidden too.
@@ -182,7 +179,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Sync engine:**
   1. Fetch the manifest (`If-None-Match` with the `contentVersion`) and compute a plan (add, update, delete).
   2. Download in parallel to `.part` files, verify the hash, then rename atomically.
-  3. Cache hashes by `(path, size, mtime)`. Today `checkFiles` re-hashes every file on each launch on purpose, so local changes are always repaired; keep that guarantee.
+  3. Cache hashes by `(path, size, mtime)`. Today `SyncEngine` re-hashes the `always` files on every entry and every Play on purpose, so local changes are always repaired; keep that guarantee.
   4. Apply a policy per file: `always` (the server wins, restored on every launch) or `once` (copied only if missing, then the player's).
   5. Clean managed dirs, and delete files that were in the previous manifest but not in the new one (tracked in a local list).
   6. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
@@ -197,22 +194,16 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
 **Critical**
 - Fullscreen and resolution settings are never applied (no `--fullscreen`, `customResolution` never set).
-- The update check runs before `runApp` with no timeout.
-- `isUpdated()` returns `""` for platforms without an installer, which shows a blocking "update required" on macOS/Linux.
 
 **Important**
-- Instance zip: fully loaded into memory, extracted synchronously on the UI isolate, no zip-slip check. Server-provided file paths aren't sanitized.
-- File download URLs interpolate the path without encoding.
 - Auto-connect uses Quick Play only (1.20+); older versions need `--server`/`--port`.
 - The game process: the launcher calls `exit(0)` on the first stdout line, no logs are kept, and the pipes are not drained when staying open.
-- Legacy updater runs a downloaded `.exe` with no signature/hash check.
 - XSTS error codes are not handled.
 
 **Minor**
 - `HomeScreen.news` is typed `List<Map>?`, but JSON gives `List<dynamic>` (runtime cast error).
 - `NewsCard` checks `link` but opens `discordLink`.
 - `CustomDialog` ignores `secondaryButtonOnPressed`.
-- `UpdateScreen` references the missing `assets/img/loging-background.jpg`.
 - Slider thumb color math uses the new 0..1 color channels.
 - Hardcoded strings ("Últimas noticias", "Abrir", the footer brand text).
 - `FutureBuilder` futures created inside `build`.

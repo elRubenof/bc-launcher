@@ -1,48 +1,16 @@
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
-
-import 'package:archive/archive.dart';
-import 'package:open_file/open_file.dart';
 import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/settings.dart';
-import 'package:crypto/crypto.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class Utility {
   static final key = GlobalKey<NavigatorState>();
-
-  static ValueNotifier<bool> isLoading = ValueNotifier(false);
-  static ValueNotifier<String?> loadingState = ValueNotifier(null);
-  static ValueNotifier<double?> loadingProgress = ValueNotifier(null);
 
   static ValueNotifier<bool> isLaunching = ValueNotifier(false);
 
   static AppLocalizations getLocalizations(BuildContext context) {
     return AppLocalizations.of(context)!;
-  }
-
-  static Future<Map<String, dynamic>> getAuth(String uuid) async {
-    try {
-      final response = await http.get(
-        Uri.parse("${Constants.api}/auth?uuid=$uuid"),
-      );
-
-      if (response.statusCode != 200) {
-        return {'error': true, 'statusCode': response.statusCode};
-      }
-
-      return json.decode(response.body);
-    } catch (e) {
-      return {'error': true, 'statusCode': e.toString()};
-    }
   }
 
   static Future<void> loadSettings() async {
@@ -76,200 +44,11 @@ class Utility {
     preferences.remove("fullscreen");
   }
 
-  static Future<Directory> getInstanceDir(String serverId) async {
-    final supportDirectory = await getApplicationSupportDirectory();
-    final installDir = Directory(join(supportDirectory.path, serverId));
-
-    Settings.minecraftDirectory = installDir;
-    return installDir;
-  }
-
-  static Future<bool> installInstance(Map server, Directory installDir) async {
-    try {
-      await _downloadInstance(server, installDir);
-      await _unZipInstance(server, installDir);
-
-      return true;
-    } catch (e) {
-      log("Error on install instance ${server['id']}: \n${e.toString()}");
-
-      return false;
-    }
-  }
-
-  static Future<void> _downloadInstance(
-    Map server,
-    Directory installDir,
-  ) async {
-    final l = Utility.getLocalizations(key.currentContext!);
-
-    log("Downloading ${server['id']}");
-    await Dio().download(
-      "${Constants.api}/server/install?id=${server['id']}",
-      "${installDir.path}.zip",
-      options: Options(method: 'POST', responseType: ResponseType.bytes),
-      onReceiveProgress: (received, total) {
-        if (total != -1) {
-          Utility.loadingState.value ??= "${l.downloading} ${server['name']}";
-          Utility.loadingProgress.value = received / total;
-        }
-      },
-    );
-
-    Utility.loadingState.value = null;
-    Utility.loadingProgress.value = null;
-    log("Download complete: ${installDir.path}.zip");
-  }
-
-  static Future<void> _unZipInstance(Map server, Directory installDir) async {
-    final l = Utility.getLocalizations(key.currentContext!);
-    Utility.loadingState.value = "${l.installing} ${server['name']}";
-
-    String zipFilePath = "${installDir.path}.zip";
-    File zipFile = File(zipFilePath);
-    if (!await zipFile.exists()) return;
-
-    Archive archive = ZipDecoder().decodeBytes(await zipFile.readAsBytes());
-
-    for (ArchiveFile file in archive) {
-      String filename = file.name;
-      if (file.isFile) {
-        List<int> data = file.content;
-        File(_resolvePath(installDir.path, filename))
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(data);
-      } else {
-        Directory(
-          _resolvePath(installDir.path, filename),
-        ).createSync(recursive: true);
-      }
-    }
-
-    log("Unzip finished: ${installDir.path}");
-
-    await zipFile.delete();
-    Utility.loadingState.value = null;
-  }
-
-  static Future<void> checkFiles(String serverId) async {
-    final response = await http.get(
-      Uri.parse("${Constants.api}/server/version?id=$serverId"),
-    );
-
-    final version = json.decode(response.body);
-
-    // Checked on every launch on purpose, so a modified or missing file is
-    // always fixed.
-    await _deleteUntrackedFolders(version);
-    await _checkAndDownloadFiles(version);
-  }
-
-  static Future<void> _deleteUntrackedFolders(Map version) async {
-    for (String path in version['delete_untracked_folders'] ?? []) {
-      for (var file
-          in Directory(
-            _resolvePath(Settings.minecraftDirectory.path, path),
-          ).listSync()) {
-        if (file is! File) continue;
-
-        final fileName = basename(file.path);
-        if ((version['files'] as List)
-            .where((e) => e['path'] == "$path/$fileName")
-            .isEmpty) {
-          await file.delete();
-        }
-      }
-    }
-  }
-
-  static Future<void> _checkAndDownloadFiles(Map version) async {
-    for (Map<String, dynamic> fileMap in version['files']) {
-      final file = File(
-        _resolvePath(Settings.minecraftDirectory.path, fileMap['path']),
-      );
-      final hash = file.existsSync() ? await _getHash(file) : null;
-
-      if (hash != null && hash == fileMap['hash']) continue;
-
-      log("Downloading ${fileMap['path']}");
-      await Dio().download(
-        "${Constants.api}/server/file?id=${version['instance']}&file=${fileMap['path']}",
-        file.path,
-        options: Options(method: 'POST', responseType: ResponseType.bytes),
-      );
-    }
-  }
-
-  /// Joins a server-provided path, which always uses `/`, onto a local [base].
-  static String _resolvePath(String base, String serverPath) {
-    return joinAll([base, ...posix.split(serverPath)]);
-  }
-
-  static Future<String> _getHash(File file) async {
-    return "${await file.openRead().transform(sha256).first}";
-  }
-
   static Future<void> setAutoConnect(bool value) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
     await preferences.setBool("autoConnect", value);
     Settings.autoConnect = value;
-  }
-
-  static Future<String?> isUpdated() async {
-    try {
-      await _deleteOldInstallers();
-
-      final packageInfo = await PackageInfo.fromPlatform();
-      final versionResponse = await http.get(
-        Uri.parse("${Constants.api}/version"),
-      );
-
-      final version = json.decode(versionResponse.body);
-      if (packageInfo.version == version["version"]) return null;
-
-      return version['installers'][Platform.operatingSystem] ?? "";
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static Future<void> _deleteOldInstallers() async {
-    if (!Platform.isWindows) return;
-
-    final supportDirectory = await getApplicationSupportDirectory();
-    for (FileSystemEntity item in supportDirectory.listSync()) {
-      if (item.path.endsWith(".exe")) await item.delete();
-    }
-  }
-
-  static Future<bool> update(String url, String downloadigText) async {
-    if (!Platform.isWindows) return false;
-
-    final supportDirectory = await getApplicationSupportDirectory();
-    final filePath = "${supportDirectory.path}/${url.split('/').last}";
-
-    try {
-      final downloadFile = File(filePath);
-      if (await downloadFile.exists()) await downloadFile.delete();
-
-      await Dio().download(
-        url,
-        filePath,
-        options: Options(method: 'POST', responseType: ResponseType.bytes),
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            Utility.loadingState.value ??= downloadigText;
-            Utility.loadingProgress.value = received / total;
-          }
-        },
-      );
-
-      await OpenFile.open(filePath);
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 
   static void pushReplacement(BuildContext context, Widget destination) {

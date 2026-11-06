@@ -13,9 +13,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home => 'Home';
 
   @override
-  String get map => 'Map';
-
-  @override
   String get settings => 'Settings';
 
   @override
@@ -23,9 +20,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get screenshots => 'Screenshots';
-
-  @override
-  String get reinstall => 'Reinstall';
 
   @override
   String get autoConnect => 'Auto-Connect';
@@ -97,35 +91,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetSettings => 'Reset settings';
 
   @override
-  String get installing => 'Installing';
-
-  @override
-  String get availableUpdate => 'Available update';
-
-  @override
-  String get updateQuestion =>
-      'Do you want to install the newest app´s version?';
-
-  @override
-  String get yes => 'Yes';
-
-  @override
-  String get no => 'No';
-
-  @override
-  String get updatedNeeded => 'Updated needed';
-
-  @override
   String get close => 'Close';
-
-  @override
-  String get downloading => 'Downloading';
-
-  @override
-  String get downloadingJava => 'Downloading Java';
-
-  @override
-  String get downloadingLibraries => 'Downloading game files';
 
   @override
   String get launchError => 'Couldn\'t start the game';
@@ -137,27 +103,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastNews => 'Last news';
 
   @override
-  String get userNotAuthorized => 'User not authorized';
-
-  @override
-  String get serverNotResponding => 'Server not responding';
-
-  @override
   String get missingClientId =>
       'Missing MS_CLIENT_ID: run or build with --dart-define-from-file=.env';
-
-  @override
-  String get versionErrorDialogTitle => 'Incorrect version';
-
-  @override
-  String get versionErrorDialogDescription =>
-      'Incorrect version of the instance detected. Do you want to reinstall';
-
-  @override
-  String get reinstallDialogTitle => 'Reinstall instance';
-
-  @override
-  String get reinstallDialogDescription => 'Do you want to reinstall';
 
   @override
   String get noOrganizationsTitle => 'You don\'t have any organization yet';

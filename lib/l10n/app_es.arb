@@ -1,11 +1,9 @@
 {
   "home": "Inicio",
-  "map": "Mapa",
   "settings": "Ajustes",
 
   "play": "Jugar",
   "screenshots": "Capturas de pantalla",
-  "reinstall": "Reinstalar",
   "autoConnect": "Auto-Conectar",
 
   "loginTitle": "Inicia sesión",
@@ -33,30 +31,15 @@
   "memoryAllocation": "Memoria Asignada",
   "resetSettings": "Reiniciar ajustes",
 
-  "installing": "Instalando",
 
-  "availableUpdate": "Actualización disponible",
-  "updateQuestion": "¿Quieres instalar la última versión de la aplicación?",
-  "yes": "Si",
-  "no": "No",
-  "updatedNeeded": "Actualización necesaria",
   "close": "Cerrar",
-  "downloading": "Descargando",
-  "downloadingJava": "Descargando Java",
-  "downloadingLibraries": "Descargando archivos del juego",
   "launchError": "No se pudo iniciar el juego",
   "launchErrorDesc": "Comprueba tu conexión e inténtalo de nuevo",
 
   "lastNews": "Últimas noticias",
 
-  "userNotAuthorized": "Usuario no autorizado",
-  "serverNotResponding": "Servidor no responde",
   "missingClientId": "Falta MS_CLIENT_ID: ejecuta o compila con --dart-define-from-file=.env",
 
-  "versionErrorDialogTitle": "Versión incorrecta",
-  "versionErrorDialogDescription": "Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar",
-  "reinstallDialogTitle": "Reinstalar instancia",
-  "reinstallDialogDescription": "¿Estás seguro que deseas reinstalar",
 
   "noOrganizationsTitle": "Aún no tienes ninguna organización",
   "noOrganizationsDesc": "Abre el enlace de tu organización desde su página web y se añadirá aquí.",

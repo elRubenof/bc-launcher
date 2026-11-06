@@ -47,7 +47,6 @@ dependencies:
   http: ^1.2.2
   dart_minecraft: ^0.6.0
   package_info_plus: ^8.1.2
-  open_file: ^3.5.11
   dio: ^5.9.1
   archive: ^4.0.7
   crypto: ^3.0.7

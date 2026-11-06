@@ -2,7 +2,6 @@ import 'package:bc_launcher/l10n/app_localizations.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/no_organizations_screen.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
-import 'package:bc_launcher/screens/update_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
@@ -25,14 +24,13 @@ void main() async {
   await OrganizationStore.load();
   OrganizationStore.refresh();
 
-  final updated = await Utility.isUpdated();
   runApp(
     MaterialApp(
       navigatorKey: Utility.key,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: updated == null ? const MyApp() : UpdateScreen(url: updated),
+      home: const MyApp(),
     ),
   );
 }

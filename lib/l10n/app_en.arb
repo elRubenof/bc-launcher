@@ -1,11 +1,9 @@
 {
   "home": "Home",
-  "map": "Map",
   "settings": "Settings",
 
   "play": "Play",
   "screenshots": "Screenshots",
-  "reinstall": "Reinstall",
   "autoConnect": "Auto-Connect",
 
   "loginTitle": "Sign in",
@@ -33,30 +31,15 @@
   "memoryAllocation": "Memory Allocation",
   "resetSettings": "Reset settings",
 
-  "installing": "Installing",
 
-  "availableUpdate": "Available update",
-  "updateQuestion": "Do you want to install the newest app´s version?",
-  "yes": "Yes",
-  "no": "No",
-  "updatedNeeded": "Updated needed",
   "close": "Close",
-  "downloading": "Downloading",
-  "downloadingJava": "Downloading Java",
-  "downloadingLibraries": "Downloading game files",
   "launchError": "Couldn't start the game",
   "launchErrorDesc": "Check your connection and try again",
 
   "lastNews": "Last news",
 
-  "userNotAuthorized": "User not authorized",
-  "serverNotResponding": "Server not responding",
   "missingClientId": "Missing MS_CLIENT_ID: run or build with --dart-define-from-file=.env",
 
-  "versionErrorDialogTitle": "Incorrect version",
-  "versionErrorDialogDescription": "Incorrect version of the instance detected. Do you want to reinstall",
-  "reinstallDialogTitle": "Reinstall instance",
-  "reinstallDialogDescription": "Do you want to reinstall",
 
   "noOrganizationsTitle": "You don't have any organization yet",
   "noOrganizationsDesc": "Open your organization's link from its website and it will be added here.",

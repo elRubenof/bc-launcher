@@ -18,7 +18,6 @@ class Constants {
   static const releasesUrl =
       "https://github.com/elRubenof/bc-launcher/releases/latest";
 
-  static String api = "http://127.0.0.1:8787";
   static const clientID = String.fromEnvironment('MS_CLIENT_ID');
   static const redirectUrl = String.fromEnvironment(
     'MS_REDIRECT_URL',

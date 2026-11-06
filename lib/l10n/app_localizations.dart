@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'Home'**
   String get home;
 
-  /// No description provided for @map.
-  ///
-  /// In en, this message translates to:
-  /// **'Map'**
-  String get map;
-
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -127,12 +121,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Screenshots'**
   String get screenshots;
-
-  /// No description provided for @reinstall.
-  ///
-  /// In en, this message translates to:
-  /// **'Reinstall'**
-  String get reinstall;
 
   /// No description provided for @autoConnect.
   ///
@@ -266,65 +254,11 @@ abstract class AppLocalizations {
   /// **'Reset settings'**
   String get resetSettings;
 
-  /// No description provided for @installing.
-  ///
-  /// In en, this message translates to:
-  /// **'Installing'**
-  String get installing;
-
-  /// No description provided for @availableUpdate.
-  ///
-  /// In en, this message translates to:
-  /// **'Available update'**
-  String get availableUpdate;
-
-  /// No description provided for @updateQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Do you want to install the newest app´s version?'**
-  String get updateQuestion;
-
-  /// No description provided for @yes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get yes;
-
-  /// No description provided for @no.
-  ///
-  /// In en, this message translates to:
-  /// **'No'**
-  String get no;
-
-  /// No description provided for @updatedNeeded.
-  ///
-  /// In en, this message translates to:
-  /// **'Updated needed'**
-  String get updatedNeeded;
-
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
-
-  /// No description provided for @downloading.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading'**
-  String get downloading;
-
-  /// No description provided for @downloadingJava.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading Java'**
-  String get downloadingJava;
-
-  /// No description provided for @downloadingLibraries.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading game files'**
-  String get downloadingLibraries;
 
   /// No description provided for @launchError.
   ///
@@ -344,47 +278,11 @@ abstract class AppLocalizations {
   /// **'Last news'**
   String get lastNews;
 
-  /// No description provided for @userNotAuthorized.
-  ///
-  /// In en, this message translates to:
-  /// **'User not authorized'**
-  String get userNotAuthorized;
-
-  /// No description provided for @serverNotResponding.
-  ///
-  /// In en, this message translates to:
-  /// **'Server not responding'**
-  String get serverNotResponding;
-
   /// No description provided for @missingClientId.
   ///
   /// In en, this message translates to:
   /// **'Missing MS_CLIENT_ID: run or build with --dart-define-from-file=.env'**
   String get missingClientId;
-
-  /// No description provided for @versionErrorDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Incorrect version'**
-  String get versionErrorDialogTitle;
-
-  /// No description provided for @versionErrorDialogDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Incorrect version of the instance detected. Do you want to reinstall'**
-  String get versionErrorDialogDescription;
-
-  /// No description provided for @reinstallDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Reinstall instance'**
-  String get reinstallDialogTitle;
-
-  /// No description provided for @reinstallDialogDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Do you want to reinstall'**
-  String get reinstallDialogDescription;
 
   /// No description provided for @noOrganizationsTitle.
   ///

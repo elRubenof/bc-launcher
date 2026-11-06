@@ -1,13 +1,11 @@
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:window_manager/window_manager.dart';
 
-/// The launcher's loading screen. Shows [status], [detail] and [progress]
-/// when [status] is given, or [Utility.loadingState] and
-/// [Utility.loadingProgress] otherwise.
+/// The launcher's loading screen: its logo and, at the bottom, [status],
+/// [detail] and a bar with [progress] (moving while it is `null`).
 class LoadingScreen extends StatefulWidget {
   final String? status;
   final String? detail;
@@ -41,20 +39,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
               colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
             ),
           ),
-          if (widget.status != null)
-            _bottom(widget.status, widget.detail, widget.progress)
-          else
-            ListenableBuilder(
-              listenable: Listenable.merge([
-                Utility.loadingState,
-                Utility.loadingProgress,
-              ]),
-              builder: (context, _) => _bottom(
-                Utility.loadingState.value,
-                null,
-                Utility.loadingProgress.value,
-              ),
-            ),
+          _bottom(widget.status, widget.detail, widget.progress),
           SizedBox(
             height: Constants.topBarHeight,
             child: DragToMoveArea(

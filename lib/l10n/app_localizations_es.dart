@@ -13,9 +13,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get home => 'Inicio';
 
   @override
-  String get map => 'Mapa';
-
-  @override
   String get settings => 'Ajustes';
 
   @override
@@ -23,9 +20,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get screenshots => 'Capturas de pantalla';
-
-  @override
-  String get reinstall => 'Reinstalar';
 
   @override
   String get autoConnect => 'Auto-Conectar';
@@ -97,35 +91,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get resetSettings => 'Reiniciar ajustes';
 
   @override
-  String get installing => 'Instalando';
-
-  @override
-  String get availableUpdate => 'Actualización disponible';
-
-  @override
-  String get updateQuestion =>
-      '¿Quieres instalar la última versión de la aplicación?';
-
-  @override
-  String get yes => 'Si';
-
-  @override
-  String get no => 'No';
-
-  @override
-  String get updatedNeeded => 'Actualización necesaria';
-
-  @override
   String get close => 'Cerrar';
-
-  @override
-  String get downloading => 'Descargando';
-
-  @override
-  String get downloadingJava => 'Descargando Java';
-
-  @override
-  String get downloadingLibraries => 'Descargando archivos del juego';
 
   @override
   String get launchError => 'No se pudo iniciar el juego';
@@ -137,28 +103,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lastNews => 'Últimas noticias';
 
   @override
-  String get userNotAuthorized => 'Usuario no autorizado';
-
-  @override
-  String get serverNotResponding => 'Servidor no responde';
-
-  @override
   String get missingClientId =>
       'Falta MS_CLIENT_ID: ejecuta o compila con --dart-define-from-file=.env';
-
-  @override
-  String get versionErrorDialogTitle => 'Versión incorrecta';
-
-  @override
-  String get versionErrorDialogDescription =>
-      'Se ha detectado una versión incorrecta de la instancia. ¿Deseas reinstalar';
-
-  @override
-  String get reinstallDialogTitle => 'Reinstalar instancia';
-
-  @override
-  String get reinstallDialogDescription =>
-      '¿Estás seguro que deseas reinstalar';
 
   @override
   String get noOrganizationsTitle => 'Aún no tienes ninguna organización';
