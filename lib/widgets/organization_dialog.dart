@@ -77,8 +77,7 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
 
       _organization = organization;
       _currentVersion = current;
-      final minimum = organization.minLauncherVersion;
-      if (minimum != null && _isOlder(current, minimum)) {
+      if (organization.needsNewerLauncher(current)) {
         _fail(_Failure.outdated);
       } else {
         setState(() => _step = _Step.confirm);
@@ -128,23 +127,6 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
       _step = _Step.failed;
       _failure = failure;
     });
-  }
-
-  static bool _isOlder(String current, String minimum) {
-    List<int> parts(String version) => version
-        .split(RegExp(r'[+-]'))
-        .first
-        .split('.')
-        .map((part) => int.tryParse(part) ?? 0)
-        .toList();
-
-    final a = parts(current), b = parts(minimum);
-    for (var i = 0; i < 3; i++) {
-      final x = i < a.length ? a[i] : 0, y = i < b.length ? b[i] : 0;
-      if (x != y) return x < y;
-    }
-    
-    return false;
   }
 
   @override

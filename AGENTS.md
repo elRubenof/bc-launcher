@@ -44,10 +44,12 @@ lib/
     tabs/                       home (news), map (webview_all), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
-                                instances, manifest, news; token, retries, 401 renewal; ApiError
+                                instances, manifest, news; token, retries, 401 renewal, 426 renegotiation; ApiError
                                 with a type (offline, notMember, upgradeRequired, …) and the API's code
     deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
-    organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key
+    organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, and the
+                                selected one
+    instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     java_manager.dart           Java runtime per version from Mojang's java-runtime manifest

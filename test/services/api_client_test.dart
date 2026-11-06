@@ -386,4 +386,58 @@ void main() {
       expect(server.requests, hasLength(1));
     });
   });
+
+  group('426', () {
+    test(
+      'negotiates again and repeats the request with the new version',
+      () async {
+        final server = FakeServer(
+          (request, _) => request.uri.path.startsWith('/api/v1/')
+              ? problem(426)
+              : json(200, {'instances': []}),
+        );
+        var renegotiations = 0;
+        final api = ApiClient(
+          organization,
+          getToken: () async => 'token',
+          renegotiate: () async {
+            renegotiations++;
+            return Organization.fromDiscovery(
+              fixture('discovery')..['apiVersions'] = [2],
+              url: 'https://example.com',
+              apiVersion: 2,
+            );
+          },
+          dio: dioWith(server),
+        );
+
+        expect(await api.instances(), isEmpty);
+        expect(renegotiations, 1);
+        expect(server.requests.map((r) => r.uri.path), [
+          '/api/v1/instances',
+          '/api/v2/instances',
+        ]);
+        expect(api.organization.apiVersion, 2);
+      },
+    );
+
+    test('no shared version left is incompatible', () async {
+      final api = ApiClient(
+        organization,
+        getToken: () async => 'token',
+        renegotiate: () async =>
+            throw const ApiError(ApiErrorType.incompatible),
+        dio: dioWith(FakeServer((_, _) => problem(426))),
+      );
+
+      await expectLater(api.instances(), apiError(ApiErrorType.incompatible));
+    });
+
+    test('without a way to negotiate, the 426 is the error', () async {
+      await expectLater(
+        client(FakeServer((_, _) => problem(426))).instances(),
+        apiError(ApiErrorType.upgradeRequired),
+      );
+    });
+  });
 }

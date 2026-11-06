@@ -100,6 +100,44 @@ void main() {
     });
   });
 
+  group('selected organization', () {
+    test('the first added is selected', () async {
+      expect(OrganizationStore.selected.value, isNull);
+      await OrganizationStore.save(organization('https://a.com'));
+      await OrganizationStore.save(organization('https://b.com'));
+
+      expect(OrganizationStore.selected.value, 'a.com');
+    });
+
+    test('a selection is remembered across launches', () async {
+      await OrganizationStore.save(organization('https://a.com'));
+      await OrganizationStore.save(organization('https://b.com'));
+      await OrganizationStore.select('b.com');
+
+      await OrganizationStore.load();
+      expect(OrganizationStore.selected.value, 'b.com');
+    });
+
+    test('an unknown organization can not be selected', () async {
+      await OrganizationStore.save(organization('https://a.com'));
+      await OrganizationStore.select('missing.com');
+
+      expect(OrganizationStore.selected.value, 'a.com');
+    });
+
+    test('removing the selected one selects the first left', () async {
+      await OrganizationStore.save(organization('https://a.com'));
+      await OrganizationStore.save(organization('https://b.com'));
+      await OrganizationStore.select('a.com');
+
+      await OrganizationStore.remove(organization('https://a.com'));
+      expect(OrganizationStore.selected.value, 'b.com');
+
+      await OrganizationStore.remove(organization('https://b.com'));
+      expect(OrganizationStore.selected.value, isNull);
+    });
+  });
+
   group('TokenStore', () {
     // TokenStore keeps what it read in memory; these keys are not reused by
     // other tests, so the cache can't hide a missing write.

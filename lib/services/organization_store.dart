@@ -11,12 +11,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// they were added. They are identified by [Organization.key].
 class OrganizationStore {
   static final organizations = ValueNotifier<List<Organization>>(const []);
+  static final selected = ValueNotifier<String?>(null);
 
   /// Reads the saved organizations. One that can't be read is left out.
   static Future<void> load() async {
     final preferences = await SharedPreferences.getInstance();
     final saved = preferences.getString("organizations");
-    if (saved == null) return;
+    if (saved == null) {
+      organizations.value = const [];
+      selected.value = null;
+      return;
+    }
 
     final result = <Organization>[];
     try {
@@ -31,6 +36,19 @@ class OrganizationStore {
       log("The saved organizations can't be read: $e");
     }
     organizations.value = List.unmodifiable(result);
+
+    final key = preferences.getString("selectedOrganization");
+    selected.value = byKey(key ?? "") != null
+        ? key
+        : (result.isEmpty ? null : result.first.key);
+  }
+
+  /// Shows the organization with [key] and remembers it.
+  static Future<void> select(String key) async {
+    if (byKey(key) == null) return;
+    selected.value = key;
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString("selectedOrganization", key);
   }
 
   static Organization? byKey(String key) {
@@ -91,5 +109,17 @@ class OrganizationStore {
       jsonEncode([for (final organization in list) organization.toJson()]),
     );
     organizations.value = List.unmodifiable(list);
+
+    // Keep a valid selection: the first organization when the selected one
+    // was removed, or the first one added.
+    if (byKey(selected.value ?? "") == null) {
+      final first = list.isEmpty ? null : list.first.key;
+      selected.value = first;
+      if (first == null) {
+        await preferences.remove("selectedOrganization");
+      } else {
+        await preferences.setString("selectedOrganization", first);
+      }
+    }
   }
 }

@@ -109,6 +109,30 @@ class Organization {
 
   bool hasCapability(String capability) => capabilities.contains(capability);
 
+  /// Whether [launcherVersion] is older than [minLauncherVersion].
+  bool needsNewerLauncher(String launcherVersion) {
+    final minimum = minLauncherVersion;
+    return minimum != null && _isOlder(launcherVersion, minimum);
+  }
+
+  /// Whether the `x.y.z` version [current] is lower than [minimum]. A build
+  /// or pre-release suffix (`+1`, `-beta`) is ignored; missing parts are 0.
+  static bool _isOlder(String current, String minimum) {
+    List<int> parts(String version) => version
+        .split(RegExp(r'[+-]'))
+        .first
+        .split('.')
+        .map((part) => int.tryParse(part) ?? 0)
+        .toList();
+
+    final a = parts(current), b = parts(minimum);
+    for (var i = 0; i < 3; i++) {
+      final x = i < a.length ? a[i] : 0, y = i < b.length ? b[i] : 0;
+      if (x != y) return x < y;
+    }
+    return false;
+  }
+
   static AuthType _authType(String value) => switch (value) {
     'mojang-session' => AuthType.mojangSession,
     'unverified' => AuthType.unverified,

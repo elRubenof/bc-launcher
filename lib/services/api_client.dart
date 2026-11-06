@@ -39,7 +39,8 @@ class ApiClient {
   /// API versions this launcher speaks; the highest one shared is used.
   static const supportedApiVersions = [1];
 
-  final Organization organization;
+  Organization get organization => _organization;
+  Organization _organization;
 
   /// The organization token, or `null` when there is none yet.
   final Future<String?> Function() getToken;
@@ -47,17 +48,29 @@ class ApiClient {
   /// Called on `401`: signs in again and returns the new token, or `null`.
   final Future<String?> Function()? renewToken;
 
+  /// Called on `426`: reads the discovery again and returns the organization
+  /// with the newly negotiated API version, or throws [ApiError]
+  /// (`incompatible`) when no version is shared any more.
+  final Future<Organization> Function()? renegotiate;
+
   final Dio _dio;
 
   ApiClient(
-    this.organization, {
+    Organization organization, {
     required this.getToken,
     this.renewToken,
+    this.renegotiate,
     Dio? dio,
-  }) : _dio = dio ?? _newDio() {
-    _dio.options
-      ..baseUrl = "${organization.url}/api/v${organization.apiVersion}"
-      ..validateStatus = (_) => true;
+  }) : _organization = organization,
+       _dio = dio ?? _newDio() {
+    _dio.options.validateStatus = (_) => true;
+    _use(organization);
+  }
+
+  void _use(Organization organization) {
+    _organization = organization;
+    _dio.options.baseUrl =
+        "${organization.url}/api/v${organization.apiVersion}";
   }
 
   /// Reads the discovery document at [url] (`https://` is added when
@@ -176,9 +189,40 @@ class ApiClient {
     return _read(response, parse);
   }
 
+  /// Sends the request; on `426` negotiates the API version again and
+  /// repeats it once with the new version.
+  Future<Response> _send(
+    String method,
+    String path, {
+    bool auth = true,
+    Object? data,
+    Map<String, dynamic>? query,
+    Map<String, String> headers = const {},
+  }) async {
+    Future<Response> send() => _sendWithToken(
+      method,
+      path,
+      auth: auth,
+      data: data,
+      query: query,
+      headers: headers,
+    );
+
+    try {
+      return await send();
+    } on ApiError catch (e) {
+      final renegotiate = this.renegotiate;
+      if (e.type != ApiErrorType.upgradeRequired || renegotiate == null) {
+        rethrow;
+      }
+      _use(await renegotiate());
+      return send();
+    }
+  }
+
   /// Sends with the token, retrying network and server failures (GET only)
   /// and signing in again once on `401`.
-  Future<Response> _send(
+  Future<Response> _sendWithToken(
     String method,
     String path, {
     bool auth = true,

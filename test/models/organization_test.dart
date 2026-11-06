@@ -99,4 +99,30 @@ void main() {
     expect(organization.hasCapability('server-status'), isTrue);
     expect(organization.hasCapability('optional-mods'), isFalse);
   });
+
+  group('needsNewerLauncher', () {
+    Organization requiring(String? minimum) => Organization.fromJson({
+      'url': 'https://example.com',
+      'minLauncherVersion': minimum,
+    });
+
+    test('without a minimum any launcher is fine', () {
+      expect(requiring(null).needsNewerLauncher('0.0.1'), isFalse);
+    });
+
+    test('compares x.y.z numerically', () {
+      final organization = requiring('1.10.0');
+      expect(organization.needsNewerLauncher('1.9.9'), isTrue);
+      expect(organization.needsNewerLauncher('1.10.0'), isFalse);
+      expect(organization.needsNewerLauncher('1.10.1'), isFalse);
+      expect(organization.needsNewerLauncher('2.0.0'), isFalse);
+    });
+
+    test('missing parts count as 0 and suffixes are ignored', () {
+      expect(requiring('1.2').needsNewerLauncher('1.2.0'), isFalse);
+      expect(requiring('1.2.1').needsNewerLauncher('1.2'), isTrue);
+      expect(requiring('1.2.0').needsNewerLauncher('1.2.0+5'), isFalse);
+      expect(requiring('1.2.0-beta').needsNewerLauncher('1.1.9'), isTrue);
+    });
+  });
 }

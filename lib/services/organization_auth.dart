@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/services/api_client.dart';
+import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/services/token_store.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:dio/dio.dart';
@@ -40,8 +41,20 @@ class OrganizationAuth {
       getToken: () async =>
           await TokenStore.token(organization.key) ?? await signIn(client),
       renewToken: () => signIn(client),
+      renegotiate: () => _renegotiate(organization),
     );
     return client;
+  }
+
+  /// Reads the discovery again after a `426` and keeps the organization
+  /// saved with the new version. Throws [ApiError] (`incompatible`) when no
+  /// version is shared any more.
+  static Future<Organization> _renegotiate(Organization organization) async {
+    final fresh = await ApiClient.discovery(organization.url);
+    if (OrganizationStore.byKey(fresh.key) != null) {
+      await OrganizationStore.save(fresh);
+    }
+    return fresh;
   }
 
   /// `challenge` → Mojang's `join` → `verify`, and saves the token. Throws
