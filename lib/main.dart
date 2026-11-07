@@ -7,6 +7,7 @@ import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
+import 'package:bc_launcher/utils/trusted_roots.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/organization_dialog.dart';
 import 'package:bc_launcher/widgets/fatal_error_message.dart';
@@ -16,6 +17,7 @@ import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TrustedRoots.load();
   DeepLinks.listen();
   OrganizationDialog.listen();
   DeepLinks.register();

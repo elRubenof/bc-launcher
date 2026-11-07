@@ -114,6 +114,8 @@ lib/
     global_settings.dart        the launcher's own settings, for every instance (keep it open, open the last one):
                                 load, set and reset them in SharedPreferences
     system_memory.dart          the computer's total RAM (sysctl, /proc/meminfo, GlobalMemoryStatusEx by FFI)
+    trusted_roots.dart          on Windows, adds the bundled Mozilla roots to the default SecurityContext on start
+                                (Dart doesn't make Windows fetch the roots it is missing)
     utility.dart                localizations, navigation, launching/playing state
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
@@ -126,6 +128,8 @@ lib/
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
+assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
+                                release
 test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1
                                 responses shaped like the server's openapi.json, read with fixture();
                                 services/fake_server.dart is an organization's server for sync tests
