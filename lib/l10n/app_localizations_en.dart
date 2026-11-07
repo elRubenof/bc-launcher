@@ -432,4 +432,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backToInstances => 'Back to the instances';
+
+  @override
+  String get latestNews => 'Latest news';
+
+  @override
+  String get pinnedNews => 'PINNED';
+
+  @override
+  String get readMore => 'Read more';
+
+  @override
+  String get readLess => 'Read less';
+
+  @override
+  String get newsError => 'Couldn\'t load the news';
 }

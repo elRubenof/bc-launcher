@@ -46,7 +46,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainScreen> {
-  /// By [selectedTab]. The instance's news comes in phase 5.
+  /// By [selectedTab].
   late Map<int, Widget> tabs;
 
   @override
@@ -55,7 +55,10 @@ class _MainPageState extends State<MainScreen> {
 
     selectedTab.value = homeTab;
     tabs = {
-      homeTab: const HomeScreen(news: null),
+      homeTab: HomeScreen(
+        organization: widget.organization,
+        instance: widget.instance,
+      ),
       for (final (i, tab) in widget.instance.tabs.indexed)
         if (tab.openIn == WebTabOpenIn.launcher)
           if (MainScreen.resolveUrl(tab) case final url?)

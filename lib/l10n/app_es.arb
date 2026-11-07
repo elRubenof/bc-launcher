@@ -126,5 +126,11 @@
   "notEnoughSpaceDesc": "{name} necesita {needed} MB y solo quedan {available} MB libres en el disco. Libera espacio y vuelve a intentarlo.",
   "instanceGoneTitle": "{name} ya no está disponible",
   "instanceGoneDesc": "Puede que la organización la haya quitado o que ya no tengas acceso.",
-  "backToInstances": "Volver a las instancias"
+  "backToInstances": "Volver a las instancias",
+
+  "latestNews": "Últimas noticias",
+  "pinnedNews": "FIJADA",
+  "readMore": "Leer más",
+  "readLess": "Leer menos",
+  "newsError": "No se han podido cargar las noticias"
 }

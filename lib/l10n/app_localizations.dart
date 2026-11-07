@@ -786,6 +786,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to the instances'**
   String get backToInstances;
+
+  /// No description provided for @latestNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest news'**
+  String get latestNews;
+
+  /// No description provided for @pinnedNews.
+  ///
+  /// In en, this message translates to:
+  /// **'PINNED'**
+  String get pinnedNews;
+
+  /// No description provided for @readMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get readMore;
+
+  /// No description provided for @readLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Read less'**
+  String get readLess;
+
+  /// No description provided for @newsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the news'**
+  String get newsError;
 }
 
 class _AppLocalizationsDelegate

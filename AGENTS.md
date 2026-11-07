@@ -49,7 +49,7 @@ lib/
                                 updates and launches it; puts the instance's InstanceTheme on everything under it
                                 and its background under its background color at 85 % (the launcher's if it has
                                 none or it can't be loaded)
-    tabs/                       home (news, empty until phase 5), web tab (webview_all, for openIn: launcher; the
+    tabs/                       home (the instance's news, NewsCarousel), web tab (webview_all, for openIn: launcher; the
                                 browser ones open from the top bar, marked ↗), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
@@ -98,16 +98,22 @@ lib/
                                 beside it, without the token (the 20 newest kept); how it ended (never started,
                                 crashed by exit code or a new crash report)
     log_export.dart             the last game's log, crash report and info zipped for support; save dialog
+    news_catalog.dart           an instance's news a page (20) at a time with the cursor; error kept until the next
+                                load; an invalid cursor starts again from the first page
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
     constants.dart              colors, sizes, defaults, releases URL, Azure app values from .env
+    news_markdown.dart          a news body's markdown (package:markdown) as blocks and styled spans: headings, bold,
+                                italic, lists, code, http(s) links; `_` is never italic
     instance_theme.dart         InstanceTheme (ThemeExtension): the instance's colors inside MainScreen, the
                                 launcher's (Constants) anywhere else; its primary also themes switches and sliders
     settings.dart               static user settings (RAM, resolution, …)
     utility.dart                settings persistence, localizations, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
-  widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news card, window buttons,
+  widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news carousel (one at a time, read more,
+                                loading the next page, retry) and its body (whole, or its first 3 lines
+                                counting every block's, the one that doesn't fit ending in "…"), window buttons,
                                 full-screen error message, add-organization dialog opened by links,
                                 organization logo and rail, the launcher's dropdown menus (LauncherMenu), instance
                                 card with its menu, instance actions (open
@@ -211,7 +217,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
 - **Launch** (done, `GameProcess`): game output in a log file, crash detection, the launcher hidden while playing unless it stays open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`) running the game (`GameProcess`, against a fake process) and zipping its logs (`LogExport`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`) running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
@@ -221,8 +227,6 @@ Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 - XSTS error codes are not handled.
 
 **Minor**
-- `HomeScreen.news` is typed `List<Map>?`, but JSON gives `List<dynamic>` (runtime cast error).
-- `NewsCard` checks `link` but opens `discordLink`.
 - Slider thumb color math uses the new 0..1 color channels.
-- Hardcoded strings ("Últimas noticias", "Abrir", the footer brand text).
+- Hardcoded strings (the footer brand text).
 - `FutureBuilder` futures created inside `build`.

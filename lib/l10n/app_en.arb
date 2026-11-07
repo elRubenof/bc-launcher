@@ -152,5 +152,11 @@
   "instanceGoneTitle": "{name} is no longer available",
   "@instanceGoneTitle": {"placeholders": {"name": {"type": "String"}}},
   "instanceGoneDesc": "The organization may have removed it, or you no longer have access to it.",
-  "backToInstances": "Back to the instances"
+  "backToInstances": "Back to the instances",
+
+  "latestNews": "Latest news",
+  "pinnedNews": "PINNED",
+  "readMore": "Read more",
+  "readLess": "Read less",
+  "newsError": "Couldn't load the news"
 }

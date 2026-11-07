@@ -1,88 +1,54 @@
+import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/services/news_catalog.dart';
+import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/widgets/news_card.dart';
+import 'package:bc_launcher/widgets/news_carousel.dart';
 import 'package:flutter/material.dart';
 
+/// The instance's home: its news on the right.
 class HomeScreen extends StatefulWidget {
-  final List<Map>? news;
+  final Organization organization;
+  final Instance instance;
 
-  const HomeScreen({super.key, required this.news});
+  const HomeScreen({
+    super.key,
+    required this.organization,
+    required this.instance,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int currentIndex = 0;
+  /// How far Play rises over the bottom bar, and the gap the news leave
+  /// above it.
+  static const _playOverBar = 12.0, _gapOverPlay = 30.0;
+  static const _topGap = 34.0;
+
+  late final NewsCatalog catalog = NewsCatalog.forInstance(
+    OrganizationAuth.clientFor(widget.organization),
+    widget.instance.id,
+  )..load();
+
+  @override
+  void dispose() {
+    catalog.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Constants.horizontalPadding,
-        vertical: Constants.topBarHeight,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [const SizedBox(), newSection()],
-      ),
-    );
-  }
-
-  Widget newSection() {
-    if (widget.news == null) return Container();
-
-    double width = MediaQuery.of(context).size.width * 0.4;
-    if (width > 1000) width = 1000;
-
-    return SizedBox(
-      width: width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Últimas noticias",
-                style: TextStyle(
-                  color: Constants.textColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
-                children: List.generate(
-                  widget.news!.length,
-                  (index) => MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => setState(() => currentIndex = index),
-                      child: Container(
-                        color: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: AnimatedContainer(
-                          height: 3,
-                          width: currentIndex == index ? 45 : 35,
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(left: 7),
-                          decoration: BoxDecoration(
-                            color:
-                                currentIndex == index
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          NewsCard(width: width, newData: widget.news![currentIndex]),
-        ],
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: _topGap,
+          right: Constants.horizontalPadding,
+          bottom: _playOverBar + _gapOverPlay,
+        ),
+        child: SizedBox(width: 500, child: NewsCarousel(catalog: catalog)),
       ),
     );
   }
