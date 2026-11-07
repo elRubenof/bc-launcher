@@ -1,18 +1,19 @@
-import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
 
-class MapScreen extends StatefulWidget {
-  final String? mapUrl;
+/// A web tab that opens in the launcher.
+class WebTabScreen extends StatefulWidget {
+  final Uri url;
 
-  const MapScreen({super.key, required this.mapUrl});
+  const WebTabScreen({super.key, required this.url});
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  State<WebTabScreen> createState() => _WebTabScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _WebTabScreenState extends State<WebTabScreen> {
   late final WebViewController _controller;
   bool show = true;
 
@@ -30,7 +31,7 @@ class _MapScreenState extends State<MapScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.mapUrl!));
+      ..loadRequest(widget.url);
   }
 
   @override
@@ -50,8 +51,8 @@ class _MapScreenState extends State<MapScreen> {
             )
           : Center(
               child: Text(
-                l.mapError,
-                style: const TextStyle(color: Constants.textColor),
+                l.webTabError,
+                style: TextStyle(color: InstanceTheme.of(context).text),
               ),
             ),
     );

@@ -194,11 +194,11 @@ abstract class AppLocalizations {
   /// **'Switch server'**
   String get switchInstances;
 
-  /// No description provided for @mapError.
+  /// No description provided for @webTabError.
   ///
   /// In en, this message translates to:
-  /// **'Error on loading map'**
-  String get mapError;
+  /// **'Couldn\'t load the page'**
+  String get webTabError;
 
   /// No description provided for @gameSettings.
   ///

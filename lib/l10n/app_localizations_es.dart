@@ -61,7 +61,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get switchInstances => 'Cambiar servidor';
 
   @override
-  String get mapError => 'Error al cargar el mapa';
+  String get webTabError => 'No se ha podido cargar la página';
 
   @override
   String get gameSettings => 'Ajustes de Juego';

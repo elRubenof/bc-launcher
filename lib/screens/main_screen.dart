@@ -2,15 +2,24 @@ import 'dart:io';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/models/web_tab.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
+import 'package:bc_launcher/screens/tabs/web_tab_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 
-final ValueNotifier selectedTab = ValueNotifier<int>(0);
+final ValueNotifier selectedTab = ValueNotifier<int>(homeTab);
+
+const homeTab = 0;
+const settingsTab = 1;
+
+/// The tab of the instance's web tab at [index] that opens in the launcher.
+int webTabIndex(int index) => 2 + index;
 
 /// An installed instance: its tabs and Play.
 class MainScreen extends StatefulWidget {
@@ -27,20 +36,31 @@ class MainScreen extends StatefulWidget {
 
   @override
   State<MainScreen> createState() => _MainPageState();
+
+  /// [tab]'s URL for the signed-in player, or null if no one is.
+  static Uri? resolveUrl(WebTab tab) {
+    final profile = Minecraft.profile.value;
+    if (profile == null) return null;
+    return tab.resolveUrl(uuid: profile.uuid, name: profile.name);
+  }
 }
 
 class _MainPageState extends State<MainScreen> {
-  /// By [selectedTab]. The instance's news and web tabs come in phase 5.
+  /// By [selectedTab]. The instance's news comes in phase 5.
   late Map<int, Widget> tabs;
 
   @override
   void initState() {
     super.initState();
 
-    selectedTab.value = 0;
+    selectedTab.value = homeTab;
     tabs = {
-      0: const HomeScreen(news: null),
-      2: SettingsScreen(
+      homeTab: const HomeScreen(news: null),
+      for (final (i, tab) in widget.instance.tabs.indexed)
+        if (tab.openIn == WebTabOpenIn.launcher)
+          if (MainScreen.resolveUrl(tab) case final url?)
+            webTabIndex(i): WebTabScreen(key: ValueKey(i), url: url),
+      settingsTab: SettingsScreen(
         organizationKey: widget.organization.key,
         instance: widget.instance,
         folder: widget.folder,
@@ -69,7 +89,7 @@ class _MainPageState extends State<MainScreen> {
               Padding(
                 padding: EdgeInsets.only(
                   top: Constants.topBarHeight,
-                  bottom: index == 0 ? Constants.topBarHeight : 0,
+                  bottom: index == homeTab ? Constants.topBarHeight : 0,
                 ),
                 child: tabs[index] ?? const SizedBox.shrink(),
               ),
@@ -79,7 +99,7 @@ class _MainPageState extends State<MainScreen> {
               ),
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
-                bottom: index == 0 ? 0 : -200,
+                bottom: index == homeTab ? 0 : -200,
                 child: BottomBar(
                   organization: widget.organization,
                   instance: widget.instance,

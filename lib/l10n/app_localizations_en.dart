@@ -61,7 +61,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchInstances => 'Switch server';
 
   @override
-  String get mapError => 'Error on loading map';
+  String get webTabError => 'Couldn\'t load the page';
 
   @override
   String get gameSettings => 'Game Settings';

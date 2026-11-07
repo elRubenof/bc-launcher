@@ -5,13 +5,19 @@ import 'package:flutter/material.dart';
 class TabButton extends StatefulWidget {
   final String label;
   final IconData icon;
-  final int tab;
+
+  /// The tab it shows, or null when it opens outside the launcher.
+  final int? tab;
+
+  /// Instead of showing [tab]; marked as opening in the browser.
+  final VoidCallback? onTap;
 
   const TabButton({
     super.key,
     required this.label,
     required this.icon,
-    required this.tab,
+    this.tab,
+    this.onTap,
   });
 
   @override
@@ -59,7 +65,9 @@ class _TabButtonState extends State<TabButton> {
                 opacity: (selected || _hover) ? 1 : 0.7,
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
-                  onTapDown: (d) => selectedTab.value = widget.tab,
+                  onTapDown: (d) => widget.tab != null
+                      ? selectedTab.value = widget.tab
+                      : widget.onTap?.call(),
                   onHover: (value) => setState(() => _hover = value),
                   child: Row(
                     children: [
@@ -73,6 +81,15 @@ class _TabButtonState extends State<TabButton> {
                           fontSize: 11,
                         ),
                       ),
+                      if (widget.onTap != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.north_east,
+                            color: theme.text,
+                            size: 11,
+                          ),
+                        ),
                     ],
                   ),
                 ),

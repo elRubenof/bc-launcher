@@ -44,11 +44,13 @@ lib/
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
-    main_screen.dart            an installed instance: tabs (home, settings) + top & bottom bars; Play repairs,
+    main_screen.dart            an installed instance: tabs (home, its web tabs, settings) + top & bottom bars (the
+                                bottom one only on home); Play repairs,
                                 updates and launches it; puts the instance's InstanceTheme on everything under it
                                 and its background under its background color at 85 % (the launcher's if it has
                                 none or it can't be loaded)
-    tabs/                       home (news, empty until phase 5), map (webview_all, unused until phase 5), settings
+    tabs/                       home (news, empty until phase 5), web tab (webview_all, for openIn: launcher; the
+                                browser ones open from the top bar, marked ↗), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
                                 instances, manifest, news; token, retries, 401 renewal, 426 renegotiation; ApiError

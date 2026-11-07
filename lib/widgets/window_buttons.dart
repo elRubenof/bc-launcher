@@ -24,7 +24,7 @@ class WindowButtons extends StatelessWidget {
               icon: Icons.settings,
               size: 14.0,
               backgroundColor: darkMode ? Colors.black : Colors.white,
-              onTap: () => selectedTab.value = 2,
+              onTap: () => selectedTab.value = settingsTab,
             ),
           MouseIconButton(
             icon: Icons.minimize,

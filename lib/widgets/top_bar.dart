@@ -1,5 +1,7 @@
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/models/web_tab.dart';
+import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
@@ -11,6 +13,7 @@ import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 
 class TopBar extends StatefulWidget {
@@ -74,21 +77,60 @@ class _TopBarState extends State<TopBar> {
     );
   }
 
+  /// Home, the instance's web tabs and Settings.
   Widget tabs() {
     final l = Utility.getLocalizations(context);
-    const tabsNumber = 2;
+    final webTabs = widget.instance.tabs;
+    final tabsNumber = 2 + webTabs.length;
 
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
-      constraints: const BoxConstraints(minWidth: 120.0 * tabsNumber),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TabButton(label: l.home, icon: Icons.home, tab: 0),
-          TabButton(label: l.settings, icon: Icons.settings, tab: 2),
-        ],
+    return Flexible(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.067 * tabsNumber,
+        constraints: BoxConstraints(minWidth: 120.0 * tabsNumber),
+        // Spread like before when they fit; smaller when they don't.
+        child: LayoutBuilder(
+          builder: (context, box) => FittedBox(
+            fit: BoxFit.scaleDown,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: box.maxWidth,
+                minHeight: box.maxHeight,
+                maxHeight: box.maxHeight,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 28,
+                children: [
+                  TabButton(label: l.home, icon: Icons.home, tab: homeTab),
+                  for (final (i, tab) in webTabs.indexed)
+                    TabButton(
+                      label: tab.label,
+                      icon: webTabIcon(tab.icon),
+                      tab: tab.openIn == WebTabOpenIn.launcher
+                          ? webTabIndex(i)
+                          : null,
+                      onTap: tab.openIn == WebTabOpenIn.browser
+                          ? () => openInBrowser(tab)
+                          : null,
+                    ),
+                  TabButton(
+                    label: l.settings,
+                    icon: Icons.settings,
+                    tab: settingsTab,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  /// Opens [tab] in the system browser; the launcher stays where it is.
+  void openInBrowser(WebTab tab) {
+    final url = MainScreen.resolveUrl(tab);
+    if (url != null) launchUrl(url, mode: LaunchMode.externalApplication);
   }
 }
 
@@ -164,4 +206,20 @@ Widget account(Organization organization) {
       );
     },
   );
+}
+
+/// The icon of each of the contract's web tab icons.
+IconData webTabIcon(WebTabIcon icon) {
+  return switch (icon) {
+    WebTabIcon.map => Icons.map,
+    WebTabIcon.trophy => Icons.emoji_events,
+    WebTabIcon.calendar => Icons.calendar_month,
+    WebTabIcon.book => Icons.menu_book,
+    WebTabIcon.chart => Icons.bar_chart,
+    WebTabIcon.live => Icons.live_tv,
+    WebTabIcon.users => Icons.group,
+    WebTabIcon.list => Icons.list,
+    WebTabIcon.form => Icons.assignment,
+    WebTabIcon.globe => Icons.public,
+  };
 }

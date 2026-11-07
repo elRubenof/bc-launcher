@@ -19,7 +19,7 @@
   "logout": "Cerrar sesión",
   "switchInstances": "Cambiar servidor",
 
-  "mapError": "Error al cargar el mapa",
+  "webTabError": "No se ha podido cargar la página",
 
   "gameSettings": "Ajustes de Juego",
   "directory": "Directorio",

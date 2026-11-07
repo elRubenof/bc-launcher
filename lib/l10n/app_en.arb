@@ -19,7 +19,7 @@
   "logout": "Logout",
   "switchInstances": "Switch server",
 
-  "mapError": "Error on loading map",
+  "webTabError": "Couldn't load the page",
 
   "gameSettings": "Game Settings",
   "directory": "Directory",
