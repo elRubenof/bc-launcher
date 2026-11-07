@@ -127,10 +127,18 @@ class GameInstaller {
   /// The version to launch: Minecraft's, or the loader's, named as its
   /// installer names it (`fabric-loader-0.16.5-1.21.1`, `1.20.1-forge-47.3.0`,
   /// `neoforge-21.1.77`).
-  static String versionIdOf(Manifest manifest) {
-    final loader = manifest.loaderType;
-    final minecraft = manifest.minecraftVersion;
-    final version = manifest.loaderVersion;
+  static String versionIdOf(Manifest manifest) => versionIdFor(
+    manifest.loaderType,
+    manifest.minecraftVersion,
+    manifest.loaderVersion,
+  );
+
+  /// Like [versionIdOf], from the versions an installation saved.
+  static String versionIdFor(
+    LoaderType loader,
+    String minecraft,
+    String? version,
+  ) {
     return switch (loader) {
       LoaderType.vanilla => minecraft,
       LoaderType.forge || LoaderType.neoforge => ForgeInstaller.versionId(

@@ -59,6 +59,7 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
         OrganizationAuth.clientFor(organization),
         organization.key,
         instance,
+        unreachable: InstanceCatalog.isUnreachable(organization.key),
         onStep: (step) {
           if (mounted) setState(() => _step = step);
         },
@@ -269,7 +270,13 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
                     CustomButton(
                       l.backToInstances,
                       filled: !canRetry,
-                      onPressed: () {
+                      onPressed: () async {
+                        // The next start stays on the list instead of
+                        // trying this instance again.
+                        await OrganizationStore.clearLastInstance(
+                          widget.organization.key,
+                        );
+                        if (!mounted || !dialogContext.mounted) return;
                         Navigator.pop(dialogContext);
                         Navigator.pop(context, false);
                       },

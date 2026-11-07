@@ -37,14 +37,22 @@ class InstanceInstaller {
   /// repairs whatever the player changed or deleted. Throws
   /// [NotEnoughSpaceError], [GameFilesError], [ApiError] or the download's
   /// error; what was done is kept, so trying again resumes.
+  ///
+  /// When the organization is already known not to answer ([unreachable]),
+  /// it isn't asked: a complete installation is entered as it is.
   static Future<void> enter(
     ApiClient client,
     String organizationKey,
     Instance instance, {
+    bool unreachable = false,
     void Function(EntryStep step)? onStep,
     void Function(SyncProgress progress)? onSyncProgress,
     void Function(double progress)? onInstallProgress,
   }) async {
+    if (unreachable) {
+      await _installedVersion(organizationKey, instance.id);
+      return;
+    }
     try {
       await _run(
         client,
@@ -67,13 +75,54 @@ class InstanceInstaller {
     }
   }
 
-  /// Before playing: like [enter], but without connection it always fails,
-  /// so the game never starts unrepaired. Returns the version to launch.
-  static Future<String> play(
+  /// Before playing: like [enter]. When the organization doesn't answer, a
+  /// complete installation is played as it is, without syncing or repairing
+  /// (`offline`); with [unreachable] it isn't even asked. Returns the
+  /// version to launch.
+  static Future<({String versionId, bool offline})> play(
     ApiClient client,
     String organizationKey,
-    Instance instance,
-  ) => _run(client, organizationKey, instance);
+    Instance instance, {
+    bool unreachable = false,
+  }) async {
+    if (unreachable) {
+      final versionId = await _installedVersion(organizationKey, instance.id);
+      return (versionId: versionId, offline: true);
+    }
+    try {
+      final versionId = await _run(client, organizationKey, instance);
+      return (versionId: versionId, offline: false);
+    } catch (e) {
+      final cause = e is GameFilesError ? e.cause : e;
+      if (!isOffline(cause)) rethrow;
+
+      final state = await InstanceManager.readState(
+        organizationKey,
+        instance.id,
+      );
+      if (state == null || !state.complete) rethrow;
+      return (versionId: _versionOf(state), offline: true);
+    }
+  }
+
+  /// The version of a complete installation, played without the
+  /// organization; without one, it fails as having no connection.
+  static Future<String> _installedVersion(
+    String organizationKey,
+    String instanceId,
+  ) async {
+    final state = await InstanceManager.readState(organizationKey, instanceId);
+    if (state == null || !state.complete) {
+      throw const ApiError(ApiErrorType.offline);
+    }
+    return _versionOf(state);
+  }
+
+  static String _versionOf(InstanceState state) => GameInstaller.versionIdFor(
+    state.loaderType,
+    state.minecraftVersion,
+    state.loaderVersion,
+  );
 
   /// Returns the version to launch.
   static Future<String> _run(

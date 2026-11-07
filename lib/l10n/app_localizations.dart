@@ -828,6 +828,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Website'**
   String get website;
+
+  /// No description provided for @organizationNotResponding.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} isn\'t responding'**
+  String organizationNotResponding(String name);
+
+  /// No description provided for @playInstalledDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You can play what you already have installed, only local mode. The other instances will show up when it\'s server respondes.'**
+  String get playInstalledDesc;
+
+  /// No description provided for @playingInstalledDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re playing what\'s installed. It may not be up to date.'**
+  String get playingInstalledDesc;
 }
 
 class _AppLocalizationsDelegate

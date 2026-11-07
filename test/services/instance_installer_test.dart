@@ -174,12 +174,83 @@ void main() {
       );
     });
 
-    test('playing fails, so the game never starts unrepaired', () async {
+    test('playing plays what is installed, as it is', () async {
       await enter(instance());
+      server.offline = true;
+      prepared.clear();
+
+      final played = await InstanceInstaller.play(
+        client,
+        'example.com',
+        instance(contentVersion: 2),
+      );
+
+      expect(played.versionId, 'fabric-loader-0.16.5-1.21.1');
+      expect(played.offline, isTrue);
+      expect(prepared, isEmpty);
+      expect((await state())!.contentVersion, 1);
+    });
+
+    test('playing what was never installed fails', () async {
       server.offline = true;
 
       await expectLater(
         InstanceInstaller.play(client, 'example.com', instance()),
+        throwsA(predicate(InstanceInstaller.isOffline)),
+      );
+    });
+  });
+
+  group('unreachable organization', () {
+    test('entering never asks it and enters what is installed', () async {
+      await enter(instance());
+      server.requests.clear();
+
+      await InstanceInstaller.enter(
+        client,
+        'example.com',
+        instance(contentVersion: 2),
+        unreachable: true,
+      );
+
+      expect(server.requests, isEmpty);
+    });
+
+    test('playing never asks it and plays what is installed', () async {
+      await enter(instance());
+      server.requests.clear();
+      prepared.clear();
+
+      final played = await InstanceInstaller.play(
+        client,
+        'example.com',
+        instance(),
+        unreachable: true,
+      );
+
+      expect(played.versionId, 'fabric-loader-0.16.5-1.21.1');
+      expect(played.offline, isTrue);
+      expect(server.requests, isEmpty);
+      expect(prepared, isEmpty);
+    });
+
+    test('what was never installed fails as having no connection', () async {
+      await expectLater(
+        InstanceInstaller.enter(
+          client,
+          'example.com',
+          instance(),
+          unreachable: true,
+        ),
+        throwsA(predicate(InstanceInstaller.isOffline)),
+      );
+      await expectLater(
+        InstanceInstaller.play(
+          client,
+          'example.com',
+          instance(),
+          unreachable: true,
+        ),
         throwsA(predicate(InstanceInstaller.isOffline)),
       );
     });
@@ -191,13 +262,14 @@ void main() {
       final mod = File(join(folder.path, 'mods', 'a.jar'));
       await mod.writeAsString('tampered');
 
-      final version = await InstanceInstaller.play(
+      final played = await InstanceInstaller.play(
         client,
         'example.com',
         instance(),
       );
 
-      expect(version, 'fabric-loader-0.16.5-1.21.1');
+      expect(played.versionId, 'fabric-loader-0.16.5-1.21.1');
+      expect(played.offline, isFalse);
       expect(await mod.readAsString(), 'mod a');
       expect(prepared, hasLength(2));
     });

@@ -121,6 +121,13 @@ void main() {
     expect(view.greyedOut, isFalse);
   });
 
+  test('a list answering 404 (no API there) does not answer either', () async {
+    final view = await load(organization('a.com'), () => json(404, {}));
+
+    expect(view.status, OrganizationStatus.offline);
+    expect(InstanceCatalog.isUnreachable('a.com'), isTrue);
+  });
+
   test('retrying while offline keeps the message until it answers', () async {
     final a = organization('a.com');
     await load(a, () => json(200, fixture('instances')));
@@ -135,6 +142,31 @@ void main() {
     await InstanceCatalog.refresh(a);
 
     expect(seen, [OrganizationStatus.offline]);
+  });
+
+  test('markOffline keeps the list, and the next refresh decides', () async {
+    final a = organization('a.com');
+    await load(a, () => json(200, fixture('instances')));
+
+    expect(InstanceCatalog.isUnreachable(a.key), isFalse);
+    InstanceCatalog.markOffline(a.key);
+    expect(InstanceCatalog.viewOf(a.key).status, OrganizationStatus.offline);
+    expect(InstanceCatalog.isUnreachable(a.key), isTrue);
+    expect(InstanceCatalog.viewOf(a.key).instances, hasLength(2));
+
+    await InstanceCatalog.refresh(a);
+    expect(InstanceCatalog.viewOf(a.key).status, OrganizationStatus.ready);
+  });
+
+  test('markOffline leaves a greyed out organization as it is', () async {
+    final a = organization('a.com', minLauncherVersion: '1.2.0');
+    await load(a, () => json(200, fixture('instances')));
+
+    InstanceCatalog.markOffline(a.key);
+    expect(
+      InstanceCatalog.viewOf(a.key).status,
+      OrganizationStatus.incompatible,
+    );
   });
 
   test('a list refreshing stays on screen', () async {

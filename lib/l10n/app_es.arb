@@ -135,5 +135,9 @@
   "newsError": "No se han podido cargar las noticias",
 
   "discord": "Discord",
-  "website": "Web"
+  "website": "Web",
+
+  "organizationNotResponding": "{name} no responde",
+  "playInstalledDesc": "Puedes jugar lo que ya tienes instalado, solo en local. Las demás instancias aparecerán cuando el servidor responda.",
+  "playingInstalledDesc": "Juegas con lo instalado. Puede que no esté al día."
 }

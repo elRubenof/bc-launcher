@@ -11,6 +11,7 @@ import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
+import 'package:bc_launcher/widgets/offline_notice.dart';
 import 'package:bc_launcher/widgets/custom_button.dart';
 import 'package:bc_launcher/widgets/organization_logo.dart';
 import 'package:bc_launcher/widgets/organization_rail.dart';
@@ -30,6 +31,9 @@ class OrganizationsScreen extends StatefulWidget {
 class _OrganizationsScreenState extends State<OrganizationsScreen> {
   /// Coming back to the launcher refreshes the instances, at most this often.
   static const _refreshInterval = Duration(seconds: 30);
+
+  /// A notice over the instances, as wide as three cards.
+  static const _noticeWidth = 940.0;
 
   /// The last used instance is entered by itself only once per run.
   static bool _autoEntered = false;
@@ -87,6 +91,8 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     if (view.status == OrganizationStatus.loading) return;
     _autoEntered = true;
 
+    // An organization that doesn't answer shows the list, without a dialog;
+    // the last instance is kept for the next start.
     final last = await OrganizationStore.lastInstance(organization.key);
     final instance = view.status == OrganizationStatus.ready
         ? view.instances.where((instance) => instance.id == last).firstOrNull
@@ -144,6 +150,31 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
     if (mounted) setState(() => _installed[key] = installed);
   }
 
+  /// The instances completely installed here, as last served, newest
+  /// installation first: what can be played while the organization doesn't
+  /// answer.
+  List<Instance> _playable(Organization organization) {
+    final entries =
+        (_installed[organization.key] ?? {}).entries
+            .where((entry) => entry.value.complete)
+            .toList()
+          ..sort(_newestFirst);
+    return [
+      for (final entry in entries)
+        InstanceManager.savedInstance(entry.key, entry.value),
+    ];
+  }
+
+  static int _newestFirst(
+    MapEntry<String, InstanceState> a,
+    MapEntry<String, InstanceState> b,
+  ) {
+    final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+    return (b.value.installedAt ?? epoch).compareTo(
+      a.value.installedAt ?? epoch,
+    );
+  }
+
   /// The installed instances [organization] no longer serves, newest
   /// installation first.
   List<Instance> _unavailable(
@@ -155,12 +186,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
         (_installed[organization.key] ?? {}).entries
             .where((entry) => !ids.contains(entry.key))
             .toList()
-          ..sort((a, b) {
-            final epoch = DateTime.fromMillisecondsSinceEpoch(0);
-            return (b.value.installedAt ?? epoch).compareTo(
-              a.value.installedAt ?? epoch,
-            );
-          });
+          ..sort(_newestFirst);
     return [
       for (final entry in entries)
         InstanceManager.savedInstance(entry.key, entry.value),
@@ -264,6 +290,21 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
       return _instances(organization, view.instances, unavailable);
     }
 
+    // Without the organization, what is installed is played as it is.
+    final playable = _playable(organization);
+    if (view.status == OrganizationStatus.offline && playable.isNotEmpty) {
+      return _instances(
+        organization,
+        playable,
+        const [],
+        notice: OfflineNotice(
+          title: l.organizationNotResponding(name),
+          description: l.playInstalledDesc,
+          onRetry: () => InstanceCatalog.refresh(organization),
+        ),
+      );
+    }
+
     return switch (view.status) {
       OrganizationStatus.loading => const Center(
         child: CircularProgressIndicator(color: Constants.mainColor),
@@ -332,8 +373,9 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
   Widget _instances(
     Organization organization,
     List<Instance> instances,
-    List<Instance> unavailable,
-  ) {
+    List<Instance> unavailable, {
+    Widget? notice,
+  }) {
     final l = Utility.getLocalizations(context);
     return Column(
       children: [
@@ -348,6 +390,14 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
             ),
           ),
         ),
+        if (notice != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(40, 12, 40, 0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _noticeWidth),
+              child: SizedBox(width: double.infinity, child: notice),
+            ),
+          ),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) => Scrollbar(

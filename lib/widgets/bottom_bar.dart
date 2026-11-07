@@ -234,11 +234,13 @@ class _BottomBarState extends State<BottomBar> {
     final organization = widget.organization;
     final instance = widget.instance;
     try {
-      final versionId = await InstanceInstaller.play(
+      final (:versionId, :offline) = await InstanceInstaller.play(
         OrganizationAuth.clientFor(organization),
         organization.key,
         instance,
+        unreachable: InstanceCatalog.isUnreachable(organization.key),
       );
+      if (offline) InstanceCatalog.markOffline(organization.key);
       final game = await Minecraft.launch(
         instance,
         widget.folder,

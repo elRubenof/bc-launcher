@@ -99,6 +99,23 @@ class InstanceCatalog {
     }
   }
 
+  /// The list of [key] couldn't be loaded (no connection, a failing server
+  /// or no API there): its installed instances are played without asking.
+  /// An instance it answers 404 for while its list loads stays blocked.
+  static bool isUnreachable(String key) =>
+      viewOf(key).status == OrganizationStatus.offline;
+
+  /// [key] stopped answering (e.g. before playing); a list on screen stays
+  /// until the next refresh.
+  static void markOffline(String key) {
+    final current = viewOf(key);
+    if (current.status != OrganizationStatus.ready &&
+        current.status != OrganizationStatus.loading) {
+      return;
+    }
+    _set(key, OrganizationView(OrganizationStatus.offline, current.instances));
+  }
+
   /// Forgets a removed organization.
   static void forget(String key) {
     organizations.value = {...organizations.value}..remove(key);

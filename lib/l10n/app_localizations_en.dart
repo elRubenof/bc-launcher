@@ -453,4 +453,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get website => 'Website';
+
+  @override
+  String organizationNotResponding(String name) {
+    return '$name isn\'t responding';
+  }
+
+  @override
+  String get playInstalledDesc =>
+      'You can play what you already have installed, only local mode. The other instances will show up when it\'s server respondes.';
+
+  @override
+  String get playingInstalledDesc =>
+      'You\'re playing what\'s installed. It may not be up to date.';
 }

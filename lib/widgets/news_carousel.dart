@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// An instance's news, one at a time, with arrows to go through them. Empty
-/// when it has none.
+/// when it has none or they can't be loaded.
 class NewsCarousel extends StatefulWidget {
   final NewsCatalog catalog;
 
@@ -43,9 +43,8 @@ class _NewsCarouselState extends State<NewsCarousel> {
       listenable: catalog,
       builder: (context, _) {
         final items = catalog.items;
-        if (items.isEmpty && catalog.error == null) {
-          return const SizedBox.shrink();
-        }
+        // No news, or the first page couldn't be loaded: nothing at all.
+        if (items.isEmpty) return const SizedBox.shrink();
         if (index > items.length) index = 0;
 
         return Column(

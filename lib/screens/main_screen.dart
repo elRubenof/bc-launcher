@@ -6,11 +6,14 @@ import 'package:bc_launcher/models/web_tab.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
 import 'package:bc_launcher/screens/tabs/web_tab_screen.dart';
+import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_settings_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
+import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
+import 'package:bc_launcher/widgets/offline_notice.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -109,6 +112,7 @@ class _MainPageState extends State<MainScreen> {
                 organization: widget.organization,
                 instance: widget.instance,
               ),
+              if (index == homeTab) offlineNotice(theme),
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 bottom: index == homeTab ? 0 : -200,
@@ -122,6 +126,36 @@ class _MainPageState extends State<MainScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Over the bottom bar while the organization doesn't answer: what is
+  /// installed is played as it is.
+  Widget offlineNotice(InstanceTheme theme) {
+    final l = Utility.getLocalizations(context);
+    final organization = widget.organization;
+
+    return Positioned(
+      left: 20,
+      bottom: Constants.topBarHeight + 16,
+      child: ValueListenableBuilder(
+        valueListenable: InstanceCatalog.organizations,
+        builder: (context, _, _) {
+          final status = InstanceCatalog.viewOf(organization.key).status;
+          if (status != OrganizationStatus.offline) {
+            return const SizedBox.shrink();
+          }
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 470),
+            child: OfflineNotice(
+              title: l.organizationNotResponding(organization.name),
+              description: l.playingInstalledDesc,
+              background: theme.background.withValues(alpha: 0.92),
+              onRetry: () => InstanceCatalog.refresh(organization),
+            ),
+          );
+        },
       ),
     );
   }

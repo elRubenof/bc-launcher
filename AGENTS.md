@@ -41,16 +41,20 @@ lib/
                                 can't be shown (no access, incompatible, offline); remove an organization (from
                                 those screens or a right click on its logo in the column);
                                 entering an instance (by click, or the last one used on start without showing
-                                the list, unless turned off in Settings) opens MainScreen; installed instances
-                                it no longer serves are listed last, greyed out, newest installation first
+                                the list, unless turned off in Settings or its organization doesn't answer) opens
+                                MainScreen; installed instances it no longer serves are listed last, greyed out,
+                                newest installation first; while it doesn't answer, only the installed ones, as last
+                                served, under a notice with "Retry"
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
-                                LoadingScreen, and its errors (offline, no space, game files, instance gone)
+                                LoadingScreen, and its errors (offline, no space, game files, instance gone); going
+                                back from one forgets it as the last instance, so the next start shows the list
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     main_screen.dart            an installed instance: tabs (home, its web tabs, settings) + top & bottom bars (the
                                 bottom one only on home); Play repairs,
                                 updates and launches it; puts the instance's InstanceTheme on everything under it
                                 and its background under its background color at 85 % (the launcher's if it has
-                                none or it can't be loaded)
+                                none or it can't be loaded); on home, the offline notice while the organization
+                                doesn't answer
     tabs/                       home (the instance's news, NewsCarousel), web tab (webview_all, for openIn: launcher; the
                                 browser ones open from the top bar, marked ↗), settings
   services/
@@ -70,11 +74,16 @@ lib/
     sync_engine.dart            runs a sync: manifest (ETag, saved copy), free space, downloads with sha256,
                                 deletions, installed.json; fetches the manifest again when its URLs expire
     instance_installer.dart     entering an instance and playing it: first time (download, then install the game
-                                files), update, or check (sync and check the game files, which repairs); offline, an
-                                installed instance is entered as it is but never played; state.json, servers.dat
+                                files), update, or check (sync and check the game files, which repairs); when the
+                                organization doesn't answer, a complete installation is entered and played as it is,
+                                without syncing (play says so: `offline`); when its list already failed
+                                (`InstanceCatalog.isUnreachable`, any failure but 403 or incompatible, a 404 too),
+                                it isn't asked at all, while a 404 for one instance whose list loads keeps it
+                                blocked; state.json, servers.dat
                                 entry (created once, address moved)
     server_list.dart            the game's servers.dat (NBT): create it, move one entry's address
-    instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline)
+    instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline);
+                                markOffline when it stops answering before playing
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
     game_installer.dart         the game files of an instance ("Installing"): version JSON from Mojang, then
@@ -120,11 +129,12 @@ lib/
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news carousel (one at a time, read more,
-                                loading the next page, retry) and its body (whole, or its first 3 lines
-                                counting every block's, the one that doesn't fit ending in "…"), window buttons,
+                                loading the next page, retry; nothing without news or if they can't load) and its
+                                body (whole, or its first 3 lines counting every block's, the one that doesn't fit
+                                ending in "…"), window buttons,
                                 full-screen error message, add-organization dialog opened by links,
                                 organization logo and rail, the launcher's dropdown menus (LauncherMenu), instance
-                                card with its menu, instance actions (open
+                                card with its menu, the offline notice (list and instance screen), instance actions (open
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
