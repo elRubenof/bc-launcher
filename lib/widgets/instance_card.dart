@@ -3,6 +3,7 @@ import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
+import 'package:bc_launcher/widgets/instance_initials.dart';
 import 'package:bc_launcher/widgets/launcher_menu.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -259,28 +260,7 @@ class _InstanceCardState extends State<InstanceCard> {
 
   Widget _icon() {
     final instance = widget.instance;
-    final initials = Container(
-      width: 64,
-      height: 64,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: instance.colors.primary,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        instance.name
-            .split(RegExp(r'\s+'))
-            .where((word) => word.isNotEmpty)
-            .take(2)
-            .map((word) => word[0].toUpperCase())
-            .join(),
-        style: const TextStyle(
-          color: Constants.textColor,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
+    final initials = InstanceInitials(instance: instance);
 
     final iconUrl = instance.iconUrl;
     if (iconUrl == null) return initials;

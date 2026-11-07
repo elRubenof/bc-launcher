@@ -9,6 +9,7 @@ import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/widgets/instance_initials.dart';
 import 'package:bc_launcher/widgets/tab_button.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
@@ -60,19 +61,22 @@ class _TopBarState extends State<TopBar> {
     );
   }
 
-  /// The instance's icon, or the organization's logo when it has none.
+  /// The instance's icon, or the organization's logo when it has none;
+  /// its initials, like in its card, when neither can be shown.
   Widget logo() {
+    const size = Constants.topBarHeight * 0.75;
+    final initials = InstanceInitials(instance: widget.instance, size: size);
     final url = widget.instance.iconUrl ?? widget.organization.logoUrl;
     return Container(
       height: Constants.topBarHeight,
       width: 100,
       alignment: Alignment.center,
       child: url == null
-          ? null
+          ? initials
           : Image.network(
               url,
-              height: Constants.topBarHeight * 0.75,
-              errorBuilder: (context, error, stackTrace) => Container(),
+              height: size,
+              errorBuilder: (context, error, stackTrace) => initials,
             ),
     );
   }

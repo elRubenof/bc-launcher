@@ -138,7 +138,8 @@ lib/
                                 body (whole, or its first 3 lines counting every block's, the one that doesn't fit
                                 ending in "…"), window buttons,
                                 full-screen error message, add-organization dialog opened by links,
-                                organization logo and rail, the launcher's dropdown menus (LauncherMenu), instance
+                                organization logo and rail, instance initials (card and top bar without an icon),
+                                the launcher's dropdown menus (LauncherMenu), instance
                                 card with its menu, the offline notice (list and instance screen), instance actions (open
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
