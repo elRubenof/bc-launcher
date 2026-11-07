@@ -51,7 +51,7 @@ class _TopBarState extends State<TopBar> {
                 logo(),
                 tabs(),
                 account(widget.organization),
-                const WindowButtons(),
+                const WindowButtons(enableSettings: false),
               ],
             ),
           ),

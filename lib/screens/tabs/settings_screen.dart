@@ -468,7 +468,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                CupertinoIcons.delete,
+                CupertinoIcons.restart,
                 color: Theme.of(context).primaryColor,
                 size: 20,
               ),
