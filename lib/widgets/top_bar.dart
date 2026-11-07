@@ -156,6 +156,11 @@ Widget account(Organization organization) {
                   margin: const EdgeInsets.only(right: 14),
                   child: Image.network(
                     "https://crafthead.net/avatar/${value.uuid}",
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.person,
+                      size: 25,
+                      color: InstanceTheme.of(context).text,
+                    ),
                   ),
                 ),
                 Container(
