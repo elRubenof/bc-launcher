@@ -155,46 +155,61 @@ class _BottomBarState extends State<BottomBar> {
         linkButton(Icons.image, l.screenshots, "file://$screenshotsPath"),
         const SizedBox(width: 15),
         if (widget.instance.serverAddress != null)
-          Container(
-            height: 35,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: Colors.white
-                  .withValues(alpha: 0.12)
-                  .withValues(alpha: 0.06),
+          // Without internet there are no servers: off and can't be changed.
+          ValueListenableBuilder(
+            valueListenable: Minecraft.offline,
+            builder: (context, offline, child) => IgnorePointer(
+              ignoring: offline,
+              child: Opacity(opacity: offline ? 0.4 : 1, child: child),
             ),
-            child: Row(
-              children: [
-                Text(
-                  l.autoConnect,
-                  style: TextStyle(
-                    color: theme.text,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.bold,
+            child: Container(
+              height: 35,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: Colors.white
+                    .withValues(alpha: 0.12)
+                    .withValues(alpha: 0.06),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    l.autoConnect,
+                    style: TextStyle(
+                      color: theme.text,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 25,
-                  margin: const EdgeInsets.only(left: 8),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: Transform.scale(
-                      scale: 0.5,
-                      child: ValueListenableBuilder(
-                        valueListenable: widget.settings,
-                        builder: (context, settings, _) => CupertinoSwitch(
-                          value: settings.connects,
-                          activeTrackColor: theme.primary,
-                          onChanged: (value) => widget.settings.save(
-                            settings.copyWith(autoConnect: value),
-                          ),
+                  Container(
+                    width: 25,
+                    margin: const EdgeInsets.only(left: 8),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Transform.scale(
+                        scale: 0.5,
+                        child: ListenableBuilder(
+                          listenable: Listenable.merge([
+                            widget.settings,
+                            Minecraft.offline,
+                          ]),
+                          builder: (context, _) {
+                            final settings = widget.settings.value;
+                            return CupertinoSwitch(
+                              value:
+                                  settings.connects && !Minecraft.offline.value,
+                              activeTrackColor: theme.primary,
+                              onChanged: (value) => widget.settings.save(
+                                settings.copyWith(autoConnect: value),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
       ],

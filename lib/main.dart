@@ -3,6 +3,7 @@ import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/no_organizations_screen.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
+import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -26,6 +27,12 @@ void main() async {
   await GlobalSettings.load();
   await OrganizationStore.load();
   OrganizationStore.refresh();
+  // Back online: the organizations and their instances are asked again.
+  Minecraft.offline.addListener(() {
+    if (Minecraft.offline.value) return;
+    OrganizationStore.refresh();
+    InstanceCatalog.refreshAll();
+  });
 
   runApp(
     MaterialApp(
@@ -72,7 +79,7 @@ class MyApp extends StatelessWidget {
           return const LoadingScreen();
         }
 
-        if (!snapshot.data!) {
+        if (snapshot.data == SignIn.signedOut) {
           return const LoginScreen();
         }
 

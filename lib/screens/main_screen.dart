@@ -130,8 +130,8 @@ class _MainPageState extends State<MainScreen> {
     );
   }
 
-  /// Over the bottom bar while the organization doesn't answer: what is
-  /// installed is played as it is.
+  /// Over the bottom bar without internet (single player only) or while the
+  /// organization doesn't answer (what is installed is played as it is).
   Widget offlineNotice(InstanceTheme theme) {
     final l = Utility.getLocalizations(context);
     final organization = widget.organization;
@@ -139,21 +139,33 @@ class _MainPageState extends State<MainScreen> {
     return Positioned(
       left: 20,
       bottom: Constants.topBarHeight + 16,
-      child: ValueListenableBuilder(
-        valueListenable: InstanceCatalog.organizations,
-        builder: (context, _, _) {
-          final status = InstanceCatalog.viewOf(organization.key).status;
-          if (status != OrganizationStatus.offline) {
+      child: ListenableBuilder(
+        listenable: Listenable.merge([
+          InstanceCatalog.organizations,
+          Minecraft.offline,
+        ]),
+        builder: (context, _) {
+          final background = theme.background.withValues(alpha: 0.92);
+          final OfflineNotice notice;
+          if (Minecraft.offline.value) {
+            notice = OfflineNotice(
+              title: l.noInternetTitle,
+              description: l.singlePlayerOnlyDesc,
+              background: background,
+            );
+          } else if (InstanceCatalog.isUnreachable(organization.key)) {
+            notice = OfflineNotice(
+              title: l.organizationNotResponding(organization.name),
+              description: l.playingInstalledDesc,
+              background: background,
+              onRetry: () => InstanceCatalog.refresh(organization),
+            );
+          } else {
             return const SizedBox.shrink();
           }
           return ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 470),
-            child: OfflineNotice(
-              title: l.organizationNotResponding(organization.name),
-              description: l.playingInstalledDesc,
-              background: theme.background.withValues(alpha: 0.92),
-              onRetry: () => InstanceCatalog.refresh(organization),
-            ),
+            child: notice,
           );
         },
       ),

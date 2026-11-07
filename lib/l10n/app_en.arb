@@ -166,5 +166,8 @@
   "organizationNotResponding": "{name} isn't responding",
   "@organizationNotResponding": {"placeholders": {"name": {"type": "String"}}},
   "playInstalledDesc": "You can play what you already have installed, only local mode. The other instances will show up when it's server respondes.",
-  "playingInstalledDesc": "You're playing what's installed. It may not be up to date."
+  "playingInstalledDesc": "You're playing what's installed. It may not be up to date.",
+
+  "noInternetTitle": "No internet connection",
+  "singlePlayerOnlyDesc": "You can play single player. You won't be able to join servers."
 }

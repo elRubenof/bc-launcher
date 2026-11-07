@@ -846,6 +846,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re playing what\'s installed. It may not be up to date.'**
   String get playingInstalledDesc;
+
+  /// No description provided for @noInternetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get noInternetTitle;
+
+  /// No description provided for @singlePlayerOnlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You can play single player. You won\'t be able to join servers.'**
+  String get singlePlayerOnlyDesc;
 }
 
 class _AppLocalizationsDelegate

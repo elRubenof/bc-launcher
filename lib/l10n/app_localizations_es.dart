@@ -466,4 +466,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get playingInstalledDesc =>
       'Juegas con lo instalado. Puede que no esté al día.';
+
+  @override
+  String get noInternetTitle => 'Sin conexión a internet';
+
+  @override
+  String get singlePlayerOnlyDesc =>
+      'Puedes jugar en un solo jugador. No podrás entrar en servidores.';
 }

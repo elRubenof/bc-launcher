@@ -139,5 +139,8 @@
 
   "organizationNotResponding": "{name} no responde",
   "playInstalledDesc": "Puedes jugar lo que ya tienes instalado, solo en local. Las demás instancias aparecerán cuando el servidor responda.",
-  "playingInstalledDesc": "Juegas con lo instalado. Puede que no esté al día."
+  "playingInstalledDesc": "Juegas con lo instalado. Puede que no esté al día.",
+
+  "noInternetTitle": "Sin conexión a internet",
+  "singlePlayerOnlyDesc": "Puedes jugar en un solo jugador. No podrás entrar en servidores."
 }

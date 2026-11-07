@@ -466,4 +466,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get playingInstalledDesc =>
       'You\'re playing what\'s installed. It may not be up to date.';
+
+  @override
+  String get noInternetTitle => 'No internet connection';
+
+  @override
+  String get singlePlayerOnlyDesc =>
+      'You can play single player. You won\'t be able to join servers.';
 }

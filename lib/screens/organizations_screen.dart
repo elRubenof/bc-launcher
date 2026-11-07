@@ -7,6 +7,7 @@ import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
@@ -210,6 +211,7 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
           OrganizationStore.organizations,
           OrganizationStore.selected,
           InstanceCatalog.organizations,
+          Minecraft.offline,
         ]),
         builder: (context, _) {
           final organizations = OrganizationStore.organizations.value;
@@ -297,11 +299,17 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
         organization,
         playable,
         const [],
-        notice: OfflineNotice(
-          title: l.organizationNotResponding(name),
-          description: l.playInstalledDesc,
-          onRetry: () => InstanceCatalog.refresh(organization),
-        ),
+        // Without internet it goes away by itself when it's back.
+        notice: Minecraft.offline.value
+            ? OfflineNotice(
+                title: l.noInternetTitle,
+                description: l.playInstalledDesc,
+              )
+            : OfflineNotice(
+                title: l.organizationNotResponding(name),
+                description: l.playInstalledDesc,
+                onRetry: () => InstanceCatalog.refresh(organization),
+              ),
       );
     }
 

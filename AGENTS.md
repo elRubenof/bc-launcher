@@ -112,6 +112,8 @@ lib/
     news_catalog.dart           an instance's news a page (20) at a time with the cursor; error kept until the next
                                 load; an invalid cursor starts again from the first page
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
+    minecraft_session_store.dart  the player's profile and Minecraft token (renewed after 23 h) in
+                                flutter_secure_storage, to start and play without internet
     instance_settings_store.dart  one instance's game settings (RAM, resolution, fullscreen, auto-connect) in
                                 .bc-launcher/settings.json, written at once; reset deletes it
   utils/
@@ -126,7 +128,10 @@ lib/
     trusted_roots.dart          on Windows, adds the bundled Mozilla roots to the default SecurityContext on start
                                 (Dart doesn't make Windows fetch the roots it is missing)
     utility.dart                localizations, navigation, launching/playing state
-    minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
+    minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process;
+                                without internet (a connection failure, never a rejection) it starts with the saved
+                                session, `offline` is on (single player: no servers, Auto-Conectar off) and it
+                                retries every 30 s; back online, the organizations are asked again
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
   widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news carousel (one at a time, read more,
                                 loading the next page, retry; nothing without news or if they can't load) and its
@@ -235,7 +240,7 @@ The current code relies on static globals (`GlobalSettings`, `Utility`'s `ValueN
   5. Clean managed dirs, and delete files that were in the previous manifest but not in the new one (tracked in a local list).
   6. Keep managed files separate from user files: saves, screenshots, `options.txt` and `servers.dat` must survive a reinstall.
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
-- **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). Cache the Minecraft token (24 h validity). Support multiple accounts.
+- **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). The Minecraft token is cached (done, `MinecraftSessionStore`). Support multiple accounts.
 - **Launch** (done, `GameProcess`): game output in a log file, crash detection, the launcher hidden while playing unless it stays open.
 - **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`), each instance's settings (`InstanceSettings`, `InstanceSettingsStore`, `SystemMemory`'s parsing), running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
