@@ -2,17 +2,19 @@ import 'dart:io';
 
 import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
+import 'package:bc_launcher/models/instance_settings.dart';
 import 'package:bc_launcher/services/game_process.dart';
+import 'package:bc_launcher/services/instance_settings_store.dart';
 import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
-import 'package:bc_launcher/utils/settings.dart';
+import 'package:bc_launcher/utils/global_settings.dart';
+import 'package:bc_launcher/utils/system_memory.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/custom_dialog.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,11 +24,15 @@ class SettingsScreen extends StatefulWidget {
   /// The instance's folder.
   final Directory folder;
 
+  /// The instance's game settings.
+  final InstanceSettingsStore settings;
+
   const SettingsScreen({
     super.key,
     required this.organizationKey,
     required this.instance,
     required this.folder,
+    required this.settings,
   });
 
   @override
@@ -40,7 +46,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Color get textColor => InstanceTheme.of(context).text;
   Color get greyColor => textColor.withValues(alpha: 0.45);
 
-  double allocatedRAM = Settings.allocatedRAM.toDouble();
+  /// The RAM slider's maximum: the computer's.
+  int maxRam = SystemMemory.fallbackGb;
+
+  InstanceSettings get settings => widget.settings.value;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.settings.addListener(_changed);
+    SystemMemory.totalGb().then((gb) {
+      if (mounted) setState(() => maxRam = gb);
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.settings.removeListener(_changed);
+    super.dispose();
+  }
+
+  void _changed() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -78,21 +104,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     toggle(
                       l.openLastInstance,
                       l.openLastInstanceDesc,
-                      Settings.openLastInstance,
-                      (value) {
-                        Settings.openLastInstance = value;
-                        return "openLastInstance";
-                      },
+                      GlobalSettings.openLastInstance,
+                      GlobalSettings.setOpenLastInstance,
                     ),
                     const SizedBox(height: 30),
                     toggle(
                       l.keepLauncherOpen,
                       l.keepLauncherOpenDesc,
-                      Settings.keepLauncherOpen,
-                      (value) {
-                        Settings.keepLauncherOpen = value;
-                        return "keepLauncherOpen";
-                      },
+                      GlobalSettings.keepLauncherOpen,
+                      GlobalSettings.setKeepLauncherOpen,
                     ),
                     const SizedBox(height: 30),
                     gameLogs(),
@@ -194,8 +214,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   contentPadding: const EdgeInsets.only(bottom: 8),
                   hintStyle: TextStyle(color: textColor),
                   hintText: isWidth!
-                      ? "${Settings.gameWidth}"
-                      : "${Settings.gameHeight}",
+                      ? "${settings.width}"
+                      : "${settings.height}",
                 ),
                 onTapOutside: (value) {
                   saveResolution(true);
@@ -211,23 +231,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final value = int.tryParse(controller.text);
     if (value == null) {
-      controller.text = "${isWidth ? Settings.gameWidth : Settings.gameHeight}";
+      controller.text = "${isWidth ? settings.width : settings.height}";
       return;
     }
 
-    if (isWidth) {
-      Settings.gameWidth = value;
-    } else {
-      Settings.gameHeight = value;
-    }
-
     controller.clear();
-    setState(() {});
-
-    SharedPreferences.getInstance().then((pref) {
-      pref.setInt("gameWidth", Settings.gameWidth);
-      pref.setInt("gameHeight", Settings.gameHeight);
-    });
+    widget.settings.save(
+      isWidth
+          ? settings.copyWith(gameWidth: value)
+          : settings.copyWith(gameHeight: value),
+    );
   }
 
   Widget resolutionInput() {
@@ -240,9 +253,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // Only used in a window.
           IgnorePointer(
-            ignoring: Settings.fullscreen,
+            ignoring: settings.isFullscreen,
             child: Opacity(
-              opacity: Settings.fullscreen ? 0.4 : 1,
+              opacity: settings.isFullscreen ? 0.4 : 1,
               child: Row(
                 children: [
                   input(controller: resolutionWith, isWidth: true),
@@ -263,16 +276,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Transform.scale(
               scale: 0.6,
               child: Switch(
-                value: Settings.fullscreen,
-                onChanged: (value) {
-                  setState(() {
-                    Settings.fullscreen = value;
-
-                    SharedPreferences.getInstance().then((pref) {
-                      pref.setBool("fullscreen", value);
-                    });
-                  });
-                },
+                value: settings.isFullscreen,
+                onChanged: (value) =>
+                    widget.settings.save(settings.copyWith(fullscreen: value)),
               ),
             ),
           ),
@@ -282,12 +288,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// A setting with its switch; [save] sets it and gives its preference key.
+  /// A setting with its switch; [save] sets and saves it.
   Widget toggle(
     String title,
     String description,
     bool value,
-    String Function(bool value) save,
+    Future<void> Function(bool value) save,
   ) {
     return Row(
       children: [
@@ -298,12 +304,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Switch(
             value: value,
             onChanged: (value) {
-              setState(() {
-                final key = save(value);
-                SharedPreferences.getInstance().then((pref) {
-                  pref.setBool(key, value);
-                });
-              });
+              save(value);
+              setState(() {});
             },
           ),
         ),
@@ -390,6 +392,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget memoryBar() {
+    final ram = settings.ram(widget.instance, maxRam);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 60),
       child: Transform.translate(
@@ -405,18 +409,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   overlayColor: Colors.transparent,
                 ),
                 child: Slider(
-                  value: allocatedRAM,
+                  value: ram.toDouble(),
                   min: 1,
-                  max: 16,
+                  max: maxRam < 2 ? 2 : maxRam.toDouble(),
                   onChanged: (value) {
-                    setState(() {
-                      allocatedRAM = value;
-                      Settings.allocatedRAM = value.toInt();
-                    });
-
-                    SharedPreferences.getInstance().then((pref) {
-                      pref.setInt("allocatedRAM", value.toInt());
-                    });
+                    final gb = value.round();
+                    if (gb != ram) {
+                      widget.settings.save(settings.copyWith(ramGb: gb));
+                    }
                   },
                 ),
               ),
@@ -434,7 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                "${Settings.allocatedRAM}",
+                "$ram",
                 style: TextStyle(color: textColor, fontSize: 12),
               ),
             ),
@@ -484,12 +484,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         onPressed: () async {
-          await Utility.resetSettings();
+          // This instance's and the launcher's own.
+          await GlobalSettings.reset();
+          await widget.settings.reset();
 
           setState(() {
             resolutionWith.clear();
             resoulutionHeight.clear();
-            allocatedRAM = Settings.allocatedRAM.toDouble();
           });
         },
       ),

@@ -6,6 +6,7 @@ import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
+import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/organization_dialog.dart';
 import 'package:bc_launcher/widgets/fatal_error_message.dart';
@@ -20,7 +21,7 @@ void main() async {
   DeepLinks.register();
   _setUpWindow();
 
-  await Utility.loadSettings();
+  await GlobalSettings.load();
   await OrganizationStore.load();
   OrganizationStore.refresh();
 

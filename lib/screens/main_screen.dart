@@ -6,6 +6,7 @@ import 'package:bc_launcher/models/web_tab.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
 import 'package:bc_launcher/screens/tabs/web_tab_screen.dart';
+import 'package:bc_launcher/services/instance_settings_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -48,6 +49,7 @@ class MainScreen extends StatefulWidget {
 class _MainPageState extends State<MainScreen> {
   /// By [selectedTab].
   late Map<int, Widget> tabs;
+  late final settings = InstanceSettingsStore(widget.folder)..load();
 
   @override
   void initState() {
@@ -67,8 +69,15 @@ class _MainPageState extends State<MainScreen> {
         organizationKey: widget.organization.key,
         instance: widget.instance,
         folder: widget.folder,
+        settings: settings,
       ),
     };
+  }
+
+  @override
+  void dispose() {
+    settings.dispose();
+    super.dispose();
   }
 
   @override
@@ -107,6 +116,7 @@ class _MainPageState extends State<MainScreen> {
                   organization: widget.organization,
                   instance: widget.instance,
                   folder: widget.folder,
+                  settings: settings,
                 ),
               ),
             ],

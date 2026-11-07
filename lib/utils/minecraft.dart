@@ -3,12 +3,13 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/instance_settings.dart';
 import 'package:bc_launcher/services/credentials_store.dart';
 import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
-import 'package:bc_launcher/utils/settings.dart';
+import 'package:bc_launcher/utils/system_memory.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
@@ -146,7 +147,8 @@ class Minecraft {
     Instance instance,
     Directory folder,
     String versionId,
-    Directory sharedFolder, {
+    Directory sharedFolder,
+    InstanceSettings settings, {
     VoidCallback? onStarted,
   }) async {
     final path = folder.path;
@@ -167,19 +169,21 @@ class Minecraft {
       'uuid': profile.value!.uuid,
       'token': token,
       'executablePath': java,
-      'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
+      'jvmArguments': [
+        "-Xmx${settings.ram(instance, await SystemMemory.totalGb())}G",
+      ],
       'sharedRoot': sharedFolder.path,
-      if (Settings.autoConnect && instance.serverAddress != null)
+      if (settings.connects && instance.serverAddress != null)
         ...MinecraftLauncherCore.serverOptions(
           versionData,
           instance.serverAddress!,
         ),
-      if (Settings.fullscreen)
+      if (settings.isFullscreen)
         'fullscreen': true
       else ...{
         'customResolution': true,
-        'resolutionWidth': "${Settings.gameWidth}",
-        'resolutionHeight': "${Settings.gameHeight}",
+        'resolutionWidth': "${settings.width}",
+        'resolutionHeight': "${settings.height}",
       },
     };
 

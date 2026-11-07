@@ -9,13 +9,14 @@ import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_installer.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
+import 'package:bc_launcher/services/instance_settings_store.dart';
 import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/sync_engine.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
-import 'package:bc_launcher/utils/settings.dart';
+import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
 import 'package:bc_launcher/widgets/custom_dialog.dart';
@@ -32,12 +33,14 @@ class BottomBar extends StatefulWidget {
   final Organization organization;
   final Instance instance;
   final Directory folder;
+  final InstanceSettingsStore settings;
 
   const BottomBar({
     super.key,
     required this.organization,
     required this.instance,
     required this.folder,
+    required this.settings,
   });
 
   @override
@@ -149,8 +152,7 @@ class _BottomBarState extends State<BottomBar> {
           linkButton(Icons.discord, l.discord, url),
           const SizedBox(width: 15),
         ],
-        linkButton(Icons.image, l.screenshots, "file://${screenshotsPath}"),
-
+        linkButton(Icons.image, l.screenshots, "file://$screenshotsPath"),
         const SizedBox(width: 15),
         if (widget.instance.serverAddress != null)
           Container(
@@ -179,14 +181,15 @@ class _BottomBarState extends State<BottomBar> {
                     cursor: SystemMouseCursors.click,
                     child: Transform.scale(
                       scale: 0.5,
-                      child: CupertinoSwitch(
-                        value: Settings.autoConnect,
-                        activeTrackColor: theme.primary,
-                        onChanged: (value) async {
-                          await Utility.setAutoConnect(value);
-
-                          setState(() {});
-                        },
+                      child: ValueListenableBuilder(
+                        valueListenable: widget.settings,
+                        builder: (context, settings, _) => CupertinoSwitch(
+                          value: settings.connects,
+                          activeTrackColor: theme.primary,
+                          onChanged: (value) => widget.settings.save(
+                            settings.copyWith(autoConnect: value),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -241,6 +244,7 @@ class _BottomBarState extends State<BottomBar> {
         widget.folder,
         versionId,
         await InstanceManager.sharedFolder(),
+        widget.settings.value,
         onStarted: onGameStarted,
       );
       onGameClosed(game);
@@ -255,7 +259,7 @@ class _BottomBarState extends State<BottomBar> {
   void onGameStarted() {
     Utility.isLaunching.value = false;
     Utility.isPlaying.value = true;
-    if (!Settings.keepLauncherOpen) {
+    if (!GlobalSettings.keepLauncherOpen) {
       WindowManager.instance.getCurrent()?.hide();
     }
   }
@@ -267,7 +271,7 @@ class _BottomBarState extends State<BottomBar> {
 
     Utility.isPlaying.value = false;
     if (!game.crashed) {
-      if (!Settings.keepLauncherOpen) exit(0);
+      if (!GlobalSettings.keepLauncherOpen) exit(0);
       return;
     }
 

@@ -7,7 +7,7 @@ import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/api_client.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_store.dart';
-import 'package:bc_launcher/utils/utility.dart';
+import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
 import 'package:bc_launcher/widgets/organization_rail.dart';
 import 'package:dio/dio.dart';
@@ -60,7 +60,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await OrganizationStore.load();
-    await Utility.loadSettings();
+    await GlobalSettings.load();
     InstanceCatalog.organizations.value = const {};
     InstanceCatalog.launcherVersion = () async => '1.0.1';
     answers = {};
