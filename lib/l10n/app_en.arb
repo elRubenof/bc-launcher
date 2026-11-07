@@ -158,5 +158,8 @@
   "pinnedNews": "PINNED",
   "readMore": "Read more",
   "readLess": "Read less",
-  "newsError": "Couldn't load the news"
+  "newsError": "Couldn't load the news",
+
+  "discord": "Discord",
+  "website": "Website"
 }

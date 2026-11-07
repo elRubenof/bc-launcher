@@ -137,26 +137,20 @@ class _BottomBarState extends State<BottomBar> {
   Widget launcherOptions() {
     final l = Utility.getLocalizations(context);
     final theme = InstanceTheme.of(context);
+    final screenshotsPath = join(widget.folder.path, "screenshots");
 
     return Row(
       children: [
-        MouseIconButton(
-          icon: Icons.image,
-          size: 17.0,
-          toolTip: l.screenshots,
-          color: theme.text,
-          hoverColor: Colors.white.withValues(alpha: 0.5),
-          backgroundSize: 35.0,
-          backgroundColor: Colors.white.withValues(alpha: 0.12),
-          onTap: () async {
-            Directory screenshotsDir = Directory(
-              join(widget.folder.path, "screenshots"),
-            );
+        if (widget.instance.webUrl case final url?) ...[
+          linkButton(Icons.public, l.website, url),
+          const SizedBox(width: 15),
+        ],
+        if (widget.instance.discordUrl case final url?) ...[
+          linkButton(Icons.discord, l.discord, url),
+          const SizedBox(width: 15),
+        ],
+        linkButton(Icons.image, l.screenshots, "file://${screenshotsPath}"),
 
-            await screenshotsDir.create();
-            launchUrlString("file://${screenshotsDir.path}");
-          },
-        ),
         const SizedBox(width: 15),
         if (widget.instance.serverAddress != null)
           Container(
@@ -201,6 +195,29 @@ class _BottomBarState extends State<BottomBar> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Opens the instance's [url] (its own or its organization's) in the
+  /// browser, like the screenshots button.
+  Widget linkButton(IconData icon, String toolTip, String url) {
+    return MouseIconButton(
+      icon: icon,
+      size: 17.0,
+      toolTip: toolTip,
+      color: InstanceTheme.of(context).text,
+      hoverColor: Colors.white.withValues(alpha: 0.5),
+      backgroundSize: 35.0,
+      backgroundColor: Colors.white.withValues(alpha: 0.12),
+      onTap: () async {
+        if (url.startsWith("file://")) {
+          await Directory(url.substring(7)).create();
+          launchUrlString(url);
+        }
+
+        final uri = Uri.tryParse(url);
+        if (uri != null) launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
     );
   }
 

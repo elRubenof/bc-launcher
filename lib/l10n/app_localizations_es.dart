@@ -447,4 +447,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newsError => 'No se han podido cargar las noticias';
+
+  @override
+  String get discord => 'Discord';
+
+  @override
+  String get website => 'Web';
 }

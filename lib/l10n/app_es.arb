@@ -132,5 +132,8 @@
   "pinnedNews": "FIJADA",
   "readMore": "Leer más",
   "readLess": "Leer menos",
-  "newsError": "No se han podido cargar las noticias"
+  "newsError": "No se han podido cargar las noticias",
+
+  "discord": "Discord",
+  "website": "Web"
 }
