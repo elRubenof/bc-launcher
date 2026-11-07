@@ -45,7 +45,9 @@ lib/
                                 LoadingScreen, and its errors (offline, no space, game files, instance gone)
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server
     main_screen.dart            an installed instance: tabs (home, settings) + top & bottom bars; Play repairs,
-                                updates and launches it (still with the launcher's look; its theme is phase 5)
+                                updates and launches it; puts the instance's InstanceTheme on everything under it
+                                and its background under its background color at 85 % (the launcher's if it has
+                                none or it can't be loaded)
     tabs/                       home (news, empty until phase 5), map (webview_all, unused until phase 5), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
@@ -97,6 +99,8 @@ lib/
     credentials_store.dart      Microsoft OAuth credentials in flutter_secure_storage
   utils/
     constants.dart              colors, sizes, defaults, releases URL, Azure app values from .env
+    instance_theme.dart         InstanceTheme (ThemeExtension): the instance's colors inside MainScreen, the
+                                launcher's (Constants) anywhere else; its primary also themes switches and sliders
     settings.dart               static user settings (RAM, resolution, …)
     utility.dart                settings persistence, localizations, navigation
     minecraft.dart              Microsoft → XBL → XSTS → Minecraft auth, building and starting the game process
@@ -194,7 +198,7 @@ The current code relies on static globals (`Settings`, `Utility`'s `ValueNotifie
 - **Layers:** `lib/models/` (typed models with hand-written `fromJson`/`toJson`), `lib/services/` (`ApiClient`, `AuthService`, `OrganizationRegistry`/discovery, `SyncEngine`, `LoaderInstaller`, `JavaManager`, `GameLauncher`, `UpdateService`), and `lib/screens/` + `lib/widgets/` for UI only.
 - **State management: Riverpod.** Services never touch `BuildContext` or l10n; they return results or typed errors and the UI translates them.
 - **One HTTP client** (Dio) per organization, with base URL, timeouts, retries and the token (done: `ApiClient`). The rest of the launcher gets models or an `ApiError`, never HTTP status codes or JSON.
-- **Per-instance theming** from the instance's colors and background, instead of `Constants` colors.
+- **Per-instance theming** from the instance's colors and background, instead of `Constants` colors (done for MainScreen and what hangs from it, `InstanceTheme.of(context)`; new UI inside an instance reads its colors from there).
 - **Sync engine:**
   1. Fetch the manifest (`If-None-Match` with the `contentVersion`) and compute a plan (add, update, delete).
   2. Download in parallel to `.part` files, verify the hash, then rename atomically.

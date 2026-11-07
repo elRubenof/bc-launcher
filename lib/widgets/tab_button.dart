@@ -1,5 +1,5 @@
 import 'package:bc_launcher/screens/main_screen.dart';
-import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:flutter/material.dart';
 
 class TabButton extends StatefulWidget {
@@ -27,6 +27,7 @@ class _TabButtonState extends State<TabButton> {
       valueListenable: selectedTab,
       builder: (context, value, child) {
         final selected = value == widget.tab;
+        final theme = InstanceTheme.of(context);
 
         return Stack(
           children: [
@@ -39,7 +40,7 @@ class _TabButtonState extends State<TabButton> {
                       borderRadius: BorderRadius.circular(50),
                       boxShadow: [
                         BoxShadow(
-                          color: Constants.mainColor.withValues(alpha: 0.5),
+                          color: theme.primary.withValues(alpha: 0.5),
                           blurRadius: 50.0,
                           spreadRadius: 40.0,
                         ),
@@ -47,7 +48,7 @@ class _TabButtonState extends State<TabButton> {
                     ),
                     child: Container(
                       margin: const EdgeInsets.only(top: 1),
-                      color: Constants.mainColor,
+                      color: theme.primary,
                       height: 1,
                     ),
                   ),
@@ -62,22 +63,16 @@ class _TabButtonState extends State<TabButton> {
                   onHover: (value) => setState(() => _hover = value),
                   child: Row(
                     children: [
-                      Icon(
-                        widget.icon,
-                        color: Constants.mainColor,
-                        size: 25,
-                      ),
-                      const SizedBox(
-                        width: 12,
-                      ),
+                      Icon(widget.icon, color: theme.primary, size: 25),
+                      const SizedBox(width: 12),
                       Text(
                         widget.label.toUpperCase(),
-                        style: const TextStyle(
-                          color: Constants.textColor,
+                        style: TextStyle(
+                          color: theme.text,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

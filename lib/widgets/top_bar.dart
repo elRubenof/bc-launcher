@@ -4,6 +4,7 @@ import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/tab_button.dart';
@@ -30,7 +31,7 @@ class _TopBarState extends State<TopBar> {
     return Container(
       width: width,
       height: Constants.topBarHeight,
-      color: Constants.backgroundColor,
+      color: InstanceTheme.of(context).background,
       child: Stack(
         children: [
           // Not const: `flutter run` fails to compile a const DragToMoveArea.
@@ -120,7 +121,10 @@ Widget account(Organization organization) {
                   child: Text(
                     value.name,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(
+                      color: InstanceTheme.of(context).text,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],

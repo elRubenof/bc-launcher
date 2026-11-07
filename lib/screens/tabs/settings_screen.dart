@@ -5,6 +5,7 @@ import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/custom_dialog.dart';
@@ -36,7 +37,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final resolutionWith = TextEditingController();
   final resoulutionHeight = TextEditingController();
 
-  final greyColor = Constants.textColor.withValues(alpha: 0.45);
+  Color get textColor => InstanceTheme.of(context).text;
+  Color get greyColor => textColor.withValues(alpha: 0.45);
 
   double allocatedRAM = Settings.allocatedRAM.toDouble();
 
@@ -114,10 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget title(String text) {
     return Container(
       margin: const EdgeInsets.only(bottom: 33),
-      child: Text(
-        text,
-        style: const TextStyle(color: Constants.textColor, fontSize: 20.5),
-      ),
+      child: Text(text, style: TextStyle(color: textColor, fontSize: 20.5)),
     );
   }
 
@@ -127,10 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         Container(
           margin: EdgeInsets.only(bottom: description != null ? 3 : 18),
-          child: Text(
-            title,
-            style: const TextStyle(color: Constants.textColor, fontSize: 17),
-          ),
+          child: Text(title, style: TextStyle(color: textColor, fontSize: 17)),
         ),
         if (description != null)
           Container(
@@ -171,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Text(
                     text,
                     style: TextStyle(
-                      color: Constants.textColor.withValues(alpha: 0.75),
+                      color: textColor.withValues(alpha: 0.75),
                       fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -191,15 +187,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: TextField(
                 controller: controller,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Constants.textColor,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: textColor, fontSize: 11),
                 cursorColor: Colors.transparent,
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.only(bottom: 8),
-                  hintStyle: const TextStyle(color: Constants.textColor),
+                  hintStyle: TextStyle(color: textColor),
                   hintText: isWidth!
                       ? "${Settings.gameWidth}"
                       : "${Settings.gameHeight}",
@@ -386,7 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Text(
             text.toUpperCase(),
             style: TextStyle(
-              color: outlined ? Constants.textColor : Colors.black,
+              color: outlined ? textColor : Colors.black,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -442,10 +435,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: Text(
                 "${Settings.allocatedRAM}",
-                style: const TextStyle(
-                  color: Constants.textColor,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: textColor, fontSize: 12),
               ),
             ),
             Text("GB", style: TextStyle(color: greyColor, fontSize: 11)),

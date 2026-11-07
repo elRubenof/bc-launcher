@@ -5,6 +5,7 @@ import 'package:bc_launcher/models/organization.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
@@ -49,48 +50,63 @@ class _MainPageState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final theme = InstanceTheme.fromColors(widget.instance.colors);
 
-    return Scaffold(
-      backgroundColor: Constants.backgroundColor,
-      body: ValueListenableBuilder(
-        valueListenable: selectedTab,
-        builder: (context, index, child) => Stack(
-          children: [
-            Image.asset(
-              "assets/img/background.png",
-              height: height,
-              width: width,
-              fit: BoxFit.cover,
-            ),
-            Container(
-              height: height,
-              color: Constants.backgroundColor.withValues(alpha: 0.85),
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: Constants.topBarHeight,
-                bottom: index == 0 ? Constants.topBarHeight : 0,
+    return Theme(
+      data: theme.apply(Theme.of(context)),
+      child: Scaffold(
+        backgroundColor: theme.background,
+        body: ValueListenableBuilder(
+          valueListenable: selectedTab,
+          builder: (context, index, child) => Stack(
+            children: [
+              Positioned.fill(child: background()),
+              Positioned.fill(
+                child: ColoredBox(
+                  color: theme.background.withValues(alpha: 0.85),
+                ),
               ),
-              child: tabs[index] ?? const SizedBox.shrink(),
-            ),
-            TopBar(
-              organization: widget.organization,
-              instance: widget.instance,
-            ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 250),
-              bottom: index == 0 ? 0 : -200,
-              child: BottomBar(
+              Padding(
+                padding: EdgeInsets.only(
+                  top: Constants.topBarHeight,
+                  bottom: index == 0 ? Constants.topBarHeight : 0,
+                ),
+                child: tabs[index] ?? const SizedBox.shrink(),
+              ),
+              TopBar(
                 organization: widget.organization,
                 instance: widget.instance,
-                folder: widget.folder,
               ),
-            ),
-          ],
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                bottom: index == 0 ? 0 : -200,
+                child: BottomBar(
+                  organization: widget.organization,
+                  instance: widget.instance,
+                  folder: widget.folder,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  /// The instance's background, or the launcher's when it has none or it
+  /// can't be loaded.
+  Widget background() {
+    const fallback = Image(
+      image: AssetImage("assets/img/background.png"),
+      fit: BoxFit.cover,
+    );
+    final url = widget.instance.backgroundUrl;
+    if (url.isEmpty) return fallback;
+
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => fallback,
     );
   }
 }

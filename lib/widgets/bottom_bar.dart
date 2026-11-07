@@ -13,6 +13,7 @@ import 'package:bc_launcher/services/log_export.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/sync_engine.dart';
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
@@ -49,6 +50,7 @@ class _BottomBarState extends State<BottomBar> {
   @override
   Widget build(BuildContext context) {
     final l = Utility.getLocalizations(context);
+    final theme = InstanceTheme.of(context);
 
     return Stack(
       alignment: Alignment.bottomCenter,
@@ -61,7 +63,7 @@ class _BottomBarState extends State<BottomBar> {
                 height: value ? 5 : 0,
                 width: MediaQuery.of(context).size.width,
                 child: LinearProgressIndicator(
-                  color: Constants.backgroundColor,
+                  color: theme.background,
                   backgroundColor: Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -70,7 +72,7 @@ class _BottomBarState extends State<BottomBar> {
             Container(
               height: Constants.topBarHeight,
               width: MediaQuery.of(context).size.width,
-              color: Constants.backgroundColor,
+              color: theme.background,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: Constants.horizontalPadding,
@@ -88,8 +90,8 @@ class _BottomBarState extends State<BottomBar> {
           builder: (context, playing, child) => Button3D(
             title: playing ? l.playing : l.play,
             width: 210,
-            color: Constants.mainColor,
-            secondaryColor: Constants.mainColorDarked,
+            color: theme.primary,
+            secondaryColor: theme.primaryDark,
             onPressed: play,
           ),
         ),
@@ -134,6 +136,7 @@ class _BottomBarState extends State<BottomBar> {
 
   Widget launcherOptions() {
     final l = Utility.getLocalizations(context);
+    final theme = InstanceTheme.of(context);
 
     return Row(
       children: [
@@ -141,7 +144,7 @@ class _BottomBarState extends State<BottomBar> {
           icon: Icons.image,
           size: 17.0,
           toolTip: l.screenshots,
-          color: Constants.textColor,
+          color: theme.text,
           hoverColor: Colors.white.withValues(alpha: 0.5),
           backgroundSize: 35.0,
           backgroundColor: Colors.white.withValues(alpha: 0.12),
@@ -169,8 +172,8 @@ class _BottomBarState extends State<BottomBar> {
               children: [
                 Text(
                   l.autoConnect,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.text,
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -184,7 +187,7 @@ class _BottomBarState extends State<BottomBar> {
                       scale: 0.5,
                       child: CupertinoSwitch(
                         value: Settings.autoConnect,
-                        activeTrackColor: const Color(0xff7a4aee),
+                        activeTrackColor: theme.primary,
                         onChanged: (value) async {
                           await Utility.setAutoConnect(value);
 
