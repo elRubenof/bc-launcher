@@ -533,22 +533,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 bottom: 16,
               ),
               decoration: BoxDecoration(
-                border: Border.all(color: Constants.dangerTextColor),
+                border: Border.all(
+                  color: Constants.dangerTextColor.withValues(alpha: 0.55),
+                ),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     CupertinoIcons.delete,
-                    color: Constants.dangerTextColor,
+                    color: Constants.dangerTextColor.withValues(alpha: 0.9),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
                   Text(
                     l.deleteInstance.toUpperCase(),
-                    style: const TextStyle(
-                      color: Constants.dangerTextColor,
+                    style: TextStyle(
+                      color: Constants.dangerTextColor.withValues(alpha: 0.9),
                       fontSize: 14,
                     ),
                   ),
