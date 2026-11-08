@@ -858,6 +858,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You can play single player. You won\'t be able to join servers.'**
   String get singlePlayerOnlyDesc;
+
+  /// No description provided for @useAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get useAnotherAccount;
+
+  /// No description provided for @accountChildTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account needs permission'**
+  String get accountChildTitle;
+
+  /// No description provided for @accountChildDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s a child account. An adult in your family has to allow you to play online in the Xbox family settings.'**
+  String get accountChildDesc;
+
+  /// No description provided for @accountNoXboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has no Xbox profile'**
+  String get accountNoXboxTitle;
+
+  /// No description provided for @accountNoXboxDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one for free on xbox.com with this account and try again.'**
+  String get accountNoXboxDesc;
+
+  /// No description provided for @accountCountryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Xbox Live isn\'t available in your country'**
+  String get accountCountryTitle;
+
+  /// No description provided for @accountCountryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Minecraft can\'t be played with this account from your country.'**
+  String get accountCountryDesc;
+
+  /// No description provided for @accountAdultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to verify your age'**
+  String get accountAdultTitle;
+
+  /// No description provided for @accountAdultDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Xbox asks you to verify that you\'re an adult before playing with this account.'**
+  String get accountAdultDesc;
+
+  /// No description provided for @accountNoGameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This account doesn\'t have Minecraft'**
+  String get accountNoGameTitle;
+
+  /// No description provided for @accountNoGameDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To play you need Minecraft: Java Edition on the Microsoft account you signed in with.'**
+  String get accountNoGameDesc;
+
+  /// No description provided for @loginExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get loginExpiredTitle;
+
+  /// No description provided for @loginExpiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Microsoft session expired or was closed somewhere else. Sign in again in the browser.'**
+  String get loginExpiredDesc;
 }
 
 class _AppLocalizationsDelegate

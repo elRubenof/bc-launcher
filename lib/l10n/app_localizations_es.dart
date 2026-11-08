@@ -473,4 +473,49 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get singlePlayerOnlyDesc =>
       'Puedes jugar en un solo jugador. No podrás entrar en servidores.';
+
+  @override
+  String get useAnotherAccount => 'Usar otra cuenta';
+
+  @override
+  String get accountChildTitle => 'Tu cuenta necesita permiso';
+
+  @override
+  String get accountChildDesc =>
+      'Es una cuenta de menor. Un adulto de tu familia tiene que permitir que juegues en línea desde los ajustes familiares de Xbox.';
+
+  @override
+  String get accountNoXboxTitle => 'Tu cuenta no tiene perfil de Xbox';
+
+  @override
+  String get accountNoXboxDesc =>
+      'Crea uno gratis en xbox.com con esta cuenta y vuelve a intentarlo.';
+
+  @override
+  String get accountCountryTitle => 'Xbox Live no está disponible en tu país';
+
+  @override
+  String get accountCountryDesc =>
+      'Con esta cuenta no se puede jugar a Minecraft desde tu país.';
+
+  @override
+  String get accountAdultTitle => 'Tienes que verificar tu edad';
+
+  @override
+  String get accountAdultDesc =>
+      'Xbox pide verificar que eres adulto antes de jugar con esta cuenta. Después, vuelve a intentarlo.';
+
+  @override
+  String get accountNoGameTitle => 'Esta cuenta no tiene Minecraft';
+
+  @override
+  String get accountNoGameDesc =>
+      'Para jugar necesitas Minecraft: Java Edition en la cuenta de Microsoft con la que has entrado.';
+
+  @override
+  String get loginExpiredTitle => 'Vuelve a iniciar sesión';
+
+  @override
+  String get loginExpiredDesc =>
+      'Tu sesión de Microsoft ha caducado o se ha cerrado desde otro sitio. Inicia sesión otra vez en el navegador.';
 }

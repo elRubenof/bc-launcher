@@ -1,10 +1,12 @@
 import 'package:bc_launcher/l10n/app_localizations.dart';
+import 'package:bc_launcher/screens/account_error_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/no_organizations_screen.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_store.dart';
+import 'package:bc_launcher/services/xbox_auth.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
@@ -80,7 +82,11 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.data == SignIn.signedOut) {
-          return const LoginScreen();
+          return switch (Minecraft.accountProblem) {
+            null => const LoginScreen(),
+            AccountProblem.expired => const LoginScreen(expired: true),
+            final problem => AccountErrorScreen(problem: problem),
+          };
         }
 
         return ValueListenableBuilder(

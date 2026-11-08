@@ -7,6 +7,7 @@ import 'package:bc_launcher/models/instance.dart';
 import 'package:bc_launcher/models/instance_settings.dart';
 import 'package:bc_launcher/services/credentials_store.dart';
 import 'package:bc_launcher/services/minecraft_session_store.dart';
+import 'package:bc_launcher/services/xbox_auth.dart';
 import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/java_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
@@ -51,9 +52,14 @@ class Minecraft {
   static const String _tokenEndpoint =
       "https://login.live.com/oauth20_token.srf";
 
+  /// Why the last sign-in couldn't go on (shown instead of the login), or
+  /// null.
+  static AccountProblem? accountProblem;
+
   /// Signs in with the saved account; without internet, with its saved
   /// profile and token.
   static Future<SignIn> authenticateOauth2() async {
+    accountProblem = null;
     final credentialsJson = await CredentialsStore.read();
     if (credentialsJson == null) return SignIn.signedOut;
     _session = await MinecraftSessionStore.read();
@@ -73,6 +79,10 @@ class Minecraft {
         _setOffline();
         return SignIn.offline;
       }
+      if (e is AccountError) {
+        accountProblem = e.problem;
+        return SignIn.signedOut;
+      }
 
       final supportDirectory = await getApplicationSupportDirectory();
       File file = File(join(supportDirectory.path, "error.txt"));
@@ -85,15 +95,42 @@ class Minecraft {
   /// Renews the Microsoft credentials and the Minecraft token, and saves
   /// them with the profile.
   static Future<void> _renew() async {
-    _credentials = await _credentials
-        .refresh(identifier: Constants.clientID)
-        .timeout(_timeout);
+    await _refreshCredentials();
+    final token = await _minecraftToken();
+    profile.value = await _profile(token);
+    await _saveSession(token);
+  }
+
+  /// Renews the Microsoft credentials; a rejected session is
+  /// [AccountProblem.expired].
+  static Future<void> _refreshCredentials() async {
+    try {
+      _credentials = await _credentials
+          .refresh(identifier: Constants.clientID)
+          .timeout(_timeout);
+    } on AuthorizationException {
+      throw const AccountError(AccountProblem.expired);
+    } on ExpirationException {
+      throw const AccountError(AccountProblem.expired);
+    }
     // Microsoft rotates the refresh token, so keep the new one.
     await CredentialsStore.write(_credentials.toJson());
+  }
 
-    final token = await _minecraftToken();
-    profile.value = await getCurrentProfile(token).timeout(_timeout);
-    await _saveSession(token);
+  /// The player's profile; an account without Minecraft is
+  /// [AccountProblem.noMinecraft].
+  static Future<Profile> _profile(String token) async {
+    try {
+      return await getCurrentProfile(token).timeout(_timeout);
+    } on AuthException {
+      throw const AccountError(AccountProblem.expired);
+    } catch (e) {
+      if (isNetworkError(e)) rethrow;
+      if ("$e".contains("does not own the game")) {
+        throw const AccountError(AccountProblem.noMinecraft);
+      }
+      rethrow;
+    }
   }
 
   static Future<void> _saveSession(String token) async {
@@ -124,14 +161,9 @@ class Minecraft {
     if (session != null && !session.isExpired) return session.token;
 
     try {
-      if (_credentials.isExpired) {
-        _credentials = await _credentials
-            .refresh(identifier: Constants.clientID)
-            .timeout(_timeout);
-        await CredentialsStore.write(_credentials.toJson());
-      }
+      if (_credentials.isExpired) await _refreshCredentials();
       final token = await _minecraftToken();
-      profile.value ??= await getCurrentProfile(token).timeout(_timeout);
+      profile.value ??= await _profile(token);
       await _saveSession(token);
       _setOnline();
       return token;
@@ -142,14 +174,20 @@ class Minecraft {
     }
   }
 
+  /// Xbox Live → XSTS → Minecraft. Throws [AccountError] when Xbox or
+  /// Minecraft reject the account.
   static Future<String> _minecraftToken() async {
-    final xbl = await authenticateXBL(_credentials.accessToken)
-        .timeout(_timeout);
-    final xsts = await authenticateXSTS(xbl.first).timeout(_timeout);
-    return await authenticateWithXBOX(
-      xsts.first,
-      xsts.second,
-    ).timeout(_timeout);
+    try {
+      final xbl = await authenticateXBL(_credentials.accessToken)
+          .timeout(_timeout);
+      final xsts = await XboxAuth.xsts(xbl.first);
+      return await authenticateWithXBOX(
+        xsts.token,
+        xsts.userHash,
+      ).timeout(_timeout);
+    } on AuthException {
+      throw const AccountError(AccountProblem.expired);
+    }
   }
 
   /// No connection at all, as opposed to Microsoft or Xbox rejecting the
@@ -292,7 +330,7 @@ class Minecraft {
     );
 
     final token = await Minecraft.getToken();
-    profile.value ??= await getCurrentProfile(token);
+    profile.value ??= await _profile(token);
 
     Map options = {
       'username': profile.value!.name,

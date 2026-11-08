@@ -142,5 +142,19 @@
   "playingInstalledDesc": "Juegas con lo instalado. Puede que no esté al día.",
 
   "noInternetTitle": "Sin conexión a internet",
-  "singlePlayerOnlyDesc": "Puedes jugar en un solo jugador. No podrás entrar en servidores."
+  "singlePlayerOnlyDesc": "Puedes jugar en un solo jugador. No podrás entrar en servidores.",
+
+  "useAnotherAccount": "Usar otra cuenta",
+  "accountChildTitle": "Tu cuenta necesita permiso",
+  "accountChildDesc": "Es una cuenta de menor. Un adulto de tu familia tiene que permitir que juegues en línea desde los ajustes familiares de Xbox.",
+  "accountNoXboxTitle": "Tu cuenta no tiene perfil de Xbox",
+  "accountNoXboxDesc": "Crea uno gratis en xbox.com con esta cuenta y vuelve a intentarlo.",
+  "accountCountryTitle": "Xbox Live no está disponible en tu país",
+  "accountCountryDesc": "Con esta cuenta no se puede jugar a Minecraft desde tu país.",
+  "accountAdultTitle": "Tienes que verificar tu edad",
+  "accountAdultDesc": "Xbox pide verificar que eres adulto antes de jugar con esta cuenta. Después, vuelve a intentarlo.",
+  "accountNoGameTitle": "Esta cuenta no tiene Minecraft",
+  "accountNoGameDesc": "Para jugar necesitas Minecraft: Java Edition en la cuenta de Microsoft con la que has entrado.",
+  "loginExpiredTitle": "Vuelve a iniciar sesión",
+  "loginExpiredDesc": "Tu sesión de Microsoft ha caducado o se ha cerrado desde otro sitio. Inicia sesión otra vez en el navegador."
 }

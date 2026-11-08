@@ -14,7 +14,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// Microsoft rejected the saved session: "Sign in again".
+  final bool expired;
+
+  const LoginScreen({super.key, this.expired = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -120,7 +123,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  _failed ? l.loginError : l.loginTitle,
+                  _failed
+                      ? l.loginError
+                      : widget.expired
+                      ? l.loginExpiredTitle
+                      : l.loginTitle,
                   style: const TextStyle(
                     color: Constants.textColor,
                     fontSize: 24,
@@ -129,7 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _failed ? l.loginErrorDesc : l.loginInBrowser,
+                  _failed
+                      ? l.loginErrorDesc
+                      : widget.expired
+                      ? l.loginExpiredDesc
+                      : l.loginInBrowser,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: textColor, fontSize: 14),
                 ),
