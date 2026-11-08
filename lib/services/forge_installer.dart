@@ -144,7 +144,10 @@ class ForgeInstaller {
     final id = versionId(loader, minecraft, version);
     if (await isInstalled(id, folder, shared)) return;
 
-    final temp = await Directory.systemTemp.createTemp("bc-launcher-forge");
+    // Resolved, so a Windows short name in it (C:\Users\RUNNER~1) doesn't make
+    // the extractor take every entry for one outside the folder and skip it.
+    final created = await Directory.systemTemp.createTemp("bc-launcher-forge");
+    final temp = Directory(await created.resolveSymbolicLinks());
     try {
       final jar = join(temp.path, "installer.jar");
       try {
