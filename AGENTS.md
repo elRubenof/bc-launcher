@@ -121,6 +121,10 @@ lib/
                                 flutter_secure_storage, to start and play without internet
     instance_settings_store.dart  one instance's game settings (RAM, resolution, fullscreen, auto-connect) in
                                 .bc-launcher/settings.json, written at once; reset deletes it
+    update_config.dart          the launcher's update feed (this repo's latest GitHub release), the pinned release
+                                keys, each platform's package ID and the recovery store's file
+    update_recovery_store.dart  desktop_updater's pending install marker in <AppSupport>/update/, so the next
+                                start knows whether the update finished
   utils/
     constants.dart              colors, sizes, defaults, releases URL, Azure app values from .env
     news_markdown.dart          a news body's markdown (package:markdown) as blocks and styled spans: headings, bold,
@@ -151,6 +155,9 @@ lib/
 assets/img/                     logo.svg, logo.png, background.png
 assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
                                 release
+desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
+desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
+                                is never in the repo
 test/                           unit tests mirroring lib/ (models, services, utils); fixtures/ holds API v1
                                 responses shaped like the server's openapi.json, read with fixture();
                                 services/fake_server.dart is an organization's server for sync tests
@@ -210,11 +217,12 @@ Agent docs like this file being committed is fine. The rule is about commits, au
    - `426 Upgrade Required` from any request re-runs the negotiation.
 4. **Deprecation policy.** A `compat.json` published from this repo's releases lists the supported and deprecated API versions with sunset dates. Old API versions are removed only after a long, announced window.
 5. **Launcher self-update via [`desktop_updater`](https://pub.dev/packages/desktop_updater)**, published from this repo's GitHub Releases.
-   - Ed25519-signed `app-archive.json` → `release.json` → artifact.
+   - Ed25519-signed `app-archive.json` → `release.json` → artifact. The feed is `releases/latest/download/app-archive.json` and the release key is bound to that exact URL (`desktop_updater.yaml`, `UpdateConfig`); GitHub's flat release assets need the release CLI's low-level commands with explicit URLs.
+   - Only **Windows** installs updates itself (zip, per-user Inno install). desktop_updater refuses to install on macOS without Developer ID signing and doesn't support AppImage, so **macOS and Linux** only notify and "Download" opens the release.
    - `supportPolicy` sets the minimum version.
+   - Versions have no `+build` number (it is optional for zip, DMG and Inno).
    - The update feed **never** comes from organization servers.
    - Until then the launcher has no update check (the legacy, server-driven `Utility.isUpdated()` / `Utility.update()` were removed).
-   - The macOS install helper must ship from the first release that uses it.
    - The private key lives only in CI secrets plus an offline backup.
 6. **Two repos.** `bc-launcher` (this one) and `bc-launcher-server`, a TypeScript monorepo with a Hono API, a React + Vite + shadcn/ui admin panel (username + password admins; one `owner`, `admin` = everything except acting on the owner, `editor` = instances, content, news and players only), zod contracts exported as OpenAPI, and Drizzle on SQLite/D1. Server deploy targets are **Cloudflare (Workers + D1 + R2)** and **Docker**. Vercel was discarded. The API contract's source of truth is `bc-launcher-server`'s OpenAPI (`packages/contracts/openapi.json`, attached to each server release); launcher models should be generated from or validated against it.
 7. **Auth with organization servers** uses Mojang's `join` / `hasJoined` handshake (done, `OrganizationAuth`): `POST /api/v1/auth/challenge` → the launcher calls Mojang's `join` with the returned `serverId` → `POST /api/v1/auth/verify`, which returns the server's own JWT. The Minecraft token never leaves the client. Discovery's `auth.type` is `mojang-session` or `unverified` (a Cloudflare server without a Mojang session proxy, which trusts the name). The old unauthenticated `GET /auth?uuid=` is gone from the launcher.
@@ -248,7 +256,7 @@ The current code relies on static globals (`GlobalSettings`, `Utility`'s `ValueN
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). The Minecraft token is cached (done, `MinecraftSessionStore`). Support multiple accounts.
 - **Launch** (done, `GameProcess`): game output in a log file, crash detection, the launcher hidden while playing unless it stays open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`), each instance's settings (`InstanceSettings`, `InstanceSettingsStore`, `SystemMemory`'s parsing), XSTS and its codes (`XboxAuth`), running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`), each instance's settings (`InstanceSettings`, `InstanceSettingsStore`, `SystemMemory`'s parsing), XSTS and its codes (`XboxAuth`), the update recovery marker (`UpdateRecoveryFileStore`) and the pinned keys matching the release key profile (`UpdateConfig`), running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 

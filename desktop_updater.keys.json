@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "profileId": "b11c323e8eca63493fed66a06a954557",
+  "feedUrl": "https://github.com/elRubenof/bc-launcher/releases/latest/download/app-archive.json",
+  "activeKeyId": "release-defd1029f92a6249a0507dbd",
+  "publicKeys": {
+    "release-defd1029f92a6249a0507dbd": "lvH8fKW8MX0P2mjr+eusVYCmUhPV9AcyvKnlZoeQV+4="
+  }
+}

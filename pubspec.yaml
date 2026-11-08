@@ -58,6 +58,7 @@ dependencies:
   file_selector: ^1.1.0
   markdown: ^7.3.1
   ffi: ^2.2.0
+  desktop_updater: ^3.2.11
 
 dev_dependencies:
   flutter_test:
