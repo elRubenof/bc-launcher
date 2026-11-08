@@ -22,6 +22,8 @@ flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 ```
 
+**CI:** `.github/workflows/ci.yml` runs on every push and pull request: `flutter analyze` and a check that the generated localizations are committed (Linux), and `flutter test` on Linux, Windows and macOS. It pins Flutter 3.47.7: change it there when the project moves to a newer Flutter.
+
 **Build configuration:** the Azure app's values are compiled in from a `.env` file (ignored by git). Copy `.env.example` to `.env` and fill in `MS_CLIENT_ID` (required to log in) and, optionally, `MS_REDIRECT_URL` (default `http://127.0.0.1`). They are read with `String.fromEnvironment` in `lib/utils/constants.dart` and fixed at build time, so `run` and `build` both need `--dart-define-from-file=.env`; without it the client ID is empty and the Microsoft login fails. `.vscode/` is ignored: any local launch or build configuration has to pass the same flag.
 
 ## Project layout
@@ -167,6 +169,7 @@ lib/
 assets/img/                     logo.svg, logo.png, background.png
 assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
                                 release
+.github/workflows/ci.yml        analysis and tests on every push (see Commands → CI)
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo

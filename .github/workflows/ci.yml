@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# A newer push to the same branch cancels the run still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Generated localizations are up to date
+        run: git diff --exit-code -- lib/l10n
+      - run: flutter analyze
+
+  # The paths, processes and line separators differ per system, so the tests
+  # run on all three.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
