@@ -15,6 +15,7 @@ import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
 import 'package:bc_launcher/widgets/offline_notice.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
+import 'package:bc_launcher/widgets/update_notice.dart';
 import 'package:flutter/material.dart';
 
 final ValueNotifier selectedTab = ValueNotifier<int>(homeTab);
@@ -112,7 +113,7 @@ class _MainPageState extends State<MainScreen> {
                 organization: widget.organization,
                 instance: widget.instance,
               ),
-              if (index == homeTab) offlineNotice(theme),
+              if (index == homeTab) notices(theme),
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 bottom: index == homeTab ? 0 : -200,
@@ -130,45 +131,64 @@ class _MainPageState extends State<MainScreen> {
     );
   }
 
-  /// Over the bottom bar without internet (single player only) or while the
-  /// organization doesn't answer (what is installed is played as it is).
+  /// Over the bottom bar: a new launcher version, and under it the offline
+  /// notice.
+  Widget notices(InstanceTheme theme) {
+    return Positioned(
+      left: 20,
+      bottom: Constants.topBarHeight + 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: UpdateNotice(
+              background: theme.background.withValues(alpha: 0.92),
+            ),
+          ),
+          offlineNotice(theme),
+        ],
+      ),
+    );
+  }
+
+  /// Without internet (single player only) or while the organization doesn't
+  /// answer (what is installed is played as it is).
   Widget offlineNotice(InstanceTheme theme) {
     final l = Utility.getLocalizations(context);
     final organization = widget.organization;
 
-    return Positioned(
-      left: 20,
-      bottom: Constants.topBarHeight + 16,
-      child: ListenableBuilder(
-        listenable: Listenable.merge([
-          InstanceCatalog.organizations,
-          Minecraft.offline,
-        ]),
-        builder: (context, _) {
-          final background = theme.background.withValues(alpha: 0.92);
-          final OfflineNotice notice;
-          if (Minecraft.offline.value) {
-            notice = OfflineNotice(
-              title: l.noInternetTitle,
-              description: l.singlePlayerOnlyDesc,
-              background: background,
-            );
-          } else if (InstanceCatalog.isUnreachable(organization.key)) {
-            notice = OfflineNotice(
-              title: l.organizationNotResponding(organization.name),
-              description: l.playingInstalledDesc,
-              background: background,
-              onRetry: () => InstanceCatalog.refresh(organization),
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-          return ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 470),
-            child: notice,
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        InstanceCatalog.organizations,
+        Minecraft.offline,
+      ]),
+      builder: (context, _) {
+        final background = theme.background.withValues(alpha: 0.92);
+        final OfflineNotice notice;
+        if (Minecraft.offline.value) {
+          notice = OfflineNotice(
+            title: l.noInternetTitle,
+            description: l.singlePlayerOnlyDesc,
+            background: background,
           );
-        },
-      ),
+        } else if (InstanceCatalog.isUnreachable(organization.key)) {
+          notice = OfflineNotice(
+            title: l.organizationNotResponding(organization.name),
+            description: l.playingInstalledDesc,
+            background: background,
+            onRetry: () => InstanceCatalog.refresh(organization),
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 470),
+          child: notice,
+        );
+      },
     );
   }
 

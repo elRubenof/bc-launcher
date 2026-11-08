@@ -140,7 +140,7 @@ void main() {
     expect(find.byType(OrganizationRail), findsNothing);
   });
 
-  testWidgets('incompatible: download and remove', (tester) async {
+  testWidgets('needs a newer launcher: update and remove', (tester) async {
     await OrganizationStore.save(organization('a.com', 'Alpha'));
     InstanceCatalog.launcherVersion = () async => '0.0.1';
     final json = fixture('discovery')
@@ -153,8 +153,13 @@ void main() {
 
     await show(tester);
 
-    expect(find.text('Alpha ya no es compatible'), findsOneWidget);
-    expect(find.text('Descargar la nueva versión'), findsOneWidget);
+    expect(find.text('Actualiza BC Launcher'), findsOneWidget);
+    expect(
+      find.text('Alpha necesita la versión 9.0.0 o posterior del launcher.'),
+      findsOneWidget,
+    );
+    expect(find.text('Actualizar el launcher'), findsOneWidget);
+    expect(find.text('Abrir carpeta'), findsNothing);
     expect(find.text('Eliminar organización'), findsOneWidget);
   });
 

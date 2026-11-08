@@ -150,6 +150,7 @@ void main() {
       expect(backend.downloads, 1);
       expect(updates.update.value.status, UpdateStatus.required);
       expect(updates.update.value.progress, isNull);
+      expect(updates.update.value.unsupported, isTrue);
 
       backend.emit(const UpdateDownloading(receivedBytes: 45, totalBytes: 100));
       expect(updates.update.value.progress, 0.45);
@@ -223,6 +224,7 @@ void main() {
       expect(backend.downloads, 1);
       expect(updates.update.value.status, UpdateStatus.required);
       expect(updates.update.value.version, "1.3.0");
+      expect(updates.update.value.unsupported, isFalse);
     });
 
     test("updating for an organization with nothing newer fails", () async {

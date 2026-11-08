@@ -3,9 +3,11 @@ import 'package:bc_launcher/screens/account_error_screen.dart';
 import 'package:bc_launcher/screens/login_screen.dart';
 import 'package:bc_launcher/screens/no_organizations_screen.dart';
 import 'package:bc_launcher/screens/organizations_screen.dart';
+import 'package:bc_launcher/screens/update_required_screen.dart';
 import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_store.dart';
+import 'package:bc_launcher/services/update_service.dart';
 import 'package:bc_launcher/services/xbox_auth.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -26,6 +28,7 @@ void main() async {
   DeepLinks.register();
   _setUpWindow();
 
+  await UpdateService.start(playing: Utility.isPlaying);
   await GlobalSettings.load();
   await OrganizationStore.load();
   OrganizationStore.refresh();
@@ -42,6 +45,7 @@ void main() async {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) => _UpdateGate(child: child!),
       home: const MyApp(),
     ),
   );
@@ -58,6 +62,46 @@ void _setUpWindow() {
   window.setSize(initialSize.toNative(), false);
   window.center();
   window.show();
+}
+
+/// A required launcher update covers every screen until it is installed;
+/// what is under it (a running game's screen too) stays as it is.
+class _UpdateGate extends StatelessWidget {
+  final Widget child;
+
+  const _UpdateGate({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final service = UpdateService.current;
+    if (service == null) return child;
+
+    return ValueListenableBuilder(
+      valueListenable: service.update,
+      builder: (context, update, _) => Stack(
+        children: [
+          child,
+          if (update.status == UpdateStatus.required)
+            // Above the navigator, so it brings its own overlay.
+            Positioned.fill(
+              child: Overlay(
+                initialEntries: [
+                  OverlayEntry(
+                    builder: (context) => ValueListenableBuilder(
+                      valueListenable: service.update,
+                      builder: (context, update, _) => UpdateRequiredScreen(
+                        service: service,
+                        update: update,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

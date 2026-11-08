@@ -479,8 +479,8 @@ abstract class AppLocalizations {
   /// No description provided for @launcherOutdatedDesc.
   ///
   /// In en, this message translates to:
-  /// **'{name} needs launcher version {required} or later. You have {current}.'**
-  String launcherOutdatedDesc(String name, String required, String current);
+  /// **'{name} needs launcher version {required} or later.'**
+  String launcherOutdatedDesc(String name, String required);
 
   /// No description provided for @downloadNewVersion.
   ///
@@ -936,6 +936,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Microsoft session expired or was closed somewhere else. Sign in again in the browser.'**
   String get loginExpiredDesc;
+
+  /// No description provided for @updateReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BC Launcher {version} is ready'**
+  String updateReadyTitle(String version);
+
+  /// No description provided for @updateReadyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart to install it.'**
+  String get updateReadyDesc;
+
+  /// No description provided for @updateCloseGameDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the game to restart'**
+  String get updateCloseGameDesc;
+
+  /// No description provided for @updateAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version is out: BC Launcher {version}'**
+  String updateAvailableTitle(String version);
+
+  /// No description provided for @updateAvailableDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Download it and replace the one you have.'**
+  String get updateAvailableDesc;
+
+  /// No description provided for @whatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get whatsNew;
+
+  /// No description provided for @restart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get restart;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @hideNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get hideNotice;
+
+  /// No description provided for @updatingPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating {percent}%'**
+  String updatingPercent(String percent);
+
+  /// No description provided for @updating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating…'**
+  String get updating;
+
+  /// No description provided for @newVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'the new version'**
+  String get newVersion;
+
+  /// No description provided for @updateUnsupportedDownloadingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This launcher version is no longer supported. Downloading {version}; the launcher restarts by itself when it\'s done.'**
+  String updateUnsupportedDownloadingDesc(String version);
+
+  /// No description provided for @updateDownloadingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {version}; the launcher restarts by itself when it\'s done.'**
+  String updateDownloadingDesc(String version);
+
+  /// No description provided for @launcherUpdateFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The launcher couldn\'t be updated'**
+  String get launcherUpdateFailedTitle;
+
+  /// No description provided for @launcherUpdateFailedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get launcherUpdateFailedDesc;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to keep playing'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This launcher version is no longer supported. Download {version} to keep playing.'**
+  String updateRequiredDesc(String version);
+
+  /// No description provided for @updateStepClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close BC Launcher.'**
+  String get updateStepClose;
+
+  /// No description provided for @updateStepReplaceMac.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the downloaded .dmg and drag BC Launcher to Applications, replacing the old one.'**
+  String get updateStepReplaceMac;
+
+  /// No description provided for @updateStepReplaceLinux.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace your AppImage with the downloaded one and make it executable.'**
+  String get updateStepReplaceLinux;
+
+  /// No description provided for @updateStepOpenMac.
+  ///
+  /// In en, this message translates to:
+  /// **'Open it again. If macOS blocks it: System Settings › Privacy & Security › Open Anyway. Your instances, worlds and account are still there.'**
+  String get updateStepOpenMac;
+
+  /// No description provided for @updateStepOpenLinux.
+  ///
+  /// In en, this message translates to:
+  /// **'Open it again. Your instances, worlds and account are still there.'**
+  String get updateStepOpenLinux;
+
+  /// No description provided for @updateLauncher.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the launcher'**
+  String get updateLauncher;
 }
 
 class _AppLocalizationsDelegate

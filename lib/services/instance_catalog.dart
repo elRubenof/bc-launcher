@@ -8,7 +8,15 @@ import 'package:bc_launcher/services/organization_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-enum OrganizationStatus { loading, ready, noAccess, incompatible, offline }
+/// `outdated`: it needs a newer launcher (its minLauncherVersion).
+enum OrganizationStatus {
+  loading,
+  ready,
+  noAccess,
+  incompatible,
+  outdated,
+  offline,
+}
 
 class OrganizationView {
   final OrganizationStatus status;
@@ -18,7 +26,8 @@ class OrganizationView {
 
   bool get greyedOut =>
       status == OrganizationStatus.noAccess ||
-      status == OrganizationStatus.incompatible;
+      status == OrganizationStatus.incompatible ||
+      status == OrganizationStatus.outdated;
 }
 
 /// The instances of every added organization and whether each one can be
@@ -79,7 +88,7 @@ class InstanceCatalog {
     final previous = viewOf(organization.key).instances;
     try {
       if (organization.needsNewerLauncher(await launcherVersion())) {
-        return const OrganizationView(OrganizationStatus.incompatible);
+        return const OrganizationView(OrganizationStatus.outdated);
       }
 
       final instances = await clientFor(organization).instances();

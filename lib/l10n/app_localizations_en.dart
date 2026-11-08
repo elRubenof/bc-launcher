@@ -222,8 +222,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get launcherOutdatedTitle => 'Update BC Launcher';
 
   @override
-  String launcherOutdatedDesc(String name, String required, String current) {
-    return '$name needs launcher version $required or later. You have $current.';
+  String launcherOutdatedDesc(String name, String required) {
+    return '$name needs launcher version $required or later.';
   }
 
   @override
@@ -519,4 +519,93 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get loginExpiredDesc =>
       'Your Microsoft session expired or was closed somewhere else. Sign in again in the browser.';
+
+  @override
+  String updateReadyTitle(String version) {
+    return 'BC Launcher $version is ready';
+  }
+
+  @override
+  String get updateReadyDesc => 'Restart to install it.';
+
+  @override
+  String get updateCloseGameDesc => 'Close the game to restart';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'A new version is out: BC Launcher $version';
+  }
+
+  @override
+  String get updateAvailableDesc => 'Download it and replace the one you have.';
+
+  @override
+  String get whatsNew => 'What\'s new';
+
+  @override
+  String get restart => 'Restart';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get hideNotice => 'Hide';
+
+  @override
+  String updatingPercent(String percent) {
+    return 'Updating $percent%';
+  }
+
+  @override
+  String get updating => 'Updating…';
+
+  @override
+  String get newVersion => 'the new version';
+
+  @override
+  String updateUnsupportedDownloadingDesc(String version) {
+    return 'This launcher version is no longer supported. Downloading $version; the launcher restarts by itself when it\'s done.';
+  }
+
+  @override
+  String updateDownloadingDesc(String version) {
+    return 'Downloading $version; the launcher restarts by itself when it\'s done.';
+  }
+
+  @override
+  String get launcherUpdateFailedTitle => 'The launcher couldn\'t be updated';
+
+  @override
+  String get launcherUpdateFailedDesc =>
+      'Check your internet connection and try again.';
+
+  @override
+  String get updateRequiredTitle => 'Update to keep playing';
+
+  @override
+  String updateRequiredDesc(String version) {
+    return 'This launcher version is no longer supported. Download $version to keep playing.';
+  }
+
+  @override
+  String get updateStepClose => 'Close BC Launcher.';
+
+  @override
+  String get updateStepReplaceMac =>
+      'Open the downloaded .dmg and drag BC Launcher to Applications, replacing the old one.';
+
+  @override
+  String get updateStepReplaceLinux =>
+      'Replace your AppImage with the downloaded one and make it executable.';
+
+  @override
+  String get updateStepOpenMac =>
+      'Open it again. If macOS blocks it: System Settings › Privacy & Security › Open Anyway. Your instances, worlds and account are still there.';
+
+  @override
+  String get updateStepOpenLinux =>
+      'Open it again. Your instances, worlds and account are still there.';
+
+  @override
+  String get updateLauncher => 'Update the launcher';
 }

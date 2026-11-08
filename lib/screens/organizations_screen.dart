@@ -5,6 +5,7 @@ import 'package:bc_launcher/screens/main_screen.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
+import 'package:bc_launcher/services/update_service.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
@@ -17,6 +18,7 @@ import 'package:bc_launcher/widgets/custom_button.dart';
 import 'package:bc_launcher/widgets/organization_logo.dart';
 import 'package:bc_launcher/widgets/organization_rail.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
+import 'package:bc_launcher/widgets/update_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -221,17 +223,33 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
           if (selected == null) return const SizedBox.shrink();
 
           final showRail = organizations.length > 1;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          return Stack(
             children: [
-              if (showRail) OrganizationRail(onRemove: _confirmRemove),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _header(selected, showLogo: !showRail),
-                    Expanded(child: _body(selected)),
-                  ],
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (showRail) OrganizationRail(onRemove: _confirmRemove),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _header(selected, showLogo: !showRail),
+                        Expanded(child: _body(selected)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                left: 20,
+                bottom: 20,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: UpdateNotice(
+                    background: Constants.backgroundColor.withValues(
+                      alpha: 0.92,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -353,6 +371,26 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
             InstanceActions.openFolderLabel(l),
             filled: false,
             onPressed: () => _openFolder(organization),
+          ),
+          CustomButton(
+            l.removeOrganization,
+            filled: false,
+            color: Constants.dangerTextColor,
+            onPressed: () => _confirmRemove(organization),
+          ),
+        ],
+      ),
+      OrganizationStatus.outdated => _message(
+        icon: Icons.warning_amber_rounded,
+        title: l.launcherOutdatedTitle,
+        description: l.launcherOutdatedDesc(
+          name,
+          organization.minLauncherVersion ?? "",
+        ),
+        buttons: [
+          CustomButton(
+            l.updateLauncher,
+            onPressed: UpdateService.updateLauncher,
           ),
           CustomButton(
             l.removeOrganization,

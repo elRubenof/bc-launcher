@@ -104,7 +104,7 @@ void main() {
       () => json(200, fixture('instances')),
     );
 
-    expect(view.status, OrganizationStatus.incompatible);
+    expect(view.status, OrganizationStatus.outdated);
     expect(view.greyedOut, isTrue);
   });
 
@@ -163,10 +163,7 @@ void main() {
     await load(a, () => json(200, fixture('instances')));
 
     InstanceCatalog.markOffline(a.key);
-    expect(
-      InstanceCatalog.viewOf(a.key).status,
-      OrganizationStatus.incompatible,
-    );
+    expect(InstanceCatalog.viewOf(a.key).status, OrganizationStatus.outdated);
   });
 
   test('a list refreshing stays on screen', () async {

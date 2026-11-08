@@ -26,12 +26,17 @@ class LauncherUpdate {
   /// A required update failed to download or install; "Retry" tries again.
   final bool failed;
 
+  /// Required because this version is no longer supported (not because an
+  /// organization asked for a newer one).
+  final bool unsupported;
+
   const LauncherUpdate(
     this.status, {
     this.version,
     this.downloadUrl,
     this.progress,
     this.failed = false,
+    this.unsupported = false,
   });
 
   static const none = LauncherUpdate(UpdateStatus.none);
@@ -106,6 +111,7 @@ class UpdateService {
   /// The update must be installed now, from [UpdateBackend]'s policy or
   /// because [updateNow] was asked.
   bool _required = false;
+  bool _unsupported = false;
   bool _restartWhenFree = false;
   String? _version;
   Timer? _timer;
@@ -190,6 +196,14 @@ class UpdateService {
     }
   }
 
+  /// [updateNow] on the running launcher's service, or the releases page if
+  /// it couldn't start.
+  static Future<void> updateLauncher() async {
+    final service = current;
+    if (service != null) return service.updateNow();
+    await _launch(Uri.parse(releasesUrl));
+  }
+
   /// "Retry" on a required update that failed: checks again and downloads.
   Future<void> retry() async {
     _publishRequired();
@@ -225,7 +239,7 @@ class UpdateService {
         break;
       case UpdateAvailable(:final descriptor, :final mandatory):
         _version = descriptor.version;
-        if (mandatory) _required = true;
+        if (mandatory) _required = _unsupported = true;
         if (installs) {
           if (_required) _publishRequired();
           unawaited(_download());
@@ -238,11 +252,11 @@ class UpdateService {
         :final mandatory,
       ):
         _version = descriptor.version;
-        if (mandatory) _required = true;
+        if (mandatory) _required = _unsupported = true;
         _publishDownload(freshInstall.downloadUrl);
       case UpdateBlockedBySupportPolicy(:final descriptor, :final freshInstall):
         _version = descriptor.version;
-        _required = true;
+        _required = _unsupported = true;
         if (installs && freshInstall == null) {
           _publishRequired();
           unawaited(_download());
@@ -301,6 +315,7 @@ class UpdateService {
       _required ? UpdateStatus.required : UpdateStatus.toDownload,
       version: _version,
       downloadUrl: url,
+      unsupported: _unsupported,
     );
   }
 
@@ -310,6 +325,7 @@ class UpdateService {
       version: _version,
       progress: progress,
       failed: failed,
+      unsupported: _unsupported,
     );
   }
 

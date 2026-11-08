@@ -6,12 +6,12 @@ import 'package:bc_launcher/services/deep_links.dart';
 import 'package:bc_launcher/services/instance_catalog.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/organization_store.dart';
+import 'package:bc_launcher/services/update_service.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 enum _Step { connecting, confirm, signingIn, failed }
 
@@ -61,7 +61,6 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
   _Step _step = _Step.connecting;
   _Failure? _failure;
   Organization? _organization;
-  String? _currentVersion;
 
   @override
   void initState() {
@@ -77,7 +76,6 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
       if (!mounted) return;
 
       _organization = organization;
-      _currentVersion = current;
       if (organization.needsNewerLauncher(current)) {
         _fail(_Failure.outdated);
       } else {
@@ -105,7 +103,7 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
       await OrganizationStore.save(organization);
       await OrganizationStore.select(organization.key);
       InstanceCatalog.refresh(organization);
-      
+
       if (mounted) Navigator.pop(context);
     } on ApiError catch (e) {
       _fail(switch (e.type) {
@@ -203,16 +201,15 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
         ),
         _Failure.outdated => (
           l.launcherOutdatedTitle,
-          l.launcherOutdatedDesc(
-            name,
-            _organization?.minLauncherVersion ?? "",
-            _currentVersion ?? "",
-          ),
+          l.launcherOutdatedDesc(name, _organization?.minLauncherVersion ?? ""),
           [
             _button(
-              l.downloadNewVersion,
+              l.updateLauncher,
               filled: true,
-              onPressed: () => launchUrl(Uri.parse(Constants.releasesUrl)),
+              onPressed: () {
+                Navigator.pop(context);
+                UpdateService.updateLauncher();
+              },
             ),
             close,
           ],

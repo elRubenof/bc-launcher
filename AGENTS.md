@@ -28,8 +28,9 @@ flutter build windows --dart-define-from-file=.env      # release build (likewis
 
 ```
 lib/
-  main.dart                     entry: link listener → load settings and organizations → client ID check → auth
-                                → NoOrganizationsScreen (none added) or OrganizationsScreen
+  main.dart                     entry: link listener → start UpdateService → load settings and organizations →
+                                client ID check → auth → NoOrganizationsScreen (none added) or OrganizationsScreen;
+                                a required launcher update covers every screen (UpdateRequiredScreen)
   l10n/                         ARB files (app_en.arb template, app_es.arb) + GENERATED app_localizations*.dart
   models/                       API v1 models with fromJson/toJson: organization (from discovery), instance,
                                 instance_colors, web_tab, manifest (+ its files), news; instance_settings (an
@@ -38,7 +39,8 @@ lib/
   screens/
     no_organizations_screen.dart  shown until an organization is added (only through its link)
     organizations_screen.dart   column of organizations (2+) and the selected one's instances, or why they
-                                can't be shown (no access, incompatible, offline); remove an organization (from
+                                can't be shown (no access, incompatible, needs a newer launcher: "Update the
+                                launcher", offline); remove an organization (from
                                 those screens or a right click on its logo in the column);
                                 entering an instance (by click, or the last one used on start without showing
                                 the list, unless turned off in Settings or its organization doesn't answer) opens
@@ -50,6 +52,9 @@ lib/
                                 back from one forgets it as the last instance, so the next start shows the list
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server;
                                 "Sign in again" when Microsoft rejected the saved session
+    update_required_screen.dart a required launcher update: on Windows "Updating x %" on the LoadingScreen (it
+                                restarts by itself), on macOS and Linux "Download" and the steps to replace it;
+                                Retry when it fails
     account_error_screen.dart   why the account can't play (child without permission, no Xbox profile, country,
                                 age verification, no Minecraft), fixed outside the launcher: Retry and Use
                                 another account
@@ -57,8 +62,8 @@ lib/
                                 bottom one only on home); Play repairs,
                                 updates and launches it; puts the instance's InstanceTheme on everything under it
                                 and its background under its background color at 85 % (the launcher's if it has
-                                none or it can't be loaded); on home, the offline notice while the organization
-                                doesn't answer
+                                none or it can't be loaded); on home, the update notice and under it the offline
+                                notice while the organization doesn't answer
     tabs/                       home (the instance's news, NewsCarousel), web tab (webview_all, for openIn: launcher; the
                                 browser ones open from the top bar, marked ↗), settings
   services/
@@ -86,7 +91,8 @@ lib/
                                 blocked; state.json, servers.dat
                                 entry (created once, address moved)
     server_list.dart            the game's servers.dat (NBT): create it, move one entry's address
-    instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, offline);
+    instance_catalog.dart       each organization's instances and status (ready, no access, incompatible, outdated
+                                (older than its minLauncherVersion), offline);
                                 markOffline when it stops answering before playing
     token_store.dart            each organization's token in flutter_secure_storage (one entry for all)
     organization_auth.dart      sign-in to an organization: challenge → Mojang join → verify; clientFor()
@@ -153,7 +159,9 @@ lib/
                                 full-screen error message, add-organization dialog opened by links,
                                 organization logo and rail, instance initials (card and top bar without an icon),
                                 the launcher's dropdown menus (LauncherMenu), instance
-                                card with its menu, the offline notice (list and instance screen), instance actions (open
+                                card with its menu, the offline notice (list and instance screen), the update notice (ready
+                                to restart on Windows, to download on macOS and Linux; bottom left, above the
+                                offline notice; its X hides it until the next start), instance actions (open
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
 assets/img/                     logo.svg, logo.png, background.png
