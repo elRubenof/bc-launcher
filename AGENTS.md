@@ -20,6 +20,7 @@ flutter analyze                 # must pass with no issues before committing
 flutter test                    # unit tests in test/ (see Target architecture → Tests)
 flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
+iscc /DAppVersion=x.y.z installers\windows\bc-launcher.iss  # Windows installer (Inno Setup 6), after the build
 ```
 
 **CI:** `.github/workflows/ci.yml` runs on every push and pull request: `flutter analyze` and a check that the generated localizations are committed (Linux), and `flutter test` on Linux, Windows and macOS. It pins Flutter 3.47.7: change it there when the project moves to a newer Flutter.
@@ -170,6 +171,10 @@ assets/img/                     logo.svg, logo.png, background.png
 assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
                                 release
 .github/workflows/ci.yml        analysis and tests on every push (see Commands → CI)
+installers/windows/             bc-launcher.iss: per-user Inno Setup installer (no admin, %LOCALAPPDATA%\Programs),
+                                desktop shortcut (checked), bclauncher:// in HKCU; uninstalling removes the program
+                                folder and asks whether to delete the data too (No by default); its AppId never
+                                changes; output in dist/installers/
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo
