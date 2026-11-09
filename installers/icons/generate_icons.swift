@@ -16,6 +16,7 @@
 // Writes:
 //   windows/runner/resources/app_icon.ico            16 to 256 px
 //   macos/Runner/Assets.xcassets/AppIcon.appiconset   16 to 1024 px
+//   installers/macos/AppIcon.icns                     16 to 1024 px
 //   installers/linux/app_icon.png                     512 px
 
 import AppKit
@@ -103,5 +104,21 @@ for size in [16, 32, 64, 128, 256, 512, 1024] {
     render(macIcon, size, margin: macMargin),
     to: "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_\(size).png")
 }
+
+let tempIconset = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("AppIcon.iconset")
+try? FileManager.default.createDirectory(at: tempIconset, withIntermediateDirectories: true)
+for size in [16, 32, 128, 256, 512] {
+  let p1x = render(macIcon, size, margin: macMargin)
+  let p2x = render(macIcon, size * 2, margin: macMargin)
+  try? p1x.write(to: tempIconset.appendingPathComponent("icon_\(size)x\(size).png"))
+  try? p2x.write(to: tempIconset.appendingPathComponent("icon_\(size)x\(size)@2x.png"))
+}
+let iconutil = Process()
+iconutil.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
+iconutil.arguments = ["-c", "icns", tempIconset.path, "-o", "installers/macos/AppIcon.icns"]
+try? iconutil.run()
+iconutil.waitUntilExit()
+try? FileManager.default.removeItem(at: tempIconset)
+print("wrote installers/macos/AppIcon.icns")
 
 write(render(icon, 512, margin: pixelMargin), to: "installers/linux/app_icon.png")

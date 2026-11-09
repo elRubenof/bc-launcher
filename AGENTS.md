@@ -21,6 +21,7 @@ flutter test                    # unit tests in test/ (see Target architecture â
 flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 iscc /DAppVersion=x.y.z installers\windows\bc-launcher.iss  # Windows installer (Inno Setup 6), after the build
+installers/macos/build_dmg.sh                          # macOS installer (.dmg), after the macOS build
 swift installers/icons/generate_icons.swift            # app icons of every platform (macOS only)
 ```
 
@@ -185,6 +186,8 @@ installers/windows/             bc-launcher.iss: per-user Inno Setup installer (
                                 desktop shortcut (checked), bclauncher:// in HKCU; uninstalling removes the program
                                 folder and asks whether to delete the data too (No by default); its AppId never
                                 changes; output in dist/installers/
+installers/macos/               build_dmg.sh: creates the drag-and-drop .dmg installer (with Applications symlink
+                                and ad-hoc codesign); output in dist/installers/
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo
