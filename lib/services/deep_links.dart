@@ -79,15 +79,47 @@ class DeepLinks {
     final home = Platform.environment['HOME'];
     if (home == null) return;
 
+    // Use $APPIMAGE if running as an AppImage, otherwise the resolved executable.
+    final executable =
+        Platform.environment['APPIMAGE'] ?? Platform.resolvedExecutable;
+
+    // Install the app icon into ~/.local/share/icons if bundled with the app.
+    try {
+      final appDir = File(Platform.resolvedExecutable).parent.path;
+      final bundledIcon = File(join(appDir, "com.bcr.bc_launcher.png"));
+      if (await bundledIcon.exists()) {
+        final targetIcon = File(join(
+          home,
+          ".local",
+          "share",
+          "icons",
+          "hicolor",
+          "512x512",
+          "apps",
+          "com.bcr.bc_launcher.png",
+        ));
+        if (!await targetIcon.exists()) {
+          await targetIcon.parent.create(recursive: true);
+          await bundledIcon.copy(targetIcon.path);
+        }
+      }
+    } catch (_) {
+      // Best-effort icon installation.
+    }
+
     final file = File(join(home, ".local", "share", "applications", fileName));
     await file.parent.create(recursive: true);
     await file.writeAsString(
       "[Desktop Entry]\n"
       "Type=Application\n"
       "Name=BC Launcher\n"
-      "Exec=\"${Platform.resolvedExecutable}\" %u\n"
-      "MimeType=x-scheme-handler/$scheme;\n"
-      "NoDisplay=true\n",
+      "Comment=A customizable Minecraft launcher\n"
+      "Exec=\"$executable\" %u\n"
+      "Icon=com.bcr.bc_launcher\n"
+      "Terminal=false\n"
+      "Categories=Game;\n"
+      "StartupWMClass=com.bcr.bc_launcher\n"
+      "MimeType=x-scheme-handler/$scheme;\n",
     );
 
     await Process.run("xdg-mime", [

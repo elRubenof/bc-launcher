@@ -22,6 +22,7 @@ flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 iscc /DAppVersion=x.y.z installers\windows\bc-launcher.iss  # Windows installer (Inno Setup 6), after the build
 installers/macos/build_dmg.sh                          # macOS installer (.dmg), after the macOS build
+installers/linux/build_appimage.sh                     # Linux installer (.AppImage), after the Linux build
 swift installers/icons/generate_icons.swift            # app icons of every platform (macOS only)
 ```
 
@@ -188,6 +189,8 @@ installers/windows/             bc-launcher.iss: per-user Inno Setup installer (
                                 changes; output in dist/installers/
 installers/macos/               build_dmg.sh: creates the drag-and-drop .dmg installer (with Applications symlink
                                 and ad-hoc codesign); output in dist/installers/
+installers/linux/               build_appimage.sh: packages the Linux bundle into an AppImage with desktop
+                                integration, icon and bclauncher:// scheme; output in dist/installers/
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo
