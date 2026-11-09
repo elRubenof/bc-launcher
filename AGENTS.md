@@ -21,6 +21,7 @@ flutter test                    # unit tests in test/ (see Target architecture �
 flutter run -d windows --dart-define-from-file=.env     # or -d macos / -d linux
 flutter build windows --dart-define-from-file=.env      # release build (likewise macos / linux)
 iscc /DAppVersion=x.y.z installers\windows\bc-launcher.iss  # Windows installer (Inno Setup 6), after the build
+swift installers/icons/generate_icons.swift            # app icons of every platform (macOS only)
 ```
 
 **CI:** `.github/workflows/ci.yml` runs on every push and pull request: `flutter analyze` and a check that the generated localizations are committed (Linux), and `flutter test` on Linux, Windows and macOS. It pins Flutter 3.47.7: change it there when the project moves to a newer Flutter.
@@ -167,10 +168,19 @@ lib/
                                 offline notice; its X hides it until the next start), instance actions (open
                                 its folder, delete it from this computer), CustomButton, LoadingScreen with its own
                                 or the global progress)
-assets/img/                     logo.svg, logo.png, background.png
+assets/img/                     icon.svg (the launcher's logo, in color, corners of 2 cells (14.3 %): login, loading
+                                and other full-screen messages, and the Windows and Linux icons), icon_macos.svg (the
+                                same face with macOS's corners, 22.5 %, only for its icon), logo.svg and logo.png (the
+                                company's logo, tinted: the footer beside "not affiliated with Mojang"), background.png
 assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
                                 release
 .github/workflows/ci.yml        analysis and tests on every push (see Commands → CI)
+installers/icons/               generate_icons.swift: the app icons, drawn from the vector at each size; never edit
+                                them by hand, change the SVG or the script and run it again. The face is pixel art
+                                on a 14 × 14 grid. Windows (windows/runner/resources/app_icon.ico, 16 to 256 px) and
+                                Linux (installers/linux/app_icon.png) from assets/img/icon.svg, the square in 14 of
+                                16 parts so each cell is whole pixels; macOS (…/AppIcon.appiconset) from
+                                assets/img/icon_macos.svg, in 824 of 1024
 installers/windows/             bc-launcher.iss: per-user Inno Setup installer (no admin, %LOCALAPPDATA%\Programs),
                                 desktop shortcut (checked), bclauncher:// in HKCU; uninstalling removes the program
                                 folder and asks whether to delete the data too (No by default); its AppId never
