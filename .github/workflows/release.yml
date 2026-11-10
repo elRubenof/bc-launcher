@@ -1,0 +1,197 @@
+name: Release
+
+# Pushing a vX.Y.Z tag (on a commit whose pubspec.yaml has version X.Y.Z) builds
+# the installers for Windows, macOS and Linux, signs the update feed and creates
+# a draft GitHub Release with auto-generated release notes.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: check
+        name: Check version matches pubspec.yaml
+        run: |
+          ver=$(grep '^version:' pubspec.yaml | head -n 1 | awk '{print $2}' | cut -d'+' -f1 | tr -d '[:space:]')
+          if [ "v$ver" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match pubspec.yaml version $ver"
+            exit 1
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Create .env
+        shell: bash
+        run: |
+          echo "MS_CLIENT_ID=${{ secrets.MS_CLIENT_ID }}" > .env
+          echo "MS_REDIRECT_URL=http://127.0.0.1" >> .env
+
+      - run: flutter pub get
+
+      - name: Build Windows executable
+        run: flutter build windows --release --dart-define-from-file=.env
+
+      - name: Build Inno Setup installer
+        shell: cmd
+        run: |
+          if not exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
+            choco install innosetup --no-progress
+          )
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ needs.version.outputs.version }} installers\windows\bc-launcher.iss
+
+      - name: Create update zip for desktop_updater
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "dist\installers\BC-Launcher-${{ needs.version.outputs.version }}-windows.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            dist/installers/BC Launcher - Installer.exe
+            dist/installers/BC-Launcher-*-windows.zip
+
+  build-macos:
+    needs: version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Create .env
+        run: |
+          echo "MS_CLIENT_ID=${{ secrets.MS_CLIENT_ID }}" > .env
+          echo "MS_REDIRECT_URL=http://127.0.0.1" >> .env
+
+      - run: flutter pub get
+
+      - name: Build macOS app
+        run: flutter build macos --release --dart-define-from-file=.env
+
+      - name: Build DMG installer
+        run: ./installers/macos/build_dmg.sh ${{ needs.version.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/installers/BC Launcher.dmg
+
+  build-linux:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libgtk-3-dev libx11-dev libxi-dev
+
+      - name: Create .env
+        run: |
+          echo "MS_CLIENT_ID=${{ secrets.MS_CLIENT_ID }}" > .env
+          echo "MS_REDIRECT_URL=http://127.0.0.1" >> .env
+
+      - run: flutter pub get
+
+      - name: Build Linux bundle
+        run: flutter build linux --release --dart-define-from-file=.env
+
+      - name: Build AppImage
+        run: |
+          export NO_FUSE=1
+          ./installers/linux/build_appimage.sh ${{ needs.version.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/installers/BC Launcher.AppImage
+
+  publish:
+    needs: [version, build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Download all installer artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/installers
+          merge-multiple: true
+
+      - name: Generate and sign release feed
+        env:
+          DESKTOP_UPDATER_KEY: ${{ secrets.DESKTOP_UPDATER_KEY }}
+          DESKTOP_UPDATER_PASSPHRASE: ${{ secrets.DESKTOP_UPDATER_PASSPHRASE }}
+        run: |
+          ver="${{ needs.version.outputs.version }}"
+          zip="dist/installers/BC-Launcher-${ver}-windows.zip"
+          dart run installers/release_feed.dart "$ver" "$zip" dist/installers
+
+          if [ -n "$DESKTOP_UPDATER_KEY" ] && [ -n "$DESKTOP_UPDATER_PASSPHRASE" ]; then
+            echo "$DESKTOP_UPDATER_KEY" > /tmp/key.dukey
+            dart run desktop_updater:release keys import --input /tmp/key.dukey --passphrase-env DESKTOP_UPDATER_PASSPHRASE
+            dart run desktop_updater:release sign --release dist/installers/release.json --app-archive dist/installers/app-archive.json
+            rm -f /tmp/key.dukey
+          else
+            echo "::warning::DESKTOP_UPDATER_KEY or PASSPHRASE secret not set; skipping release feed signature."
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/installers/BC Launcher - Installer.exe" \
+            "dist/installers/BC Launcher.dmg" \
+            "dist/installers/BC Launcher.AppImage" \
+            "dist/installers/BC-Launcher-${{ needs.version.outputs.version }}-windows.zip" \
+            dist/installers/release.json \
+            dist/installers/app-archive.json \
+            compat.json \
+            --title "BC Launcher $GITHUB_REF_NAME" \
+            --generate-notes \
+            --draft \
+            --verify-tag

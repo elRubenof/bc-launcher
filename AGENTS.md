@@ -176,7 +176,9 @@ assets/img/                     icon.svg (the launcher's logo, in color, corners
                                 company's logo, tinted: the footer beside "not affiliated with Mojang"), background.png
 assets/certs/cacert.pem         Mozilla's root certificates (https://curl.se/ca/cacert.pem), updated before each
                                 release
+compat.json                     published API compatibility policy (supported and deprecated API versions)
 .github/workflows/ci.yml        analysis and tests on every push (see Commands → CI)
+.github/workflows/release.yml   automated multiplatform build, feed signing and draft release on vX.Y.Z tags
 installers/icons/               generate_icons.swift: the app icons, drawn from the vector at each size; never edit
                                 them by hand, change the SVG or the script and run it again. The face is pixel art
                                 on a 14 × 14 grid. Windows (windows/runner/resources/app_icon.ico, 16 to 256 px) and
@@ -191,6 +193,7 @@ installers/macos/               build_dmg.sh: creates the drag-and-drop .dmg ins
                                 and ad-hoc codesign); output in dist/installers/
 installers/linux/               build_appimage.sh: packages the Linux bundle into an AppImage with desktop
                                 integration, icon and bclauncher:// scheme; output in dist/installers/
+installers/release_feed.dart    generates release.json and app-archive.json for desktop_updater before signing
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo
