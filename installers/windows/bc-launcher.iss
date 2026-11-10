@@ -1,4 +1,4 @@
-﻿; BC Launcher's Windows installer (Inno Setup 6).
+; BC Launcher's Windows installer (Inno Setup 6).
 ;
 ; Per user, without admin rights, so desktop_updater can replace the files
 ; on its own later. Build `flutter build windows --release` first, then:
@@ -39,7 +39,7 @@ SetupIconFile={#Root}\windows\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 OutputDir={#Root}\dist\installers
-OutputBaseFilename=BC-Launcher-{#AppVersion}-windows-setup
+OutputBaseFilename=BC Launcher - Installer
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
