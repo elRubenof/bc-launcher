@@ -57,6 +57,7 @@ mkdir -p "$OUTPUT_DIR"
 rm -f "$OUTPUT_FILE"
 
 APPDIR="$(mktemp -d "/tmp/bc-launcher-appdir.XXXXXX")"
+chmod 0755 "$APPDIR"
 TEMP_TOOL=""
 
 cleanup() {
@@ -89,6 +90,7 @@ export LD_LIBRARY_PATH="${HERE}/lib:${LD_LIBRARY_PATH:-}"
 exec "${HERE}/bc_launcher" "$@"
 EOF
 chmod +x "$APPDIR/AppRun"
+chmod -R a+rX "$APPDIR"
 
 # Locate or download appimagetool
 APPIMAGETOOL="${APPIMAGETOOL:-}"
