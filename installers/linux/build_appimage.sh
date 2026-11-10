@@ -13,7 +13,7 @@ set -euo pipefail
 #   installers/linux/build_appimage.sh [version]
 #
 # Output:
-#   dist/installers/BC Launcher.AppImage
+#   dist/installers/BC-Launcher.AppImage
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -50,7 +50,7 @@ if [ ! -f "$DESKTOP_FILE" ] || [ ! -f "$ICON_FILE" ]; then
 fi
 
 OUTPUT_DIR="dist/installers"
-OUTPUT_NAME="${OUTPUT_NAME:-BC Launcher.AppImage}"
+OUTPUT_NAME="${OUTPUT_NAME:-BC-Launcher.AppImage}"
 OUTPUT_FILE="${OUTPUT_DIR}/${OUTPUT_NAME}"
 
 mkdir -p "$OUTPUT_DIR"

@@ -68,14 +68,14 @@ jobs:
       - name: Create update zip for desktop_updater
         shell: pwsh
         run: |
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "dist\installers\BC-Launcher-${{ needs.version.outputs.version }}-windows.zip"
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "dist\installers\BC-Launcher-windows.zip"
 
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: |
-            dist/installers/BC Launcher - Installer.exe
-            dist/installers/BC-Launcher-*-windows.zip
+            dist/installers/BC-Launcher-Installer.exe
+            dist/installers/BC-Launcher-windows.zip
 
   build-macos:
     needs: version
@@ -105,7 +105,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: dist/installers/BC Launcher.dmg
+          path: dist/installers/BC-Launcher.dmg
 
   build-linux:
     needs: version
@@ -142,7 +142,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: dist/installers/BC Launcher.AppImage
+          path: dist/installers/BC-Launcher.AppImage
 
   publish:
     needs: [version, build-windows, build-macos, build-linux]
@@ -175,7 +175,7 @@ jobs:
           DESKTOP_UPDATER_PASSPHRASE: ${{ secrets.DESKTOP_UPDATER_PASSPHRASE }}
         run: |
           ver="${{ needs.version.outputs.version }}"
-          zip="dist/installers/BC-Launcher-${ver}-windows.zip"
+          zip="dist/installers/BC-Launcher-windows.zip"
           dart run installers/release_feed.dart "$ver" "$zip" dist/installers
 
           if [ -n "$DESKTOP_UPDATER_KEY" ] && [ -n "$DESKTOP_UPDATER_PASSPHRASE" ]; then
@@ -192,10 +192,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            "dist/installers/BC Launcher - Installer.exe" \
-            "dist/installers/BC Launcher.dmg" \
-            "dist/installers/BC Launcher.AppImage" \
-            "dist/installers/BC-Launcher-${{ needs.version.outputs.version }}-windows.zip" \
+            dist/installers/BC-Launcher-Installer.exe \
+            dist/installers/BC-Launcher.dmg \
+            dist/installers/BC-Launcher.AppImage \
+            dist/installers/BC-Launcher-windows.zip \
             dist/installers/release.json \
             dist/installers/app-archive.json \
             compat.json \

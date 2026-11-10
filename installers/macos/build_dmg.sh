@@ -17,7 +17,7 @@ set -euo pipefail
 #   installers/macos/build_dmg.sh [version]
 #
 # Output:
-#   dist/installers/BC Launcher.dmg
+#   dist/installers/BC-Launcher.dmg
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -51,7 +51,7 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 OUTPUT_DIR="dist/installers"
-OUTPUT_NAME="${OUTPUT_NAME:-BC Launcher.dmg}"
+OUTPUT_NAME="${OUTPUT_NAME:-BC-Launcher.dmg}"
 OUTPUT_DMG="${OUTPUT_DIR}/${OUTPUT_NAME}"
 
 mkdir -p "$OUTPUT_DIR"

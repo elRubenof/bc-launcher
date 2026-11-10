@@ -46,7 +46,7 @@ void main(List<String> args) {
     'channel': 'stable',
     'artifact': {
       'kind': 'zip',
-      'url': '$tagUrl/BC-Launcher-$version-windows.zip',
+      'url': '$tagUrl/BC-Launcher-windows.zip',
       'sha256': zipSha256,
       'length': zipLength,
     },
@@ -84,7 +84,7 @@ void main(List<String> args) {
         'mandatory': false,
         'release': '$tagUrl/release.json',
         'freshInstall': {
-          'downloadUrl': '$tagUrl/BC%20Launcher.dmg',
+          'downloadUrl': '$tagUrl/BC-Launcher.dmg',
         },
       },
       {
@@ -95,7 +95,7 @@ void main(List<String> args) {
         'mandatory': false,
         'release': '$tagUrl/release.json',
         'freshInstall': {
-          'downloadUrl': '$tagUrl/BC%20Launcher.AppImage',
+          'downloadUrl': '$tagUrl/BC-Launcher.AppImage',
         },
       },
     ],
