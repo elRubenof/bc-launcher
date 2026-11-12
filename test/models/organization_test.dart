@@ -88,6 +88,26 @@ void main() {
     expect(at('https://example.com').key, at('http://example.com').key);
   });
 
+  test(
+    'key keeps organizations on the same host under different paths apart',
+    () {
+      expect(Organization.keyOf('https://example.com/a'), 'example.com_a');
+      expect(Organization.keyOf('https://example.com/a/b'), 'example.com_a_b');
+      expect(
+        Organization.keyOf('https://example.com/a'),
+        isNot(Organization.keyOf('https://example.com/b')),
+      );
+    },
+  );
+
+  test('key ignores default ports, the scheme and the host case', () {
+    expect(Organization.keyOf('https://example.com:443'), 'example.com');
+    expect(Organization.keyOf('http://example.com:80'), 'example.com');
+    expect(Organization.keyOf('https://Example.com'), 'example.com');
+    expect(Organization.keyOf('example.com'), 'example.com');
+    expect(Organization.keyOf('https://example.com:8443'), 'example.com_8443');
+  });
+
   test('hasCapability', () {
     final json = fixture('discovery')..['capabilities'] = ['server-status'];
     final organization = Organization.fromDiscovery(

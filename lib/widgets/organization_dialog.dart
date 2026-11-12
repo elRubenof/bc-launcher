@@ -68,10 +68,22 @@ class _OrganizationDialogState extends State<OrganizationDialog> {
     _discover();
   }
 
+  /// The link's server, except that an organization already saved over
+  /// https stays on https: a link can't make the launcher talk to it
+  /// unencrypted.
+  String get _server {
+    final saved = OrganizationStore.byKey(Organization.keyOf(widget.server));
+    final downgrade =
+        saved != null &&
+        Uri.parse(saved.url).scheme == "https" &&
+        Uri.parse(widget.server).scheme == "http";
+    return downgrade ? saved.url : widget.server;
+  }
+
   Future<void> _discover() async {
     setState(() => _step = _Step.connecting);
     try {
-      final organization = await ApiClient.discovery(widget.server);
+      final organization = await ApiClient.discovery(_server);
       final current = (await PackageInfo.fromPlatform()).version;
       if (!mounted) return;
 

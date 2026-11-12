@@ -85,10 +85,20 @@ class Organization {
     );
   }
 
-  /// Identifies the organization in the launcher (its token, its folder):
-  /// the host and port of [url], with `_` instead of `:` so it is a valid
-  /// folder name everywhere.
-  String get key => Uri.parse(url).authority.replaceAll(':', '_');
+  /// Identifies the organization in the launcher (its token, its folder).
+  String get key => keyOf(url);
+
+  /// The key of the organization at [url]: its host, its port unless it is
+  /// the scheme's default (`Uri` leaves those out), and its path, so two
+  /// organizations on the same host under different paths stay apart. The
+  /// scheme doesn't count: http and https are the same organization. `:` and
+  /// `/` become `_` so it is a valid folder name everywhere.
+  static String keyOf(String url) {
+    final uri = Uri.parse(url.contains("://") ? url : "https://$url");
+    final port = uri.hasPort ? "_${uri.port}" : "";
+    final path = uri.pathSegments.where((s) => s.isNotEmpty).join("_");
+    return "${uri.host}$port${path.isEmpty ? "" : "_$path"}";
+  }
 
   static String? _string(Object? value) => value is String ? value : null;
 
