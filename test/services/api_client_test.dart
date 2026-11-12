@@ -241,6 +241,19 @@ void main() {
     });
   });
 
+  group('presence', () {
+    test('posts the instance with the token', () async {
+      final server = FakeServer((_, _) => ResponseBody.fromString('', 204));
+      await client(server).presence('spartaland-3');
+
+      final request = server.requests.single;
+      expect(request.method, 'POST');
+      expect(request.uri.path, '/api/v1/presence');
+      expect(request.data, {'instanceId': 'spartaland-3'});
+      expect(request.headers['Authorization'], 'Bearer token');
+    });
+  });
+
   group('manifest', () {
     test('returns it with its ETag, and null on 304', () async {
       final server = FakeServer(

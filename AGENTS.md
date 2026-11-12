@@ -54,8 +54,10 @@ lib/
                                 newest installation first; while it doesn't answer, only the installed ones, as last
                                 served, under a notice with "Retry"
     instance_loading_screen.dart  entering an instance: "Downloading / Installing / Updating <instance>" on the
-                                LoadingScreen, and its errors (offline, no space, game files, instance gone); going
-                                back from one forgets it as the last instance, so the next start shows the list
+                                LoadingScreen, and its errors (offline, no space, game files, instance gone); once
+                                entered, tells the organization (presence: the panel's last access; a failure is
+                                only logged); going back from one forgets it as the last instance, so the next
+                                start shows the list
     login_screen.dart           Microsoft OAuth (PKCE + state) in the system browser + loopback redirect server;
                                 "Sign in again" when Microsoft rejected the saved session
     update_required_screen.dart a required launcher update: on Windows "Updating x %" on the LoadingScreen (it
@@ -74,8 +76,9 @@ lib/
                                 browser ones open from the top bar, marked ↗), settings
   services/
     api_client.dart             one organization's API v1: discovery and version negotiation, sign-in,
-                                instances, manifest, news; token, retries, 401 renewal, 426 renegotiation; ApiError
-                                with a type (offline, notMember, upgradeRequired, …) and the API's code
+                                instances, manifest, news, presence (the player entered an instance); token,
+                                retries, 401 renewal, 426 renegotiation; ApiError with a type (offline, notMember,
+                                upgradeRequired, …) and the API's code
     deep_links.dart             bclauncher://add?server= links (app_links); registers the scheme on Windows/Linux
     organization_store.dart     the added organizations (SharedPreferences), keyed by Organization.key, the
                                 selected one and each one's last used instance

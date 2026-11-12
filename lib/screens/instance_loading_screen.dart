@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:bc_launcher/models/instance.dart';
@@ -55,8 +56,9 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
     });
 
     try {
+      final client = OrganizationAuth.clientFor(organization);
       await InstanceInstaller.enter(
-        OrganizationAuth.clientFor(organization),
+        client,
         organization.key,
         instance,
         unreachable: InstanceCatalog.isUnreachable(organization.key),
@@ -79,10 +81,21 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
         },
       );
       await OrganizationStore.setLastInstance(organization.key, instance.id);
+      unawaited(_reportPresence(client));
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       log("Entering ${instance.id} failed: $e");
       if (mounted) _showError(e);
+    }
+  }
+
+  /// Tells the organization the player entered the instance; a failure
+  /// never stops them.
+  Future<void> _reportPresence(ApiClient client) async {
+    try {
+      await client.presence(widget.instance.id);
+    } catch (e) {
+      log("Presence not recorded: $e");
     }
   }
 

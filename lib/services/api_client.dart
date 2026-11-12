@@ -136,6 +136,11 @@ class ApiClient {
     (json) => _list(json['instances'], Instance.fromJson),
   );
 
+  /// Tells the organization the player entered its [instanceId], which
+  /// counts as their last access.
+  Future<void> presence(String instanceId) =>
+      _send("POST", "/presence", data: {'instanceId': instanceId});
+
   /// With the [etag] of the last manifest, `null` when nothing changed.
   Future<({Manifest manifest, String? etag})?> manifest(
     String instanceId, {
