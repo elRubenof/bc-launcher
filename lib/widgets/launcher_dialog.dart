@@ -77,7 +77,7 @@ class LauncherDialog extends StatelessWidget {
           url,
           width: 80,
           height: 80,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           errorBuilder: (_, _, _) => fallback,
         ),
       ),
