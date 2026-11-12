@@ -7,6 +7,10 @@ import 'package:path/path.dart' as p;
 /// Generates the unsigned `release.json` (Windows update descriptor) and
 /// `app-archive.json` (multiplatform release index) for GitHub Releases.
 ///
+/// `app-archive.json` carries the `supportPolicy` in `support_policy.json`,
+/// beside this script: launchers older than its `minimumSupportedVersion` have
+/// to update once `enforcedAfter` has passed (at once when it is `null`).
+///
 /// Usage:
 ///   dart run installers/release_feed.dart <version> <path-to-windows-zip> [out-dir]
 void main(List<String> args) {
@@ -25,6 +29,8 @@ void main(List<String> args) {
     stderr.writeln('Windows zip not found at: ${zipFile.path}');
     exit(1);
   }
+
+  final supportPolicy = readSupportPolicy(version);
 
   outDir.createSync(recursive: true);
 
@@ -50,9 +56,7 @@ void main(List<String> args) {
       'sha256': zipSha256,
       'length': zipLength,
     },
-    'install': {
-      'strategy': 'wholeDirectoryReplace',
-    },
+    'install': {'strategy': 'wholeDirectoryReplace'},
     'minimumUpdaterVersion': '3.1.0',
     'generatedAt': DateTime.now().toUtc().toIso8601String(),
   };
@@ -67,6 +71,7 @@ void main(List<String> args) {
   final appArchiveJson = {
     'schemaVersion': 3,
     'appName': 'BC Launcher',
+    if (supportPolicy != null) 'supportPolicy': supportPolicy,
     'items': [
       {
         'version': version,
@@ -83,9 +88,7 @@ void main(List<String> args) {
         'channel': 'stable',
         'mandatory': false,
         'release': '$tagUrl/release.json',
-        'freshInstall': {
-          'downloadUrl': '$tagUrl/BC-Launcher.dmg',
-        },
+        'freshInstall': {'downloadUrl': '$tagUrl/BC-Launcher.dmg'},
       },
       {
         'version': version,
@@ -94,9 +97,7 @@ void main(List<String> args) {
         'channel': 'stable',
         'mandatory': false,
         'release': '$tagUrl/release.json',
-        'freshInstall': {
-          'downloadUrl': '$tagUrl/BC-Launcher.AppImage',
-        },
+        'freshInstall': {'downloadUrl': '$tagUrl/BC-Launcher.AppImage'},
       },
     ],
   };
@@ -106,4 +107,66 @@ void main(List<String> args) {
     const JsonEncoder.withIndent('  ').convert(appArchiveJson),
   );
   stdout.writeln('Wrote ${appArchiveFile.path}');
+}
+
+/// The `supportPolicy` for releasing [version], or `null` without a minimum
+/// version. Exits when the file is wrong, so a release never ships a policy
+/// its own version can't meet.
+Map<String, String>? readSupportPolicy(String version) {
+  final file = File(
+    p.join(p.dirname(p.fromUri(Platform.script)), 'support_policy.json'),
+  );
+  if (!file.existsSync()) return null;
+
+  final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+  final minimum = (json['minimumSupportedVersion'] as String?)?.trim();
+  if (minimum == null || minimum.isEmpty) return null;
+
+  final minimumParts = versionParts(minimum);
+  final releaseParts = versionParts(version);
+  if (minimumParts == null || releaseParts == null) {
+    fail('support_policy.json: versions must be X.Y.Z ($minimum, $version).');
+  }
+  if (compareVersions(minimumParts, releaseParts) > 0) {
+    fail(
+      'support_policy.json: minimumSupportedVersion $minimum is newer than '
+      'the release $version, so nobody could meet it.',
+    );
+  }
+
+  final enforcedAfter = (json['enforcedAfter'] as String?)?.trim();
+  final DateTime enforced;
+  if (enforcedAfter == null || enforcedAfter.isEmpty) {
+    enforced = DateTime.now().toUtc();
+  } else {
+    final parsed = DateTime.tryParse(enforcedAfter);
+    if (parsed == null) {
+      fail('support_policy.json: enforcedAfter must be an ISO-8601 date.');
+    }
+    enforced = parsed.toUtc();
+  }
+
+  return {
+    'minimumSupportedVersion': minimum,
+    'enforcedAfter': enforced.toIso8601String(),
+  };
+}
+
+/// X.Y.Z as three numbers, or `null`.
+List<int>? versionParts(String version) {
+  final match = RegExp(r'^(\d+)\.(\d+)\.(\d+)$').firstMatch(version);
+  if (match == null) return null;
+  return [for (var i = 1; i <= 3; i++) int.parse(match.group(i)!)];
+}
+
+int compareVersions(List<int> a, List<int> b) {
+  for (var i = 0; i < 3; i++) {
+    if (a[i] != b[i]) return a[i].compareTo(b[i]);
+  }
+  return 0;
+}
+
+Never fail(String message) {
+  stderr.writeln(message);
+  exit(1);
 }

@@ -204,7 +204,11 @@ installers/macos/               build_dmg.sh: creates the drag-and-drop .dmg ins
                                 and ad-hoc codesign); output in dist/installers/
 installers/linux/               build_appimage.sh: packages the Linux bundle into an AppImage with desktop
                                 integration, icon and bclauncher:// scheme; output in dist/installers/
-installers/release_feed.dart    generates release.json and app-archive.json for desktop_updater before signing
+installers/release_feed.dart    generates release.json and app-archive.json for desktop_updater before signing, with
+                                the supportPolicy from support_policy.json
+installers/support_policy.json  the oldest launcher version still supported (minimumSupportedVersion, null for none)
+                                and from when older ones must update (enforcedAfter, ISO-8601; null: at once); set
+                                it before tagging, the release fails if it is newer than the version released
 desktop_updater.yaml            the update feed's base URL, read by desktop_updater's release CLI
 desktop_updater.keys.json       the release key profile: public keys only, bound to the feed URL; the private key
                                 is never in the repo
@@ -269,7 +273,7 @@ Agent docs like this file being committed is fine. The rule is about commits, au
 5. **Launcher self-update via [`desktop_updater`](https://pub.dev/packages/desktop_updater)**, published from this repo's GitHub Releases.
    - Ed25519-signed `app-archive.json` → `release.json` → artifact. The feed is `releases/latest/download/app-archive.json` and the release key is bound to that exact URL (`desktop_updater.yaml`, `UpdateConfig`); GitHub's flat release assets need the release CLI's low-level commands with explicit URLs.
    - Only **Windows** installs updates itself (zip, per-user Inno install). desktop_updater refuses to install on macOS without Developer ID signing and doesn't support AppImage, so **macOS and Linux** only notify and "Download" opens the release: their `app-archive.json` items carry `freshInstall.downloadUrl` (the `.dmg` or AppImage asset).
-   - `supportPolicy` sets the minimum version.
+   - `supportPolicy` sets the minimum version (`installers/support_policy.json`, kept between releases): older launchers must update once its date passes. Items' `mandatory` stays `false`; a required update is always a minimum version.
    - Versions have no `+build` number (it is optional for zip, DMG and Inno).
    - The update feed **never** comes from organization servers.
    - The private key lives only in CI secrets plus an offline backup.
