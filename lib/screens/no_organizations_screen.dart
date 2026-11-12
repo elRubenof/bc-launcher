@@ -1,8 +1,9 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
+import 'package:bc_launcher/widgets/mascot/mascot.dart';
+import 'package:bc_launcher/widgets/mascot/mascot_frames.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:window_manager/window_manager.dart';
 
 class NoOrganizationsScreen extends StatelessWidget {
@@ -21,12 +22,8 @@ class NoOrganizationsScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(
-                  "assets/img/logo.svg",
-                  height: 160,
-                  colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
-                ),
-                const SizedBox(height: 32),
+                const Mascot(scene: MascotScene.waiting, cell: 9),
+                const SizedBox(height: 12),
                 Text(
                   l.noOrganizationsTitle,
                   style: const TextStyle(

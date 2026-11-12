@@ -13,6 +13,12 @@ class Constants {
   static const topBarHeight = 65.0;
   static const horizontalPadding = 90.0;
 
+  /// Size of the animated mascot everywhere (loading, login, empty screens),
+  /// as a factor of the sizes each screen gives it: 1 is the original design.
+  /// Values that leave whole pixels per cell keep every pixel the same width:
+  /// 8 / 9 gives 16 px on the loading screen and 8 px on login.
+  static const mascotScale = 8 / 9;
+
   static const defaultAutoConnect = true;
   static const defaultAllocatedRAM = 8;
   static const defaultGameWidth = 854;

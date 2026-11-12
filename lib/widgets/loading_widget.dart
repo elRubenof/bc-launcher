@@ -1,7 +1,8 @@
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:bc_launcher/widgets/mascot/mascot.dart';
+import 'package:bc_launcher/widgets/mascot/mascot_frames.dart';
 import 'package:window_manager/window_manager.dart';
 
 /// The launcher's loading screen: its logo and, at the bottom, [status],
@@ -18,6 +19,10 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  /// Room the status, its detail and the progress bar take at the bottom,
+  /// with some margin.
+  static const _bottomHeight = 72.0;
+
   final color = Colors.white.withValues(alpha: 0.8);
   @override
   Widget build(BuildContext context) {
@@ -32,11 +37,20 @@ class _LoadingScreenState extends State<LoadingScreen> {
             // ignore: prefer_const_constructors
             child: DragToMoveArea(child: SizedBox.expand()),
           ),
-          Center(
-            child: SvgPicture.asset(
-              "assets/img/logo.svg",
-              height: 300,
-              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          // Floating while there is no progress, flying with it.
+          Positioned.fill(
+            child: Mascot(
+              scene: widget.progress == null
+                  ? MascotScene.loading
+                  : MascotScene.flying,
+              cell: 18,
+              fill: true,
+              // No wind on the bar that drags the window, nor on the status
+              // text and progress bar at the bottom.
+              windMargin: const EdgeInsets.only(
+                top: Constants.topBarHeight,
+                bottom: _bottomHeight,
+              ),
             ),
           ),
           _bottom(widget.status, widget.detail, widget.progress),
