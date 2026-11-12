@@ -122,7 +122,9 @@ class MyApp extends StatelessWidget {
       future: Minecraft.authenticateOauth2(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const LoadingScreen();
+          return LoadingScreen(
+            status: Utility.getLocalizations(context).loadingSigningIn,
+          );
         }
 
         if (snapshot.data == SignIn.signedOut) {

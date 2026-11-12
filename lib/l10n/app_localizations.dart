@@ -692,6 +692,18 @@ abstract class AppLocalizations {
   /// **'Updating {name} · {percent}%'**
   String updatingInstance(String name, int percent);
 
+  /// No description provided for @loadingSigningIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in…'**
+  String get loadingSigningIn;
+
+  /// No description provided for @loadingChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking {name}…'**
+  String loadingChecking(String name);
+
   /// No description provided for @syncProgress.
   ///
   /// In en, this message translates to:

@@ -112,6 +112,8 @@
   "downloadingInstance": "Descargando {name} · {percent} %",
   "installingInstance": "Instalando {name} · {percent} %",
   "updatingInstance": "Actualizando {name} · {percent} %",
+  "loadingSigningIn": "Iniciando sesión…",
+  "loadingChecking": "Comprobando {name}…",
   "syncProgress": "{files} de {totalFiles} archivos · {megabytes} MB de {totalMegabytes} MB",
   "gameFiles": "Archivos del juego (Minecraft {version})",
   "gameFilesWithLoader": "Archivos del juego (Minecraft {version} y {loader})",

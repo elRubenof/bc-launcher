@@ -362,6 +362,14 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get loadingSigningIn => 'Iniciando sesión…';
+
+  @override
+  String loadingChecking(String name) {
+    return 'Comprobando $name…';
+  }
+
+  @override
   String syncProgress(
     int files,
     int totalFiles,
