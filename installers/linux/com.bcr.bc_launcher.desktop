@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=BC Launcher
+Comment=A customizable Minecraft launcher
+Exec=bc_launcher %u
+Icon=com.bcr.bc_launcher
+Terminal=false
+Categories=Game;
+StartupWMClass=com.bcr.bc_launcher
+MimeType=x-scheme-handler/bclauncher;

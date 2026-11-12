@@ -5,6 +5,20 @@ import 'package:bc_launcher/services/file_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
 
+/// A Java runtime: its executable and what it still has to download.
+class JavaPlan extends PendingDownloads {
+  final String executable;
+
+  const JavaPlan(
+    super.tasks, {
+    required super.finish,
+    required this.executable,
+  });
+
+  /// Already installed.
+  const JavaPlan.ready(this.executable) : super.none();
+}
+
 /// Downloads the Java runtime a Minecraft version needs from Mojang and
 /// returns the path to its executable.
 class JavaManager {
@@ -23,6 +37,18 @@ class JavaManager {
     Directory runtimesDir, {
     void Function(double progress)? onProgress,
   }) async {
+    final plan = await planRuntime(versionData, runtimesDir);
+    await FileDownloader.downloadAll(plan.tasks, onProgress: onProgress);
+    await plan.finish();
+    return plan.executable;
+  }
+
+  /// What [ensureRuntime] downloads, and what it sets up after (links,
+  /// executable permissions, the installed marker).
+  static Future<JavaPlan> planRuntime(
+    Map versionData,
+    Directory runtimesDir,
+  ) async {
     final component =
         versionData['javaVersion']?['component'] as String? ?? 'jre-legacy';
 
@@ -45,7 +71,7 @@ class JavaManager {
       for (final candidate in platforms) {
         final dir = Directory(join(runtimesDir.path, component, candidate));
         if (await File(join(dir.path, _installedMarker)).exists()) {
-          return _executable(dir);
+          return JavaPlan.ready(_executable(dir));
         }
       }
       rethrow;
@@ -62,15 +88,12 @@ class JavaManager {
     final manifestSha1 = release['manifest']['sha1'] as String;
 
     if (await marker.exists() && await marker.readAsString() == manifestSha1) {
-      return _executable(dir);
+      return JavaPlan.ready(_executable(dir));
     }
 
     final manifest =
         (await FileDownloader.dio.get(release['manifest']['url'])).data as Map;
-    await _install(manifest['files'] as Map, dir, onProgress);
-    await marker.writeAsString(manifestSha1);
-
-    return _executable(dir);
+    return _plan(manifest['files'] as Map, dir, marker, manifestSha1);
   }
 
   /// Mojang platform names for this system, preferred first. ARM machines
@@ -114,10 +137,11 @@ class JavaManager {
     return join(dir.path, 'bin', 'java');
   }
 
-  static Future<void> _install(
+  static Future<JavaPlan> _plan(
     Map files,
     Directory dir,
-    void Function(double progress)? onProgress,
+    File marker,
+    String manifestSha1,
   ) async {
     final downloads = <DownloadTask>[];
     final executables = <String>[];
@@ -150,20 +174,27 @@ class JavaManager {
     for (final task in downloads) {
       if (await task.isMissing(verifyHash: true)) pending.add(task);
     }
-    await FileDownloader.downloadAll(pending, onProgress: onProgress);
 
-    for (final entry in links.entries) {
-      final link = Link(entry.key);
-      if (await link.exists()) await link.delete();
-      await link.create(entry.value);
-    }
+    return JavaPlan(
+      pending,
+      executable: _executable(dir),
+      finish: () async {
+        for (final entry in links.entries) {
+          final link = Link(entry.key);
+          if (await link.exists()) await link.delete();
+          await link.create(entry.value);
+        }
 
-    if (!Platform.isWindows && executables.isNotEmpty) {
-      final result = await Process.run('chmod', ['+x', ...executables]);
-      if (result.exitCode != 0) {
-        throw FileSystemException('chmod failed: ${result.stderr}');
-      }
-    }
+        if (!Platform.isWindows && executables.isNotEmpty) {
+          final result = await Process.run('chmod', ['+x', ...executables]);
+          if (result.exitCode != 0) {
+            throw FileSystemException('chmod failed: ${result.stderr}');
+          }
+        }
+
+        await marker.writeAsString(manifestSha1);
+      },
+    );
   }
 
   /// Joins a manifest path, which always uses `/`, onto [dir], rejecting

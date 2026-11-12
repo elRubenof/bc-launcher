@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/instance_settings.dart';
 import 'package:bc_launcher/services/credentials_store.dart';
+import 'package:bc_launcher/services/minecraft_session_store.dart';
+import 'package:bc_launcher/services/xbox_auth.dart';
+import 'package:bc_launcher/services/game_process.dart';
 import 'package:bc_launcher/services/java_manager.dart';
-import 'package:bc_launcher/services/library_manager.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/launch_utils/minecraft_launcher_core.dart';
-import 'package:bc_launcher/utils/settings.dart';
+import 'package:bc_launcher/utils/system_memory.dart';
 import 'package:dart_minecraft/dart_minecraft.dart';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart';
@@ -15,53 +20,215 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// What [Minecraft.prepare] is downloading.
-enum PrepareStep { libraries, java }
+/// How starting the launcher went with the saved Microsoft account.
+enum SignIn {
+  signedIn,
+
+  /// No internet: the saved profile and token are used.
+  offline,
+
+  /// No saved account, or Microsoft rejected it: the login is shown.
+  signedOut,
+}
 
 class Minecraft {
   static ValueNotifier<Profile?> profile = ValueNotifier(null);
 
+  /// There is no internet (Microsoft can't be reached): the saved session
+  /// is used and the game is played without servers. It is retried every
+  /// [_reconnectInterval] until it answers.
+  static final offline = ValueNotifier<bool>(false);
+
   static HttpServer? _redirectServer;
   static late Credentials _credentials;
+  static MinecraftSession? _session;
+  static Timer? _reconnect;
+
+  static const _timeout = Duration(seconds: 20);
+  static const _reconnectInterval = Duration(seconds: 30);
 
   static const String _authorizationEndpoint =
       "https://login.live.com/oauth20_authorize.srf";
   static const String _tokenEndpoint =
       "https://login.live.com/oauth20_token.srf";
 
-  static Future<bool> authenticateOauth2() async {
+  /// Why the last sign-in couldn't go on (shown instead of the login), or
+  /// null.
+  static AccountProblem? accountProblem;
+
+  /// Signs in with the saved account; without internet, with its saved
+  /// profile and token.
+  static Future<SignIn> authenticateOauth2() async {
+    accountProblem = null;
     final credentialsJson = await CredentialsStore.read();
+    if (credentialsJson == null) return SignIn.signedOut;
+    _session = await MinecraftSessionStore.read();
 
     try {
-      if (credentialsJson == null) return false;
-
       _credentials = Credentials.fromJson(credentialsJson);
-      _credentials = await _credentials.refresh(identifier: Constants.clientID);
-      // Microsoft rotates the refresh token, so keep the new one.
-      await CredentialsStore.write(_credentials.toJson());
-
-      profile.value = await getCurrentProfile(await getToken());
+      await _renew();
+      _setOnline();
+      return SignIn.signedIn;
     } catch (e) {
+      final session = _session;
+      if (isNetworkError(e) && session != null) {
+        profile.value = Profile.fromJson({
+          'id': session.uuid,
+          'name': session.name,
+        });
+        _setOffline();
+        return SignIn.offline;
+      }
+      if (e is AccountError) {
+        accountProblem = e.problem;
+        return SignIn.signedOut;
+      }
+
       final supportDirectory = await getApplicationSupportDirectory();
       File file = File(join(supportDirectory.path, "error.txt"));
       await file.writeAsString(e.toString());
 
-      return false;
+      return SignIn.signedOut;
     }
+  }
 
-    return true;
+  /// Renews the Microsoft credentials and the Minecraft token, and saves
+  /// them with the profile.
+  static Future<void> _renew() async {
+    await _refreshCredentials();
+    final token = await _minecraftToken();
+    profile.value = await _profile(token);
+    await _saveSession(token);
+  }
+
+  /// Renews the Microsoft credentials; a rejected session is
+  /// [AccountProblem.expired].
+  static Future<void> _refreshCredentials() async {
+    try {
+      _credentials = await _credentials
+          .refresh(identifier: Constants.clientID)
+          .timeout(_timeout);
+    } on AuthorizationException {
+      throw const AccountError(AccountProblem.expired);
+    } on ExpirationException {
+      throw const AccountError(AccountProblem.expired);
+    }
+    // Microsoft rotates the refresh token, so keep the new one.
+    await CredentialsStore.write(_credentials.toJson());
+  }
+
+  /// The player's profile; an account without Minecraft is
+  /// [AccountProblem.noMinecraft].
+  static Future<Profile> _profile(String token) async {
+    try {
+      return await getCurrentProfile(token).timeout(_timeout);
+    } on AuthException {
+      throw const AccountError(AccountProblem.expired);
+    } catch (e) {
+      if (isNetworkError(e)) rethrow;
+      if ("$e".contains("does not own the game")) {
+        throw const AccountError(AccountProblem.noMinecraft);
+      }
+      rethrow;
+    }
+  }
+
+  static Future<void> _saveSession(String token) async {
+    final current = profile.value;
+    if (current == null) return;
+    final session = MinecraftSession.fresh(
+      uuid: current.uuid,
+      name: current.name,
+      token: token,
+    );
+    _session = session;
+    await MinecraftSessionStore.write(session);
   }
 
   static logout() async {
+    _stopReconnecting();
+    offline.value = false;
+    _session = null;
     await CredentialsStore.clear();
+    await MinecraftSessionStore.clear();
   }
 
+  /// The Minecraft token: the saved one while it is valid, a new one
+  /// otherwise. Without internet, the saved one even if it expired (enough
+  /// for a single player game).
   static Future<String> getToken() async {
-    if (_credentials.isExpired) await authenticateOauth2();
+    final session = _session;
+    if (session != null && !session.isExpired) return session.token;
 
-    final xbl = await authenticateXBL(_credentials.accessToken);
-    final xsts = await authenticateXSTS(xbl.first);
-    return await authenticateWithXBOX(xsts.first, xsts.second);
+    try {
+      if (_credentials.isExpired) await _refreshCredentials();
+      final token = await _minecraftToken();
+      profile.value ??= await _profile(token);
+      await _saveSession(token);
+      _setOnline();
+      return token;
+    } catch (e) {
+      if (!isNetworkError(e) || session == null) rethrow;
+      _setOffline();
+      return session.token;
+    }
+  }
+
+  /// Xbox Live → XSTS → Minecraft. Throws [AccountError] when Xbox or
+  /// Minecraft reject the account.
+  static Future<String> _minecraftToken() async {
+    try {
+      final xbl = await authenticateXBL(_credentials.accessToken)
+          .timeout(_timeout);
+      final xsts = await XboxAuth.xsts(xbl.first);
+      return await authenticateWithXBOX(
+        xsts.token,
+        xsts.userHash,
+      ).timeout(_timeout);
+    } on AuthException {
+      throw const AccountError(AccountProblem.expired);
+    }
+  }
+
+  /// No connection at all, as opposed to Microsoft or Xbox rejecting the
+  /// account.
+  static bool isNetworkError(Object error) =>
+      error is SocketException ||
+      error is http.ClientException ||
+      error is TimeoutException ||
+      error is HandshakeException ||
+      error is HttpException;
+
+  static void _setOffline() {
+    offline.value = true;
+    _reconnect ??= Timer.periodic(_reconnectInterval, (_) => _tryReconnect());
+  }
+
+  static void _setOnline() {
+    _stopReconnecting();
+    offline.value = false;
+  }
+
+  static void _stopReconnecting() {
+    _reconnect?.cancel();
+    _reconnect = null;
+  }
+
+  static bool _reconnecting = false;
+
+  static Future<void> _tryReconnect() async {
+    if (_reconnecting) return;
+    _reconnecting = true;
+    try {
+      await _renew();
+      _setOnline();
+    } catch (e) {
+      // Still without internet: try again later. A rejected account is
+      // signed in again on the next start.
+      if (!isNetworkError(e)) _stopReconnecting();
+    } finally {
+      _reconnecting = false;
+    }
   }
 
   static Future<AuthorizationCodeGrant> getAuthorizationCode() async {
@@ -141,69 +308,52 @@ class Minecraft {
     await server?.close(force: true);
   }
 
-  /// Downloads what the instance of [server] is missing to run on this
-  /// system (libraries, natives and Java) and returns the Java executable.
-  /// [onProgress] is only called while downloading.
-  static Future<String> prepare(
-    Map server, {
-    void Function(PrepareStep step, double progress)? onProgress,
+  /// Plays [versionId] of an installed instance in [folder], with the
+  /// libraries and assets shared in [sharedFolder], until the game closes.
+  /// [onStarted] is called once the game is running.
+  static Future<GameExit> launch(
+    Instance instance,
+    Directory folder,
+    String versionId,
+    Directory sharedFolder,
+    InstanceSettings settings, {
+    VoidCallback? onStarted,
   }) async {
-    final path = Settings.minecraftDirectory.path;
+    final path = folder.path;
     final versionData = await MinecraftLauncherCore.loadVersionData(
-      server['version'],
+      versionId,
       path,
     );
-    return _prepare(versionData, path, onProgress);
-  }
-
-  static Future<String> _prepare(
-    Map versionData,
-    String path,
-    void Function(PrepareStep step, double progress)? onProgress,
-  ) async {
-    await LibraryManager.ensureLibraries(
+    final java = await JavaManager.ensureRuntime(
       versionData,
-      Directory(path),
-      onProgress: (p) => onProgress?.call(PrepareStep.libraries, p),
+      Directory(join(sharedFolder.path, "runtime")),
     );
-
-    final supportDirectory = await getApplicationSupportDirectory();
-    return JavaManager.ensureRuntime(
-      versionData,
-      Directory(join(supportDirectory.path, "runtime")),
-      onProgress: (p) => onProgress?.call(PrepareStep.java, p),
-    );
-  }
-
-  /// [onPrepareProgress] reports the downloads of [prepare], when needed.
-  /// [onStartFailed] is called if the game exits before writing anything,
-  /// which means it never started.
-  static Future<void> launch(
-    Map server, {
-    bool close = true,
-    VoidCallback? onStartFailed,
-    void Function(PrepareStep step, double progress)? onPrepareProgress,
-  }) async {
-    final path = Settings.minecraftDirectory.path;
-    final versionData = await MinecraftLauncherCore.loadVersionData(
-      server['version'],
-      path,
-    );
-    final java = await _prepare(versionData, path, onPrepareProgress);
 
     final token = await Minecraft.getToken();
-    profile.value ??= await getCurrentProfile(token);
+    profile.value ??= await _profile(token);
 
     Map options = {
       'username': profile.value!.name,
       'uuid': profile.value!.uuid,
       'token': token,
       'executablePath': java,
-      'jvmArguments': ["-Xmx${Settings.allocatedRAM}G"],
-      if (Settings.autoConnect && server['ip'] != null)
-        'quickPlayMultiplayer': server['ip'],
-      if (!Settings.fullscreen) 'resolutionWidth': "${Settings.gameWidth}",
-      if (!Settings.fullscreen) 'resolutionHeight': "${Settings.gameHeight}",
+      'jvmArguments': [
+        "-Xmx${settings.ram(instance, await SystemMemory.totalGb())}G",
+      ],
+      'sharedRoot': sharedFolder.path,
+      // Without internet there are no servers to join.
+      if (settings.connects && !offline.value && instance.serverAddress != null)
+        ...MinecraftLauncherCore.serverOptions(
+          versionData,
+          instance.serverAddress!,
+        ),
+      if (settings.isFullscreen)
+        'fullscreen': true
+      else ...{
+        'customResolution': true,
+        'resolutionWidth': "${settings.width}",
+        'resolutionHeight': "${settings.height}",
+      },
     };
 
     List<String> cmd = await MinecraftLauncherCore.getMinecraftCommand(
@@ -212,24 +362,7 @@ class Minecraft {
       options,
     );
 
-    final process = await Process.start(
-      cmd[0],
-      cmd.sublist(1),
-      workingDirectory: path,
-      mode: ProcessStartMode.detachedWithStdio,
-    );
-
-    var started = false;
-    process.stderr.drain<void>();
-    process.stdout.listen(
-      (_) {
-        started = true;
-        if (close) exit(0);
-      },
-      onDone: () {
-        if (!started) onStartFailed?.call();
-      },
-    );
+    return GameProcess.run(cmd, folder, secrets: [token], onStarted: onStarted);
   }
 }
 

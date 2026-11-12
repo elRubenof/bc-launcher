@@ -7,14 +7,18 @@ import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/window_buttons.dart';
+import 'package:bc_launcher/widgets/mascot/mascot.dart';
+import 'package:bc_launcher/widgets/mascot/mascot_frames.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  /// Microsoft rejected the saved session: "Sign in again".
+  final bool expired;
+
+  const LoginScreen({super.key, this.expired = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -113,14 +117,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(
-                  "assets/img/logo.svg",
-                  height: 160,
-                  colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
-                ),
-                const SizedBox(height: 32),
+                const Mascot(scene: MascotScene.waiting, cell: 9),
+                const SizedBox(height: 12),
                 Text(
-                  _failed ? l.loginError : l.loginTitle,
+                  _failed
+                      ? l.loginError
+                      : widget.expired
+                      ? l.loginExpiredTitle
+                      : l.loginTitle,
                   style: const TextStyle(
                     color: Constants.textColor,
                     fontSize: 24,
@@ -129,7 +133,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _failed ? l.loginErrorDesc : l.loginInBrowser,
+                  _failed
+                      ? l.loginErrorDesc
+                      : widget.expired
+                      ? l.loginExpiredDesc
+                      : l.loginInBrowser,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: textColor, fontSize: 14),
                 ),

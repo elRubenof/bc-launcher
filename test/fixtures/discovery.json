@@ -1,0 +1,13 @@
+{
+  "discoveryVersion": 1,
+  "visibility": "public",
+  "name": "Boludo´s Company",
+  "description": null,
+  "logoUrl": "https://example.com/api/v1/assets/c360e305ce836255aa2845e3b11c71590e2d7208d258a409885d6cd7b5a1b165",
+  "links": { "discord": "https://discord.gg/example", "web": null },
+  "serverVersion": "0.0.0",
+  "apiVersions": [1],
+  "minLauncherVersion": null,
+  "capabilities": [],
+  "auth": { "type": "unverified" }
+}

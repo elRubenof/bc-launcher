@@ -1,131 +1,211 @@
 import 'dart:io';
 
-import 'package:bc_launcher/screens/instances_screen.dart';
+import 'package:bc_launcher/models/instance.dart';
+import 'package:bc_launcher/models/organization.dart';
+import 'package:bc_launcher/models/web_tab.dart';
 import 'package:bc_launcher/screens/tabs/home_screen.dart';
-import 'package:bc_launcher/screens/tabs/map_screen.dart';
 import 'package:bc_launcher/screens/tabs/settings_screen.dart';
+import 'package:bc_launcher/screens/tabs/web_tab_screen.dart';
+import 'package:bc_launcher/services/instance_catalog.dart';
+import 'package:bc_launcher/services/instance_settings_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
-import 'package:bc_launcher/utils/settings.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
+import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/bottom_bar.dart';
-import 'package:bc_launcher/widgets/custom_dialog.dart';
-import 'package:bc_launcher/widgets/loading_widget.dart';
+import 'package:bc_launcher/widgets/offline_notice.dart';
 import 'package:bc_launcher/widgets/top_bar.dart';
+import 'package:bc_launcher/widgets/update_notice.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' show join;
 
-final ValueNotifier selectedTab = ValueNotifier<int>(0);
+final ValueNotifier selectedTab = ValueNotifier<int>(homeTab);
 
+const homeTab = 0;
+const settingsTab = 1;
+
+/// The tab of the instance's web tab at [index] that opens in the launcher.
+int webTabIndex(int index) => 2 + index;
+
+/// An installed instance: its tabs and Play.
 class MainScreen extends StatefulWidget {
-  final Map<String, dynamic> server;
+  final Organization organization;
+  final Instance instance;
+  final Directory folder;
 
-  const MainScreen({super.key, required this.server});
+  const MainScreen({
+    super.key,
+    required this.organization,
+    required this.instance,
+    required this.folder,
+  });
 
   @override
   State<MainScreen> createState() => _MainPageState();
+
+  /// [tab]'s URL for the signed-in player, or null if no one is.
+  static Uri? resolveUrl(WebTab tab) {
+    final profile = Minecraft.profile.value;
+    if (profile == null) return null;
+    return tab.resolveUrl(uuid: profile.uuid, name: profile.name);
+  }
 }
 
 class _MainPageState extends State<MainScreen> {
-  late List<Widget> tabs;
+  /// By [selectedTab].
+  late Map<int, Widget> tabs;
+  late final settings = InstanceSettingsStore(widget.folder)..load();
 
   @override
   void initState() {
     super.initState();
 
-    selectedTab.value = 0;
-    tabs = [
-      HomeScreen(news: widget.server['news']),
-      MapScreen(mapUrl: widget.server['map']),
-      const SettingsScreen(),
-    ];
-
-    Directory(
-      join(
-        Settings.minecraftDirectory.path,
-        "versions",
-        widget.server['version'],
+    selectedTab.value = homeTab;
+    tabs = {
+      homeTab: HomeScreen(
+        organization: widget.organization,
+        instance: widget.instance,
       ),
-    ).exists().then((value) {
-      if (!value) showReinstallDialog();
-    });
+      for (final (i, tab) in widget.instance.tabs.indexed)
+        if (tab.openIn == WebTabOpenIn.launcher)
+          if (MainScreen.resolveUrl(tab) case final url?)
+            webTabIndex(i): WebTabScreen(key: ValueKey(i), url: url),
+      settingsTab: SettingsScreen(
+        organizationKey: widget.organization.key,
+        instance: widget.instance,
+        folder: widget.folder,
+        settings: settings,
+      ),
+    };
+  }
+
+  @override
+  void dispose() {
+    settings.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final theme = InstanceTheme.fromColors(widget.instance.colors);
 
-    return Scaffold(
-      backgroundColor: Constants.backgroundColor,
-      body: ValueListenableBuilder(
-        valueListenable: selectedTab,
-        builder:
-            (context, index, child) => Stack(
-              children: [
-                Image.asset(
-                  "assets/img/background.png",
-                  height: height,
-                  width: width,
-                  fit: BoxFit.cover,
+    return Theme(
+      data: theme.apply(Theme.of(context)),
+      child: Scaffold(
+        backgroundColor: theme.background,
+        body: ValueListenableBuilder(
+          valueListenable: selectedTab,
+          builder: (context, index, child) => Stack(
+            children: [
+              Positioned.fill(child: background()),
+              Positioned.fill(
+                child: ColoredBox(
+                  color: theme.background.withValues(alpha: 0.85),
                 ),
-                Container(
-                  height: height,
-                  color: Constants.backgroundColor.withValues(alpha: 0.85),
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  top: Constants.topBarHeight,
+                  bottom: index == homeTab ? Constants.topBarHeight : 0,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: Constants.topBarHeight,
-                    bottom: index == 0 ? Constants.topBarHeight : 0,
-                  ),
-                  child: tabs[index],
+                child: tabs[index] ?? const SizedBox.shrink(),
+              ),
+              TopBar(
+                organization: widget.organization,
+                instance: widget.instance,
+              ),
+              if (index == homeTab) notices(theme),
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                bottom: index == homeTab ? 0 : -200,
+                child: BottomBar(
+                  organization: widget.organization,
+                  instance: widget.instance,
+                  folder: widget.folder,
+                  settings: settings,
                 ),
-                TopBar(server: widget.server),
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 250),
-                  bottom: index == 0 ? 0 : -200,
-                  child: BottomBar(server: widget.server),
-                ),
-                ValueListenableBuilder(
-                  valueListenable: Utility.isLoading,
-                  builder:
-                      (context, value, child) =>
-                          value ? const LoadingScreen() : Container(),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Future<void> showReinstallDialog() {
+  /// Over the bottom bar: a new launcher version, and under it the offline
+  /// notice.
+  Widget notices(InstanceTheme theme) {
+    return Positioned(
+      left: 20,
+      bottom: Constants.topBarHeight + 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: UpdateNotice(
+              background: theme.background.withValues(alpha: 0.92),
+            ),
+          ),
+          offlineNotice(theme),
+        ],
+      ),
+    );
+  }
+
+  /// Without internet (single player only) or while the organization doesn't
+  /// answer (what is installed is played as it is).
+  Widget offlineNotice(InstanceTheme theme) {
     final l = Utility.getLocalizations(context);
+    final organization = widget.organization;
 
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return CustomDialog(
-          title: l.versionErrorDialogTitle,
-          description:
-              "${l.versionErrorDialogDescription} ${widget.server['name']}?",
-          mainButtonText: l.yes,
-          secondaryButtonText: l.no,
-          mainButtonOnPressed: () async {
-            Navigator.pop(context);
-            Utility.isLoading.value = true;
-
-            if (await Settings.minecraftDirectory.exists()) {
-              await Settings.minecraftDirectory.delete(recursive: true);
-            }
-
-            Utility.isLoading.value = false;
-            Utility.pushReplacement(
-              context,
-              InstancesScreen(server: widget.server),
-            );
-          },
-          secondaryButtonOnPressed: () => Navigator.pop(context),
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        InstanceCatalog.organizations,
+        Minecraft.offline,
+      ]),
+      builder: (context, _) {
+        final background = theme.background.withValues(alpha: 0.92);
+        final OfflineNotice notice;
+        if (Minecraft.offline.value) {
+          notice = OfflineNotice(
+            title: l.noInternetTitle,
+            description: l.singlePlayerOnlyDesc,
+            background: background,
+          );
+        } else if (InstanceCatalog.isUnreachable(organization.key)) {
+          notice = OfflineNotice(
+            title: l.organizationNotResponding(organization.name),
+            description: l.playingInstalledDesc,
+            background: background,
+            onRetry: () => InstanceCatalog.refresh(organization),
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 470),
+          child: notice,
         );
       },
+    );
+  }
+
+  /// The instance's background, or the launcher's when it has none or it
+  /// can't be loaded.
+  Widget background() {
+    const fallback = Image(
+      image: AssetImage("assets/img/background.png"),
+      fit: BoxFit.cover,
+    );
+    final url = widget.instance.backgroundUrl;
+    if (url.isEmpty) return fallback;
+
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => fallback,
     );
   }
 }

@@ -1,0 +1,39 @@
+{
+  "instances": [
+    {
+      "id": "spartaland-3",
+      "name": "Spartaland 3",
+      "description": "Tercera temporada",
+      "iconUrl": "https://example.com/api/v1/assets/aaaa",
+      "backgroundUrl": "https://example.com/api/v1/assets/bbbb",
+      "colors": { "primary": "#A83CBB", "primaryDark": "#8f349d", "background": "#23162A", "text": "#FFFFFF" },
+      "tabs": [
+        { "label": "Mapa", "url": "https://map.example.com/?player={name}&id={uuid}", "icon": "map", "openIn": "launcher" },
+        { "label": "Ranking", "url": "https://example.com/ranking", "icon": "trophy", "openIn": "browser" }
+      ],
+      "discordUrl": "https://discord.gg/example",
+      "webUrl": null,
+      "minecraft": { "version": "1.21.1" },
+      "loader": { "type": "fabric", "version": "0.16.5" },
+      "serverAddress": "play.example.com",
+      "recommendedRamMb": 6144,
+      "contentVersion": 3
+    },
+    {
+      "id": "cockwork",
+      "name": "Cockwork",
+      "description": null,
+      "iconUrl": null,
+      "backgroundUrl": "https://example.com/api/v1/assets/cccc",
+      "colors": { "primary": "#3366FF", "primaryDark": "#2244AA", "background": "#101820", "text": "#EEEEEE" },
+      "tabs": [],
+      "discordUrl": null,
+      "webUrl": null,
+      "minecraft": { "version": "1.20.1" },
+      "loader": { "type": "vanilla", "version": null },
+      "serverAddress": null,
+      "recommendedRamMb": null,
+      "contentVersion": 1
+    }
+  ]
+}

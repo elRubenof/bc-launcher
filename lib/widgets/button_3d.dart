@@ -1,4 +1,5 @@
 import 'package:bc_launcher/utils/constants.dart';
+import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:flutter/material.dart';
 
@@ -39,7 +40,7 @@ class _Button3DState extends State<Button3D> {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Constants.mainColor.withValues(alpha: 0.3),
+              color: widget.color.withValues(alpha: 0.3),
               blurRadius: 50.0,
               spreadRadius: 40.0,
             ),
@@ -67,8 +68,8 @@ class _Button3DState extends State<Button3D> {
                   ),
                   child: Text(
                     widget.title.toUpperCase(),
-                    style: const TextStyle(
-                      color: Constants.textColor,
+                    style: TextStyle(
+                      color: InstanceTheme.of(context).text,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -121,7 +122,7 @@ class _Button3DState extends State<Button3D> {
   }
 
   void _pressed(_) {
-    if (Utility.isLaunching.value) return;
+    if (Utility.isLaunching.value || Utility.isPlaying.value) return;
 
     setState(() {
       _top = 0;
