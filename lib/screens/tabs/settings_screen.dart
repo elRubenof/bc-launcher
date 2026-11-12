@@ -41,11 +41,15 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  /// The widest the settings get; wider windows center them.
+  static const maxWidth = 1200.0;
+
   final resolutionWith = TextEditingController();
   final resoulutionHeight = TextEditingController();
 
   Color get textColor => InstanceTheme.of(context).text;
-  Color get greyColor => textColor.withValues(alpha: 0.45);
+  Color get greyColor => textColor.withValues(alpha: 0.55);
+  Color get borderColor => textColor.withValues(alpha: 0.09);
 
   /// The RAM slider's maximum: the computer's.
   int maxRam = SystemMemory.fallbackGb;
@@ -73,157 +77,224 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final l = Utility.getLocalizations(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Constants.horizontalPadding,
-        vertical: 50,
+    // As tall as the tab (MainScreen's Stack takes its size), scrolling only
+    // when the window is too small to show it all.
+    return SizedBox.expand(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          Constants.horizontalPadding,
+          36,
+          Constants.horizontalPadding,
+          36,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: maxWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header(),
+                const SizedBox(height: 26),
+                // Both columns as tall as the taller one, so their bottoms line up.
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: instanceGroup()),
+                      const SizedBox(width: 28),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            group(l.settingsAllInstancesGroup, [
+                              row(
+                                l.openLastInstance,
+                                l.openLastInstanceDesc,
+                                switchControl(
+                                  GlobalSettings.openLastInstance,
+                                  GlobalSettings.setOpenLastInstance,
+                                ),
+                              ),
+                              row(
+                                l.keepLauncherOpen,
+                                l.keepLauncherOpenDesc,
+                                switchControl(
+                                  GlobalSettings.keepLauncherOpen,
+                                  GlobalSettings.setKeepLauncherOpen,
+                                ),
+                              ),
+                            ]),
+                            const SizedBox(height: 26),
+                            group(l.settingsSupportGroup, [
+                              row(l.gameLogs, l.gameLogsDesc, gameLogs()),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  /// The title, and resetting or deleting the instance.
+  Widget header() {
+    final l = Utility.getLocalizations(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            l.gameSettings,
+            style: TextStyle(color: textColor, fontSize: 20.5),
+          ),
+        ),
+        resetButton(),
+        const SizedBox(width: 10),
+        deleteButton(),
+      ],
+    );
+  }
+
+  Widget instanceGroup() {
+    final l = Utility.getLocalizations(context);
+
+    return group(l.settingsInstanceGroup, [
+      row(
+        l.fullscreen,
+        l.fullscreenDesc,
+        switchControl(
+          settings.isFullscreen,
+          (value) => widget.settings.save(settings.copyWith(fullscreen: value)),
+        ),
+      ),
+      row(l.resolution, l.resolutionDesc, resolutionInput()),
+      memoryRow(),
+      row(
+        l.directory,
+        widget.folder.path,
+        smallButton(
+          l.open,
+          onPressed: () => launchUrl(Uri.file(widget.folder.path)),
+        ),
+        oneLine: true,
+      ),
+    ]);
+  }
+
+  /// [rows] in one card, under their [label].
+  Widget group(String label, List<Widget> rows) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 8),
+          child: Text(label, style: TextStyle(color: greyColor, fontSize: 12)),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: textColor.withValues(alpha: 0.035),
+            border: Border.all(color: borderColor),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              for (var i = 0; i < rows.length; i++) ...[
+                if (i > 0) Divider(height: 1, thickness: 1, color: borderColor),
+                rows[i],
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// A setting: its title and description, and its [control] on the right.
+  Widget row(
+    String title,
+    String description,
+    Widget control, {
+    bool oneLine = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Row(
         children: [
-          title(l.gameSettings),
-          section(l.directory, l.directoryDesc),
-          input(text: widget.folder.path),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    section(l.resolution, l.resolutionDesc),
-                    resolutionInput(),
-                    section(l.memoryAllocation),
-                    memoryBar(),
-                  ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(color: textColor, fontSize: 14.5)),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  maxLines: oneLine ? 1 : null,
+                  overflow: oneLine ? TextOverflow.ellipsis : null,
+                  style: TextStyle(color: greyColor, fontSize: 11.5),
                 ),
-              ),
-              const SizedBox(width: 60),
-              Expanded(
-                child: Column(
-                  children: [
-                    toggle(
-                      l.openLastInstance,
-                      l.openLastInstanceDesc,
-                      GlobalSettings.openLastInstance,
-                      GlobalSettings.setOpenLastInstance,
-                    ),
-                    const SizedBox(height: 30),
-                    toggle(
-                      l.keepLauncherOpen,
-                      l.keepLauncherOpenDesc,
-                      GlobalSettings.keepLauncherOpen,
-                      GlobalSettings.setKeepLauncherOpen,
-                    ),
-                    const SizedBox(height: 30),
-                    gameLogs(),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          Row(
-            children: [
-              resetButton(),
-              const SizedBox(width: 16),
-              deleteButton(),
-            ],
-          ),
+          const SizedBox(width: 24),
+          control,
         ],
       ),
     );
   }
 
-  Widget title(String text) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 33),
-      child: Text(text, style: TextStyle(color: textColor, fontSize: 20.5)),
-    );
-  }
-
-  Widget section(String title, [String? description]) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(bottom: description != null ? 3 : 18),
-          child: Text(title, style: TextStyle(color: textColor, fontSize: 17)),
+  /// A switch; [save] sets and saves its value.
+  Widget switchControl(bool value, Future<void> Function(bool value) save) {
+    return SizedBox(
+      height: 22,
+      child: FittedBox(
+        child: Switch(
+          value: value,
+          onChanged: (value) {
+            save(value);
+            setState(() {});
+          },
         ),
-        if (description != null)
-          Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            child: Text(
-              description,
-              style: TextStyle(color: greyColor, fontSize: 11),
-            ),
-          ),
-      ],
+      ),
     );
   }
 
+  /// One side of the resolution.
   Widget input({
-    String? text,
-    TextEditingController? controller,
-    bool? isWidth,
+    required TextEditingController controller,
+    required bool isWidth,
   }) {
-    final l = Utility.getLocalizations(context);
-
     return Container(
-      height: 41,
-      margin: EdgeInsets.only(bottom: text != null ? 50 : 0),
+      height: 32,
+      width: 64,
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.5,
-          color: greyColor.withValues(alpha: 0.15),
+          color: textColor.withValues(alpha: 0.14),
         ),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: text != null
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: textColor.withValues(alpha: 0.75),
-                      fontSize: 12,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: smallButton(
-                    l.open,
-                    onPressed: () => launchUrl(Uri.file(text)),
-                  ),
-                ),
-              ],
-            )
-          : SizedBox(
-              width: 70,
-              child: TextField(
-                controller: controller,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: textColor, fontSize: 11),
-                cursorColor: Colors.transparent,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.only(bottom: 8),
-                  hintStyle: TextStyle(color: textColor),
-                  hintText: isWidth!
-                      ? "${settings.width}"
-                      : "${settings.height}",
-                ),
-                onTapOutside: (value) {
-                  saveResolution(true);
-                  saveResolution(false);
-                },
-              ),
-            ),
+      child: TextField(
+        controller: controller,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: textColor, fontSize: 12),
+        cursorColor: Colors.transparent,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.only(bottom: 14),
+          hintStyle: TextStyle(color: textColor),
+          hintText: isWidth ? "${settings.width}" : "${settings.height}",
+        ),
+        onTapOutside: (value) {
+          saveResolution(true);
+          saveResolution(false);
+        },
+      ),
     );
   }
 
@@ -244,73 +315,103 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Only used in a window.
   Widget resolutionInput() {
-    final l = Utility.getLocalizations(context);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 50),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Only used in a window.
-          IgnorePointer(
-            ignoring: settings.isFullscreen,
-            child: Opacity(
-              opacity: settings.isFullscreen ? 0.4 : 1,
-              child: Row(
-                children: [
-                  input(controller: resolutionWith, isWidth: true),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: Text(
-                      "X",
-                      style: TextStyle(color: greyColor, fontSize: 12),
-                    ),
-                  ),
-                  input(controller: resoulutionHeight, isWidth: false),
-                ],
+    return IgnorePointer(
+      ignoring: settings.isFullscreen,
+      child: Opacity(
+        opacity: settings.isFullscreen ? 0.4 : 1,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            input(controller: resolutionWith, isWidth: true),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                "×",
+                style: TextStyle(color: greyColor, fontSize: 12),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Transform.scale(
-              scale: 0.6,
-              child: Switch(
-                value: settings.isFullscreen,
-                onChanged: (value) =>
-                    widget.settings.save(settings.copyWith(fullscreen: value)),
-              ),
-            ),
-          ),
-          Text(l.fullscreen, style: TextStyle(color: greyColor)),
-        ],
+            input(controller: resoulutionHeight, isWidth: false),
+          ],
+        ),
       ),
     );
   }
 
-  /// A setting with its switch; [save] sets and saves it.
-  Widget toggle(
-    String title,
-    String description,
-    bool value,
-    Future<void> Function(bool value) save,
-  ) {
-    return Row(
-      children: [
-        Expanded(child: section(title, description)),
-        const SizedBox(width: 16),
-        Transform.scale(
-          scale: 0.6,
-          child: Switch(
-            value: value,
-            onChanged: (value) {
-              save(value);
-              setState(() {});
-            },
+  /// The RAM: its title and the instance's recommendation, and the slider
+  /// under them, as wide as the card.
+  Widget memoryRow() {
+    final l = Utility.getLocalizations(context);
+    final ram = settings.ram(widget.instance, maxRam);
+    final recommended = widget.instance.recommendedRamMb;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l.memoryAllocation,
+                  style: TextStyle(color: textColor, fontSize: 14.5),
+                ),
+              ),
+              if (recommended != null)
+                Text(
+                  l.memoryRecommended((recommended / 1024).ceil()),
+                  style: TextStyle(color: greyColor, fontSize: 11.5),
+                ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: SliderTheme(
+                  data: const SliderThemeData(
+                    thumbShape: _RectSliderThumbShape(),
+                    overlayShape: RoundSliderOverlayShape(overlayRadius: 15),
+                    overlayColor: Colors.transparent,
+                    padding: EdgeInsets.symmetric(horizontal: 9),
+                  ),
+                  child: Slider(
+                    value: ram.toDouble(),
+                    min: 1,
+                    max: maxRam < 2 ? 2 : maxRam.toDouble(),
+                    onChanged: (value) {
+                      final gb = value.round();
+                      if (gb != ram) {
+                        widget.settings.save(settings.copyWith(ramGb: gb));
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Container(
+                width: 56,
+                height: 32,
+                alignment: Alignment.center,
+                margin: const EdgeInsets.only(right: 7),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 1.5,
+                    color: textColor.withValues(alpha: 0.14),
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  "$ram",
+                  style: TextStyle(color: textColor, fontSize: 12),
+                ),
+              ),
+              Text("GB", style: TextStyle(color: greyColor, fontSize: 11)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -318,9 +419,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l = Utility.getLocalizations(context);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(child: section(l.gameLogs, l.gameLogsDesc)),
-        const SizedBox(width: 16),
         smallButton(
           l.openFolder,
           outlined: true,
@@ -363,32 +463,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Filled white, or outlined: in [color] when given, else grey.
   Widget smallButton(
     String text, {
     bool outlined = false,
-    required VoidCallback onPressed,
+    Color? color,
+    required VoidCallback? onPressed,
   }) {
+    outlined = outlined || color != null;
+
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: onPressed == null ? MouseCursor.defer : SystemMouseCursors.click,
       child: CupertinoButton(
         padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
         onPressed: onPressed,
         child: Container(
-          padding: const EdgeInsets.only(
-            left: 15,
-            right: 15,
-            top: 3,
-            bottom: 4,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: outlined ? Colors.transparent : Colors.white,
-            border: outlined ? Border.all(color: greyColor) : null,
+            border: outlined
+                ? Border.all(color: color ?? textColor.withValues(alpha: 0.45))
+                : null,
             borderRadius: BorderRadius.circular(5),
           ),
           child: Text(
             text.toUpperCase(),
             style: TextStyle(
-              color: outlined ? textColor : Colors.black,
+              color: outlined ? color ?? textColor : Colors.black,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -398,109 +500,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget memoryBar() {
-    final ram = settings.ram(widget.instance, maxRam);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 60),
-      child: Transform.translate(
-        offset: const Offset(-10, 0),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 420,
-              child: SliderTheme(
-                data: const SliderThemeData(
-                  thumbShape: _RectSliderThumbShape(),
-                  overlayShape: RoundSliderOverlayShape(overlayRadius: 15),
-                  overlayColor: Colors.transparent,
-                ),
-                child: Slider(
-                  value: ram.toDouble(),
-                  min: 1,
-                  max: maxRam < 2 ? 2 : maxRam.toDouble(),
-                  onChanged: (value) {
-                    final gb = value.round();
-                    if (gb != ram) {
-                      widget.settings.save(settings.copyWith(ramGb: gb));
-                    }
-                  },
-                ),
-              ),
-            ),
-            Container(
-              width: 60,
-              height: 30,
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(right: 7),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  width: 1.5,
-                  color: greyColor.withValues(alpha: 0.15),
-                ),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                "$ram",
-                style: TextStyle(color: textColor, fontSize: 12),
-              ),
-            ),
-            Text("GB", style: TextStyle(color: greyColor, fontSize: 11)),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Back to the instance's default game settings; the launcher's own stay.
   Widget resetButton() {
     final l = Utility.getLocalizations(context);
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        child: Container(
-          padding: const EdgeInsets.only(
-            left: 24,
-            right: 28,
-            top: 16,
-            bottom: 16,
-          ),
-          decoration: BoxDecoration(
-            //color: const Color(0xFF683D1D),
-            border: Border.all(color: Theme.of(context).primaryColor),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.restart,
-                color: Theme.of(context).primaryColor,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                l.resetSettings.toUpperCase(),
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-        onPressed: () async {
-          // This instance's and the launcher's own.
-          await GlobalSettings.reset();
-          await widget.settings.reset();
+    return smallButton(
+      l.resetSettings,
+      outlined: true,
+      onPressed: () async {
+        await widget.settings.reset();
+        if (!mounted) return;
 
-          setState(() {
-            resolutionWith.clear();
-            resoulutionHeight.clear();
-          });
-        },
-      ),
+        setState(() {
+          resolutionWith.clear();
+          resoulutionHeight.clear();
+        });
+      },
     );
   }
 
@@ -512,61 +527,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       valueListenable: Utility.isPlaying,
       builder: (context, playing, _) => Opacity(
         opacity: playing ? 0.4 : 1,
-        child: MouseRegion(
-          cursor: playing ? MouseCursor.defer : SystemMouseCursors.click,
-          child: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: playing
-                ? null
-                : () async {
-                    final instance = widget.instance;
-                    final deleted = await InstanceActions.delete(
+        child: smallButton(
+          l.deleteInstance,
+          color: Constants.dangerTextColor.withValues(alpha: 0.9),
+          onPressed: playing
+              ? null
+              : () async {
+                  final instance = widget.instance;
+                  final deleted = await InstanceActions.delete(
+                    context,
+                    widget.organizationKey,
+                    instance.id,
+                    instance.name,
+                    iconUrl: instance.iconUrl,
+                  );
+                  if (deleted && mounted) {
+                    Utility.pushReplacement(
                       context,
-                      widget.organizationKey,
-                      instance.id,
-                      instance.name,
-                      iconUrl: instance.iconUrl,
+                      const OrganizationsScreen(),
                     );
-                    if (deleted && mounted) {
-                      Utility.pushReplacement(
-                        context,
-                        const OrganizationsScreen(),
-                      );
-                    }
-                  },
-            child: Container(
-              padding: const EdgeInsets.only(
-                left: 24,
-                right: 28,
-                top: 16,
-                bottom: 16,
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Constants.dangerTextColor.withValues(alpha: 0.55),
-                ),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    CupertinoIcons.delete,
-                    color: Constants.dangerTextColor.withValues(alpha: 0.9),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    l.deleteInstance.toUpperCase(),
-                    style: TextStyle(
-                      color: Constants.dangerTextColor.withValues(alpha: 0.9),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                  }
+                },
         ),
       ),
     );

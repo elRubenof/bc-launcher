@@ -64,13 +64,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get webTabError => 'No se ha podido cargar la página';
 
   @override
-  String get gameSettings => 'Ajustes de Juego';
+  String get gameSettings => 'Ajustes de juego';
 
   @override
   String get directory => 'Directorio';
-
-  @override
-  String get directoryDesc => 'Ruta donde se guardan tus archivos de juego';
 
   @override
   String get open => 'Abrir';
@@ -79,37 +76,54 @@ class AppLocalizationsEs extends AppLocalizations {
   String get resolution => 'Resolución';
 
   @override
-  String get resolutionDesc => 'Tamaño inicial de la ventana del juego';
+  String get resolutionDesc => 'Tamaño inicial de la ventana del juego.';
 
   @override
   String get fullscreen => 'Pantalla completa';
 
   @override
-  String get memoryAllocation => 'Memoria Asignada';
+  String get settingsInstanceGroup => 'Esta instancia';
 
   @override
-  String get resetSettings => 'Reiniciar ajustes';
+  String get settingsAllInstancesGroup => 'Todas las instancias';
+
+  @override
+  String get settingsSupportGroup => 'Soporte';
+
+  @override
+  String get fullscreenDesc => 'Si está activa, la resolución no se usa.';
+
+  @override
+  String memoryRecommended(int gb) {
+    return 'Recomendada: $gb GB';
+  }
+
+  @override
+  String get memoryAllocation => 'Memoria asignada';
+
+  @override
+  String get resetSettings => 'Restablecer';
 
   @override
   String get openLastInstance => 'Abrir directamente la última instancia';
 
   @override
   String get openLastInstanceDesc =>
-      'Al abrir el launcher entrarás en la última instancia que usaste. Si lo desactivas, empezarás siempre en la lista de instancias.';
+      'Al abrir el launcher entrarás en la última instancia que usaste.';
 
   @override
   String get keepLauncherOpen => 'Mantener el launcher abierto';
 
   @override
   String get keepLauncherOpenDesc =>
-      'Mientras juegas, el launcher sigue a la vista. Si lo desactivas, se oculta y se cierra al salir del juego.';
+      'Mientras juegas, el launcher sigue a la vista.';
 
   @override
   String get gameLogs => 'Registros de partidas';
 
   @override
   String get gameLogsDesc =>
-      'Lo que pasó en cada partida. Si algo falla, expórtalos y envíalos a la organización.';
+      'Si algo falla, expórtalos y envíalos a la organización.';
 
   @override
   String get openFolder => 'Abrir carpeta';

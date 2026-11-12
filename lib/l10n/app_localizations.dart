@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @gameSettings.
   ///
   /// In en, this message translates to:
-  /// **'Game Settings'**
+  /// **'Game settings'**
   String get gameSettings;
 
   /// No description provided for @directory.
@@ -211,12 +211,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Directory'**
   String get directory;
-
-  /// No description provided for @directoryDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Path where your game files are located'**
-  String get directoryDesc;
 
   /// No description provided for @open.
   ///
@@ -233,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @resolutionDesc.
   ///
   /// In en, this message translates to:
-  /// **'Initial size for the game´s window'**
+  /// **'Initial size of the game\'s window.'**
   String get resolutionDesc;
 
   /// No description provided for @fullscreen.
@@ -242,16 +236,46 @@ abstract class AppLocalizations {
   /// **'Fullscreen'**
   String get fullscreen;
 
+  /// No description provided for @settingsInstanceGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'This instance'**
+  String get settingsInstanceGroup;
+
+  /// No description provided for @settingsAllInstancesGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'All instances'**
+  String get settingsAllInstancesGroup;
+
+  /// No description provided for @settingsSupportGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get settingsSupportGroup;
+
+  /// No description provided for @fullscreenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'When it\'s on, the resolution isn\'t used.'**
+  String get fullscreenDesc;
+
+  /// No description provided for @memoryRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended: {gb} GB'**
+  String memoryRecommended(int gb);
+
   /// No description provided for @memoryAllocation.
   ///
   /// In en, this message translates to:
-  /// **'Memory Allocation'**
+  /// **'Memory allocation'**
   String get memoryAllocation;
 
   /// No description provided for @resetSettings.
   ///
   /// In en, this message translates to:
-  /// **'Reset settings'**
+  /// **'Reset'**
   String get resetSettings;
 
   /// No description provided for @openLastInstance.
@@ -263,7 +287,7 @@ abstract class AppLocalizations {
   /// No description provided for @openLastInstanceDesc.
   ///
   /// In en, this message translates to:
-  /// **'When you open the launcher you\'ll go into the last instance you used. If you turn it off, you\'ll always start at the list of instances.'**
+  /// **'When you open the launcher you\'ll go into the last instance you used.'**
   String get openLastInstanceDesc;
 
   /// No description provided for @keepLauncherOpen.
@@ -275,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @keepLauncherOpenDesc.
   ///
   /// In en, this message translates to:
-  /// **'While you play, the launcher stays in view. If you turn it off, it hides and closes when you leave the game.'**
+  /// **'While you play, the launcher stays in view.'**
   String get keepLauncherOpenDesc;
 
   /// No description provided for @gameLogs.
@@ -287,7 +311,7 @@ abstract class AppLocalizations {
   /// No description provided for @gameLogsDesc.
   ///
   /// In en, this message translates to:
-  /// **'What happened in each game. If something goes wrong, export them and send them to the organization.'**
+  /// **'If something goes wrong, export them and send them to the organization.'**
   String get gameLogsDesc;
 
   /// No description provided for @openFolder.

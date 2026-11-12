@@ -64,13 +64,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webTabError => 'Couldn\'t load the page';
 
   @override
-  String get gameSettings => 'Game Settings';
+  String get gameSettings => 'Game settings';
 
   @override
   String get directory => 'Directory';
-
-  @override
-  String get directoryDesc => 'Path where your game files are located';
 
   @override
   String get open => 'Open';
@@ -79,37 +76,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resolution => 'Resolution';
 
   @override
-  String get resolutionDesc => 'Initial size for the game´s window';
+  String get resolutionDesc => 'Initial size of the game\'s window.';
 
   @override
   String get fullscreen => 'Fullscreen';
 
   @override
-  String get memoryAllocation => 'Memory Allocation';
+  String get settingsInstanceGroup => 'This instance';
 
   @override
-  String get resetSettings => 'Reset settings';
+  String get settingsAllInstancesGroup => 'All instances';
+
+  @override
+  String get settingsSupportGroup => 'Support';
+
+  @override
+  String get fullscreenDesc => 'When it\'s on, the resolution isn\'t used.';
+
+  @override
+  String memoryRecommended(int gb) {
+    return 'Recommended: $gb GB';
+  }
+
+  @override
+  String get memoryAllocation => 'Memory allocation';
+
+  @override
+  String get resetSettings => 'Reset';
 
   @override
   String get openLastInstance => 'Open the last instance directly';
 
   @override
   String get openLastInstanceDesc =>
-      'When you open the launcher you\'ll go into the last instance you used. If you turn it off, you\'ll always start at the list of instances.';
+      'When you open the launcher you\'ll go into the last instance you used.';
 
   @override
   String get keepLauncherOpen => 'Keep the launcher open';
 
   @override
   String get keepLauncherOpenDesc =>
-      'While you play, the launcher stays in view. If you turn it off, it hides and closes when you leave the game.';
+      'While you play, the launcher stays in view.';
 
   @override
   String get gameLogs => 'Game logs';
 
   @override
   String get gameLogsDesc =>
-      'What happened in each game. If something goes wrong, export them and send them to the organization.';
+      'If something goes wrong, export them and send them to the organization.';
 
   @override
   String get openFolder => 'Open folder';

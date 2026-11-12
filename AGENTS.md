@@ -151,7 +151,7 @@ lib/
     instance_theme.dart         InstanceTheme (ThemeExtension): the instance's colors inside MainScreen, the
                                 launcher's (Constants) anywhere else; its primary also themes switches and sliders
     global_settings.dart        the launcher's own settings, for every instance (keep it open, open the last one):
-                                load, set and reset them in SharedPreferences
+                                load and set them in SharedPreferences
     system_memory.dart          the computer's total RAM (sysctl, /proc/meminfo, GlobalMemoryStatusEx by FFI)
     trusted_roots.dart          on Windows, adds the bundled Mozilla roots to the default SecurityContext on start
                                 (Dart doesn't make Windows fetch the roots it is missing)

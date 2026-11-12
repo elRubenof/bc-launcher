@@ -37,13 +37,4 @@ class GlobalSettings {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_openLastInstanceKey, value);
   }
-
-  /// Back to the defaults.
-  static Future<void> reset() async {
-    _keepLauncherOpen = Constants.defaultKeepLauncherOpen;
-    _openLastInstance = Constants.defaultOpenLastInstance;
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.remove(_keepLauncherOpenKey);
-    await preferences.remove(_openLastInstanceKey);
-  }
 }
