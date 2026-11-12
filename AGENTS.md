@@ -158,7 +158,9 @@ lib/
                                 session, `offline` is on (single player: no servers, Auto-Conectar off) and it
                                 retries every 30 s; back online, the organizations are asked again
     launch_utils/               version-JSON parsing and command-line building (port of minecraft-launcher-lib)
-  widgets/                      reusable UI (top/bottom bar, dialogs, buttons, news carousel (one at a time, read more,
+  widgets/                      reusable UI (top/bottom bar, LauncherDialog (every dialog: a 460 px card with an 80 px badge
+                                on top: the organization's logo or the instance's icon when the dialog is about it, else an
+                                icon, neutral or red to delete or remove), buttons, news carousel (one at a time, read more,
                                 loading the next page, retry; nothing without news or if they can't load) and its
                                 body (whole, or its first 3 lines counting every block's, the one that doesn't fit
                                 ending in "…"), window buttons,

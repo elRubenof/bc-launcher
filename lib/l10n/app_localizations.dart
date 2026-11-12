@@ -311,7 +311,7 @@ abstract class AppLocalizations {
   /// No description provided for @noLogsDesc.
   ///
   /// In en, this message translates to:
-  /// **'They\'re saved when you play: come back after your first game.'**
+  /// **'Come back after your first game.'**
   String get noLogsDesc;
 
   /// No description provided for @close.
@@ -329,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @launchErrorDesc.
   ///
   /// In en, this message translates to:
-  /// **'Check your connection and try again'**
+  /// **'Check your connection and try again.'**
   String get launchErrorDesc;
 
   /// No description provided for @playing.
@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeOrganizationDesc.
   ///
   /// In en, this message translates to:
-  /// **'It will no longer show up in the launcher, and its instances will be deleted from this computer, including worlds and screenshots. To add it again you\'ll have to open its link.'**
+  /// **'It will no longer show up, and its instances will be deleted, including worlds and screenshots.'**
   String get removeOrganizationDesc;
 
   /// No description provided for @remove.
@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteInstanceDesc.
   ///
   /// In en, this message translates to:
-  /// **'Its worlds, screenshots and game settings will be deleted. Everything else can be downloaded again by entering the instance.'**
+  /// **'Its worlds, screenshots and game settings will be deleted.'**
   String get deleteInstanceDesc;
 
   /// No description provided for @delete.
@@ -649,6 +649,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleting {name}…'**
   String deletingInstance(String name);
+
+  /// No description provided for @deletingInstanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'It may take a few seconds'**
+  String get deletingInstanceDesc;
 
   /// No description provided for @deleteFailedTitle.
   ///
@@ -754,7 +760,7 @@ abstract class AppLocalizations {
   /// No description provided for @downloadFailedDesc.
   ///
   /// In en, this message translates to:
-  /// **'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.'**
+  /// **'Something went wrong. Try again.'**
   String get downloadFailedDesc;
 
   /// No description provided for @loaderNotSupportedDesc.

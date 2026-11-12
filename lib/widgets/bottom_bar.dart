@@ -19,7 +19,8 @@ import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/button_3d.dart';
-import 'package:bc_launcher/widgets/custom_dialog.dart';
+import 'package:bc_launcher/widgets/custom_button.dart';
+import 'package:bc_launcher/widgets/launcher_dialog.dart';
 import 'package:bc_launcher/widgets/mouse_icon_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -297,19 +298,23 @@ class _BottomBarState extends State<BottomBar> {
 
     final l = Utility.getLocalizations(context);
     final logs = GameProcess.logsFolder(widget.folder);
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CustomDialog(
-          title: l.gameCrashedTitle,
-          description: l.gameCrashedDesc(widget.instance.name),
-          mainButtonText: l.exportLog,
-          mainButtonOnPressed: exportLog,
-          secondaryButtonText: l.close,
-          linkText: l.openLogsFolder,
-          linkOnPressed: () => launchUrl(Uri.file(logs.path)),
-        );
-      },
+    LauncherDialog.show<void>(
+      context,
+      (context) => LauncherDialog(
+        badge: LauncherDialog.iconBadge(Icons.bug_report_outlined),
+        title: l.gameCrashedTitle,
+        description: l.gameCrashedDesc(widget.instance.name),
+        buttons: [
+          CustomButton(l.exportLog, onPressed: exportLog),
+          CustomButton(
+            l.close,
+            filled: false,
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+        linkText: l.openLogsFolder,
+        onLink: () => launchUrl(Uri.file(logs.path)),
+      ),
     );
   }
 
@@ -344,9 +349,14 @@ class _BottomBarState extends State<BottomBar> {
       InstanceCatalog.refresh(widget.organization);
     }
 
-    final (title, description) = switch (error) {
-      null => (l.launchError, l.launchErrorDesc),
+    final (icon, title, description) = switch (error) {
+      null => (
+        Icons.play_circle_outline_rounded,
+        l.launchError,
+        l.launchErrorDesc,
+      ),
       NotEnoughSpaceError(:final needed, :final available) => (
+        Icons.storage_rounded,
         l.notEnoughSpaceTitle,
         l.notEnoughSpaceDesc(
           name,
@@ -355,6 +365,7 @@ class _BottomBarState extends State<BottomBar> {
         ),
       ),
       ApiError(type: ApiErrorType.notFound) => (
+        Icons.error_outline_rounded,
         l.instanceGoneTitle(name),
         l.instanceGoneDesc,
       ),
@@ -362,26 +373,36 @@ class _BottomBarState extends State<BottomBar> {
         cause: UnsupportedLoaderError(:final loader, :final minecraft),
       ) =>
         (
+          Icons.error_outline_rounded,
           l.launchError,
           l.loaderNotSupportedDesc(name, loader.displayName, minecraft),
         ),
       _ when cause != null && InstanceInstaller.isOffline(cause) => (
+        Icons.wifi_off_rounded,
         l.organizationUnreachableTitle(widget.organization.name),
         l.organizationUnreachableDesc,
       ),
-      _ => (l.launchError, l.launchErrorDesc),
+      _ => (
+        Icons.play_circle_outline_rounded,
+        l.launchError,
+        l.launchErrorDesc,
+      ),
     };
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CustomDialog(
-          title: title,
-          description: description,
-          mainButtonText: l.close,
-          mainButtonOnPressed: () => Navigator.pop(context),
-        );
-      },
+    LauncherDialog.show<void>(
+      context,
+      (context) => LauncherDialog(
+        badge: LauncherDialog.iconBadge(icon),
+        title: title,
+        description: description,
+        buttons: [
+          CustomButton(
+            l.close,
+            filled: false,
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
     );
   }
 }

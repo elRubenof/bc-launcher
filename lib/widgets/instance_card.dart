@@ -224,6 +224,7 @@ class _InstanceCardState extends State<InstanceCard> {
                 key,
                 instance.id,
                 instance.name,
+                iconUrl: instance.iconUrl,
               ),
               color: Constants.dangerTextColor,
               enabled: !playing,

@@ -12,6 +12,7 @@ import 'package:bc_launcher/utils/minecraft.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:bc_launcher/widgets/instance_card.dart';
+import 'package:bc_launcher/widgets/launcher_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:bc_launcher/widgets/mascot/mascot.dart';
 import 'package:bc_launcher/widgets/mascot/mascot_frames.dart';
@@ -557,70 +558,28 @@ class _OrganizationsScreenState extends State<OrganizationsScreen> {
 
   Future<void> _confirmRemove(Organization organization) async {
     final l = Utility.getLocalizations(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (context) => Center(
-        child: Material(
-          color: Constants.backgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-            side: BorderSide(
-              width: 0.5,
-              color: Colors.white.withValues(alpha: 0.2),
-            ),
-          ),
-          child: Container(
-            width: 480,
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                OrganizationLogo(
-                  organization: organization,
-                  size: 80,
-                  greyedOut: true,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l.removeOrganizationQuestion(organization.name),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Constants.textColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l.removeOrganizationDesc,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Wrap(
-                  spacing: 12,
-                  children: [
-                    CustomButton(
-                      l.remove,
-                      color: const Color(0xFFB3261E),
-                      onPressed: () => Navigator.pop(context, true),
-                    ),
-                    CustomButton(
-                      l.cancel,
-                      filled: false,
-                      onPressed: () => Navigator.pop(context, false),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+    final confirmed = await LauncherDialog.show<bool>(
+      context,
+      (context) => LauncherDialog(
+        badge: OrganizationLogo(
+          organization: organization,
+          size: 80,
+          greyedOut: true,
         ),
+        title: l.removeOrganizationQuestion(organization.name),
+        description: l.removeOrganizationDesc,
+        buttons: [
+          CustomButton(
+            l.remove,
+            color: Constants.dangerColor,
+            onPressed: () => Navigator.pop(context, true),
+          ),
+          CustomButton(
+            l.cancel,
+            filled: false,
+            onPressed: () => Navigator.pop(context, false),
+          ),
+        ],
       ),
     );
     if (confirmed != true) return;

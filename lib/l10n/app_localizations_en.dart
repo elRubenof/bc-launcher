@@ -121,8 +121,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noLogsTitle => 'No logs yet';
 
   @override
-  String get noLogsDesc =>
-      'They\'re saved when you play: come back after your first game.';
+  String get noLogsDesc => 'Come back after your first game.';
 
   @override
   String get close => 'Close';
@@ -131,7 +130,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get launchError => 'Couldn\'t start the game';
 
   @override
-  String get launchErrorDesc => 'Check your connection and try again';
+  String get launchErrorDesc => 'Check your connection and try again.';
 
   @override
   String get playing => 'Playing';
@@ -291,7 +290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeOrganizationDesc =>
-      'It will no longer show up in the launcher, and its instances will be deleted from this computer, including worlds and screenshots. To add it again you\'ll have to open its link.';
+      'It will no longer show up, and its instances will be deleted, including worlds and screenshots.';
 
   @override
   String get remove => 'Remove';
@@ -321,7 +320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteInstanceDesc =>
-      'Its worlds, screenshots and game settings will be deleted. Everything else can be downloaded again by entering the instance.';
+      'Its worlds, screenshots and game settings will be deleted.';
 
   @override
   String get delete => 'Delete';
@@ -330,6 +329,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String deletingInstance(String name) {
     return 'Deleting $name…';
   }
+
+  @override
+  String get deletingInstanceDesc => 'It may take a few seconds';
 
   @override
   String deleteFailedTitle(String name) {
@@ -409,8 +411,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check your internet connection and try again. What\'s already downloaded won\'t be downloaded again.';
 
   @override
-  String get downloadFailedDesc =>
-      'Something went wrong. Try again; what\'s already downloaded won\'t be downloaded again.';
+  String get downloadFailedDesc => 'Something went wrong. Try again.';
 
   @override
   String loaderNotSupportedDesc(String name, String loader, String minecraft) {

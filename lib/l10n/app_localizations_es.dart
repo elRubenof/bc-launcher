@@ -121,8 +121,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noLogsTitle => 'Todavía no hay registros';
 
   @override
-  String get noLogsDesc =>
-      'Se guardan al jugar: vuelve aquí después de tu primera partida.';
+  String get noLogsDesc => 'Vuelve aquí después de tu primera partida.';
 
   @override
   String get close => 'Cerrar';
@@ -131,7 +130,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get launchError => 'No se pudo iniciar el juego';
 
   @override
-  String get launchErrorDesc => 'Comprueba tu conexión e inténtalo de nuevo';
+  String get launchErrorDesc => 'Comprueba tu conexión e inténtalo de nuevo.';
 
   @override
   String get playing => 'Jugando';
@@ -291,7 +290,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get removeOrganizationDesc =>
-      'Dejará de aparecer en el launcher y se borrarán de este equipo sus instancias, incluidos los mundos y las capturas de pantalla. Para volver a añadirla tendrás que abrir su enlace.';
+      'Dejará de aparecer y se borrarán sus instancias, incluidos los mundos y las capturas de pantalla.';
 
   @override
   String get remove => 'Eliminar';
@@ -321,7 +320,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get deleteInstanceDesc =>
-      'Se borrarán sus mundos, capturas y ajustes del juego. El resto se puede volver a descargar entrando en la instancia.';
+      'Se borrarán sus mundos, capturas y ajustes del juego.';
 
   @override
   String get delete => 'Borrar';
@@ -330,6 +329,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String deletingInstance(String name) {
     return 'Borrando $name…';
   }
+
+  @override
+  String get deletingInstanceDesc => 'Puede tardar unos segundos';
 
   @override
   String deleteFailedTitle(String name) {
@@ -409,8 +411,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Revisa tu conexión a internet y vuelve a intentarlo. Lo que ya se ha descargado no se vuelve a bajar.';
 
   @override
-  String get downloadFailedDesc =>
-      'Algo ha fallado. Vuelve a intentarlo; lo que ya se ha descargado no se vuelve a bajar.';
+  String get downloadFailedDesc => 'Algo ha fallado. Vuelve a intentarlo.';
 
   @override
   String loaderNotSupportedDesc(String name, String loader, String minecraft) {

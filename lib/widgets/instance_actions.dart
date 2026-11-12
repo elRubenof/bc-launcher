@@ -6,7 +6,8 @@ import 'package:bc_launcher/services/instance_manager.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
-import 'package:bc_launcher/widgets/custom_dialog.dart';
+import 'package:bc_launcher/widgets/custom_button.dart';
+import 'package:bc_launcher/widgets/launcher_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,37 +34,64 @@ class InstanceActions {
 
   /// Asks before deleting the instance from this computer, then deletes it
   /// while saying so. Returns whether it was deleted.
+  ///
+  /// Its dialogs show the instance's icon ([iconUrl]), or an icon for each
+  /// one when it has none or it can't be loaded.
   static Future<bool> delete(
     BuildContext context,
     String organizationKey,
     String instanceId,
-    String name,
-  ) async {
+    String name, {
+    String? iconUrl,
+  }) async {
     if (Utility.isPlaying.value) return false;
 
     final l = Utility.getLocalizations(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (context) => CustomDialog(
+    final confirmed = await LauncherDialog.show<bool>(
+      context,
+      (context) => LauncherDialog(
+        badge: LauncherDialog.imageBadge(
+          iconUrl,
+          LauncherDialog.iconBadge(
+            Icons.delete_outline_rounded,
+            tone: DialogTone.danger,
+          ),
+        ),
         title: l.deleteInstanceQuestion(name),
         description: l.deleteInstanceDesc,
-        mainButtonText: l.delete,
-        mainButtonColor: Constants.dangerColor,
-        mainButtonOnPressed: () => Navigator.pop(context, true),
-        secondaryButtonText: l.cancel,
+        buttons: [
+          CustomButton(
+            l.delete,
+            color: Constants.dangerColor,
+            onPressed: () => Navigator.pop(context, true),
+          ),
+          CustomButton(
+            l.cancel,
+            filled: false,
+            onPressed: () => Navigator.pop(context, false),
+          ),
+        ],
       ),
     );
     if (confirmed != true || !context.mounted) return false;
 
     final navigator = Navigator.of(context);
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (context) => PopScope(
+    LauncherDialog.show<void>(
+      context,
+      dismissible: false,
+      (context) => PopScope(
         canPop: false,
-        child: _Deleting(title: l.deletingInstance(name)),
+        child: LauncherDialog(
+          badge: LauncherDialog.imageBadge(
+            iconUrl,
+            LauncherDialog.iconBadge(
+              Icons.delete_outline_rounded,
+              tone: DialogTone.danger,
+            ),
+          ),
+          title: l.deletingInstance(name),
+          busy: l.deletingInstanceDesc,
+        ),
       ),
     );
 
@@ -81,57 +109,25 @@ class InstanceActions {
     if (error == null) return true;
 
     if (context.mounted) {
-      showDialog<void>(
-        context: context,
-        builder: (context) => CustomDialog(
+      LauncherDialog.show<void>(
+        context,
+        (context) => LauncherDialog(
+          badge: LauncherDialog.imageBadge(
+            iconUrl,
+            LauncherDialog.iconBadge(Icons.error_outline_rounded),
+          ),
           title: l.deleteFailedTitle(name),
           description: l.deleteFailedDesc,
-          mainButtonText: l.close,
-          mainButtonOnPressed: () => Navigator.pop(context),
+          buttons: [
+            CustomButton(
+              l.close,
+              filled: false,
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
         ),
       );
     }
     return false;
-  }
-}
-
-/// The dialog while an instance is being deleted.
-class _Deleting extends StatelessWidget {
-  final String title;
-
-  const _Deleting({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Material(
-        color: Constants.backgroundColor,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          width: 520,
-          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Constants.textColor,
-                  fontSize: MediaQuery.of(context).size.height * 0.03,
-                ),
-              ),
-              const SizedBox(height: 26),
-              LinearProgressIndicator(
-                minHeight: 4,
-                borderRadius: BorderRadius.circular(2),
-                color: Colors.white.withValues(alpha: 0.8),
-                backgroundColor: Colors.white.withValues(alpha: 0.08),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

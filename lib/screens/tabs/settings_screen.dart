@@ -11,7 +11,8 @@ import 'package:bc_launcher/utils/instance_theme.dart';
 import 'package:bc_launcher/utils/global_settings.dart';
 import 'package:bc_launcher/utils/system_memory.dart';
 import 'package:bc_launcher/utils/utility.dart';
-import 'package:bc_launcher/widgets/custom_dialog.dart';
+import 'package:bc_launcher/widgets/custom_button.dart';
+import 'package:bc_launcher/widgets/launcher_dialog.dart';
 import 'package:bc_launcher/widgets/instance_actions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -345,13 +346,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (exported || !mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
+    LauncherDialog.show<void>(
+      context,
+      (context) => LauncherDialog(
+        badge: LauncherDialog.iconBadge(Icons.description_outlined),
         title: l.noLogsTitle,
         description: l.noLogsDesc,
-        mainButtonText: l.close,
-        mainButtonOnPressed: () => Navigator.pop(context),
+        buttons: [
+          CustomButton(
+            l.close,
+            filled: false,
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
     );
   }
@@ -518,6 +525,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       widget.organizationKey,
                       instance.id,
                       instance.name,
+                      iconUrl: instance.iconUrl,
                     );
                     if (deleted && mounted) {
                       Utility.pushReplacement(

@@ -9,9 +9,9 @@ import 'package:bc_launcher/services/instance_installer.dart';
 import 'package:bc_launcher/services/organization_auth.dart';
 import 'package:bc_launcher/services/organization_store.dart';
 import 'package:bc_launcher/services/sync_engine.dart';
-import 'package:bc_launcher/utils/constants.dart';
 import 'package:bc_launcher/utils/utility.dart';
 import 'package:bc_launcher/widgets/custom_button.dart';
+import 'package:bc_launcher/widgets/launcher_dialog.dart';
 import 'package:bc_launcher/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -193,100 +193,48 @@ class _InstanceLoadingScreenState extends State<InstanceLoadingScreen> {
         l.gameFilesFailedDesc,
         true,
       ),
-      _ => (
-        Icons.error_outline_rounded,
-        failedTitle,
-        l.downloadFailedDesc,
-        true,
-      ),
+      _ => (Icons.download_rounded, failedTitle, l.downloadFailedDesc, true),
     };
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (dialogContext) => Center(
-        child: Material(
-          color: Constants.backgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-            side: BorderSide(
-              width: 0.5,
-              color: Colors.white.withValues(alpha: 0.2),
+    LauncherDialog.show<void>(
+      context,
+      dismissible: false,
+      (dialogContext) => LauncherDialog(
+        // The instance's icon when downloading, installing or updating it
+        // failed; the reason's icon for the rest, or when it has none or it
+        // can't be loaded.
+        badge: title == failedTitle
+            ? LauncherDialog.imageBadge(
+                widget.instance.iconUrl,
+                LauncherDialog.iconBadge(icon),
+              )
+            : LauncherDialog.iconBadge(icon),
+        title: title,
+        description: description,
+        buttons: [
+          if (canRetry)
+            CustomButton(
+              l.retry,
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _run();
+              },
             ),
+          CustomButton(
+            l.backToInstances,
+            filled: !canRetry,
+            onPressed: () async {
+              // The next start stays on the list instead of trying this
+              // instance again.
+              await OrganizationStore.clearLastInstance(
+                widget.organization.key,
+              );
+              if (!mounted || !dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
+              Navigator.pop(context, false);
+            },
           ),
-          child: Container(
-            width: 460,
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 36,
-                    color: Colors.white.withValues(alpha: 0.75),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Constants.textColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    if (canRetry)
-                      CustomButton(
-                        l.retry,
-                        onPressed: () {
-                          Navigator.pop(dialogContext);
-                          _run();
-                        },
-                      ),
-                    CustomButton(
-                      l.backToInstances,
-                      filled: !canRetry,
-                      onPressed: () async {
-                        // The next start stays on the list instead of
-                        // trying this instance again.
-                        await OrganizationStore.clearLastInstance(
-                          widget.organization.key,
-                        );
-                        if (!mounted || !dialogContext.mounted) return;
-                        Navigator.pop(dialogContext);
-                        Navigator.pop(context, false);
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
