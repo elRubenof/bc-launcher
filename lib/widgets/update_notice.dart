@@ -72,7 +72,7 @@ class UpdateNotice extends StatelessWidget {
         spacing: 12,
         children: [
           Icon(Icons.download_rounded, color: text.withValues(alpha: 0.75)),
-          Flexible(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
