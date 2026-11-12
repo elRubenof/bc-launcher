@@ -10,7 +10,7 @@ This repo contains **only the launcher app**. The backend (`bc-launcher-server`:
 
 - Targets: **Windows** (primary today), **macOS**, **Linux**. Only the `windows/`, `macos/` and `linux/` platform folders exist; don't add mobile or web targets.
 - Flutter 3.47+ (Dart 3.13+), stable channel. Required by `window_manager` 0.6; older Flutter fails on `pub get`.
-- License: GPL (see README).
+- License: GPL-3.0-only (`LICENSE`).
 
 ## Commands
 
