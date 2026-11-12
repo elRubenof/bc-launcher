@@ -7,16 +7,22 @@ import 'package:path/path.dart' as p;
 /// Generates the unsigned `release.json` (Windows update descriptor) and
 /// `app-archive.json` (multiplatform release index) for GitHub Releases.
 ///
+/// The Windows zip holds only the Inno Setup installer: the launcher runs it
+/// itself, since desktop_updater's own install needs a signed launcher.
+///
+/// `base-url`, for testing updates from a local feed, replaces the release's
+/// download URL (`https://github.com/…/releases/download/v<version>/`).
+///
 /// `app-archive.json` carries the `supportPolicy` in `support_policy.json`,
 /// beside this script: launchers older than its `minimumSupportedVersion` have
 /// to update once `enforcedAfter` has passed (at once when it is `null`).
 ///
 /// Usage:
-///   dart run installers/release_feed.dart <version> <path-to-windows-zip> [out-dir]
+///   dart run installers/release_feed.dart <version> <path-to-windows-zip> [out-dir] [base-url]
 void main(List<String> args) {
   if (args.length < 2) {
     stderr.writeln(
-      'Usage: dart run installers/release_feed.dart <version> <path-to-windows-zip> [out-dir]',
+      'Usage: dart run installers/release_feed.dart <version> <path-to-windows-zip> [out-dir] [base-url]',
     );
     exit(1);
   }
@@ -39,7 +45,9 @@ void main(List<String> args) {
   final zipLength = zipBytes.length;
 
   const repoUrl = 'https://github.com/elRubenof/bc-launcher/releases/download';
-  final tagUrl = '$repoUrl/v$version';
+  final tagUrl = args.length > 3
+      ? args[3].replaceFirst(RegExp(r'/+$'), '')
+      : '$repoUrl/v$version';
 
   // Windows release.json
   final releaseJson = {

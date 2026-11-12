@@ -1,7 +1,10 @@
 ; BC Launcher's Windows installer (Inno Setup 6).
 ;
-; Per user, without admin rights, so desktop_updater can replace the files
-; on its own later. Build `flutter build windows --release` first, then:
+; Per user, without admin rights. It is also how the launcher updates itself:
+; it downloads this installer (zipped, checked against the signed update feed)
+; and runs it with /SILENT ... /RELAUNCH=1, which installs over the old version
+; and opens the launcher again. Build `flutter build windows --release` first,
+; then:
 ;
 ;   iscc /DAppVersion=1.2.0 installers\windows\bc-launcher.iss
 ;
@@ -73,12 +76,20 @@ Root: HKCU; Subkey: "Software\Classes\bclauncher\shell\open\command"; ValueType:
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+; The launcher's own update: open it again once installed.
+Filename: "{app}\{#AppExe}"; Flags: nowait; Check: Relaunch
 
 [UninstallDelete]
 ; Updates may add files the installer didn't put there.
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+// /RELAUNCH=1, passed by the launcher when it installs its update.
+function Relaunch: Boolean;
+begin
+  Result := ExpandConstant('{param:RELAUNCH|0}') = '1';
+end;
+
 // After uninstalling, asks whether the player's data goes too (No by
 // default). It holds the organizations, the instances with their worlds,
 // Java and the saved sign-ins (encrypted in flutter_secure_storage.dat).

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:bc_launcher/services/update_config.dart';
 import 'package:desktop_updater/desktop_updater.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 
 enum UpdateStatus { none, ready, toDownload, required }
@@ -50,13 +51,17 @@ class LauncherUpdate {
 }
 
 /// The parts of `desktop_updater`'s controller the service uses, so tests can
-/// replace it.
+/// replace it. Its own install (`restartApp`) is never used: on Windows it
+/// needs an Authenticode-signed launcher.
 abstract interface class UpdateBackend implements Listenable {
   UpdateState get state;
   Future<void> checkVersion();
   Future<void> downloadUpdate();
-  Future<void> restartApp();
 }
+
+/// Starts the downloaded Windows installer in the update's folder and closes
+/// the launcher; throws if it couldn't start it.
+typedef UpdateInstaller = Future<void> Function(String stagingPath);
 
 class _ControllerBackend implements UpdateBackend {
   final DesktopUpdaterController controller;
@@ -70,8 +75,6 @@ class _ControllerBackend implements UpdateBackend {
   @override
   Future<void> downloadUpdate() => controller.downloadUpdate();
   @override
-  Future<void> restartApp() => controller.restartApp();
-  @override
   void addListener(VoidCallback listener) => controller.addListener(listener);
   @override
   void removeListener(VoidCallback listener) =>
@@ -81,10 +84,12 @@ class _ControllerBackend implements UpdateBackend {
 /// The launcher's own update, from this repo's GitHub Releases only.
 ///
 /// It checks when it starts and every 6 hours. Windows downloads a new
-/// version in the background and installs it on "Restart", never while the
-/// game runs. macOS and Linux only say there is one: their releases are a
-/// fresh download (`freshInstall`). A version past its `supportPolicy` makes
-/// the update required.
+/// version in the background (a zip with the Inno Setup installer, checked
+/// against the signed feed) and on "Restart", never while the game runs, runs
+/// that installer silently and closes; the installer opens the launcher again.
+/// macOS and Linux only say there is one: their releases are a fresh download
+/// (`freshInstall`). A version past its `supportPolicy` makes the update
+/// required.
 class UpdateService {
   static const checkEvery = Duration(hours: 6);
   static const releasesUrl =
@@ -102,6 +107,7 @@ class UpdateService {
   final ValueListenable<bool> playing;
 
   final Future<void> Function(Uri url) _openUrl;
+  final UpdateInstaller _install;
 
   final update = ValueNotifier<LauncherUpdate>(LauncherUpdate.none);
 
@@ -121,7 +127,9 @@ class UpdateService {
     required this.installs,
     required this.playing,
     Future<void> Function(Uri url)? openUrl,
-  }) : _openUrl = openUrl ?? _launch {
+    UpdateInstaller? install,
+  }) : _openUrl = openUrl ?? _launch,
+       _install = install ?? _runInstaller {
     backend.addListener(_onBackend);
     playing.addListener(_onPlaying);
   }
@@ -165,14 +173,21 @@ class UpdateService {
     }
   }
 
-  /// "Restart": installs the downloaded update, never while playing.
+  /// "Restart": runs the downloaded installer, never while playing. If it
+  /// can't, a required update fails (Retry) and an optional one becomes a
+  /// download.
   Future<void> restart() async {
-    if (playing.value || backend.state is! UpdateReadyToInstall) return;
+    final state = backend.state;
+    if (playing.value || state is! UpdateReadyToInstall) return;
     try {
-      await backend.restartApp();
+      await _install(state.stagingPath);
     } catch (e) {
       log("The update could not be installed: $e");
-      if (_required) _publishRequired(failed: true);
+      if (_required) {
+        _publishRequired(failed: true);
+      } else {
+        _publishDownload(Uri.parse(releasesUrl));
+      }
     }
   }
 
@@ -327,6 +342,21 @@ class UpdateService {
       failed: failed,
       unsupported: _unsupported,
     );
+  }
+
+  /// Starts the installer apart from the launcher and closes it, so the
+  /// installer can replace its files.
+  static Future<void> _runInstaller(String stagingPath) async {
+    final installer = File(p.join(stagingPath, UpdateConfig.windowsInstaller));
+    if (!await installer.exists()) {
+      throw StateError("The update has no installer: ${installer.path}");
+    }
+    await Process.start(
+      installer.path,
+      UpdateConfig.windowsInstallerArguments(await UpdateConfig.installLog()),
+      mode: ProcessStartMode.detached,
+    );
+    exit(0);
   }
 
   static Future<void> _launch(Uri url) async {

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// `desktop_updater`'s controller: the test moves its state and sees calls.
 class FakeBackend extends ChangeNotifier implements UpdateBackend {
   UpdateState _state = const UpdateIdle();
-  int checks = 0, downloads = 0, restarts = 0;
+  int checks = 0, downloads = 0;
 
   /// What a check or a download does next, if anything.
   UpdateState? onCheck, onDownload;
@@ -30,12 +30,6 @@ class FakeBackend extends ChangeNotifier implements UpdateBackend {
   Future<void> downloadUpdate() async {
     downloads++;
     if (onDownload != null) emit(onDownload!);
-  }
-
-  @override
-  Future<void> restartApp() async {
-    restarts++;
-    emit(const UpdateInstalling());
   }
 }
 
@@ -69,17 +63,29 @@ void main() {
   late ValueNotifier<bool> playing;
   late List<Uri> opened;
 
+  /// The staging folders whose installer was run.
+  late List<String> installed;
+
+  /// What running the installer throws, if anything.
+  Object? installError;
+
   UpdateService service({required bool installs}) => UpdateService(
     backend: backend,
     installs: installs,
     playing: playing,
     openUrl: (url) async => opened.add(url),
+    install: (stagingPath) async {
+      if (installError != null) throw installError!;
+      installed.add(stagingPath);
+    },
   );
 
   setUp(() {
     backend = FakeBackend();
     playing = ValueNotifier(false);
     opened = [];
+    installed = [];
+    installError = null;
   });
 
   group("Windows", () {
@@ -105,7 +111,8 @@ void main() {
       );
     });
 
-    test("restart installs, but never while the game runs", () async {
+    test("restart runs the downloaded installer, but never while the game "
+        "runs", () async {
       final updates = service(installs: true);
       backend.emit(
         UpdateAvailable(descriptor: release("1.2.0"), mandatory: false),
@@ -114,11 +121,43 @@ void main() {
 
       playing.value = true;
       await updates.restart();
-      expect(backend.restarts, 0);
+      expect(installed, isEmpty);
 
       playing.value = false;
       await updates.restart();
-      expect(backend.restarts, 1);
+      expect(installed, ["stage"]);
+    });
+
+    test("an installer that can't run becomes a download", () async {
+      final updates = service(installs: true);
+      installError = StateError("no installer");
+      backend.emit(
+        UpdateAvailable(descriptor: release("1.2.0"), mandatory: false),
+      );
+      backend.emit(const UpdateReadyToInstall(stagingPath: "stage"));
+
+      await updates.restart();
+      expect(updates.update.value.status, UpdateStatus.toDownload);
+      expect(updates.update.value.version, "1.2.0");
+
+      await updates.download();
+      expect(opened.single.toString(), UpdateService.releasesUrl);
+    });
+
+    test("a required update whose installer can't run fails", () async {
+      final updates = service(installs: true);
+      installError = StateError("no installer");
+      backend.emit(
+        UpdateBlockedBySupportPolicy(
+          descriptor: release("1.2.0"),
+          supportPolicy: policy,
+        ),
+      );
+      backend.emit(const UpdateReadyToInstall(stagingPath: "stage"));
+      await pumpEventQueue();
+
+      expect(updates.update.value.status, UpdateStatus.required);
+      expect(updates.update.value.failed, isTrue);
     });
 
     test("a downloaded update is not checked again", () async {
@@ -156,7 +195,7 @@ void main() {
       expect(updates.update.value.progress, 0.45);
 
       backend.emit(const UpdateReadyToInstall(stagingPath: "stage"));
-      expect(backend.restarts, 1);
+      expect(installed, ["stage"]);
     });
 
     test("a required update waits for the game to close", () {
@@ -169,10 +208,10 @@ void main() {
         ),
       );
       backend.emit(const UpdateReadyToInstall(stagingPath: "stage"));
-      expect(backend.restarts, 0);
+      expect(installed, isEmpty);
 
       playing.value = false;
-      expect(backend.restarts, 1);
+      expect(installed, ["stage"]);
     });
 
     test("a required update that fails can be retried", () async {
@@ -208,7 +247,7 @@ void main() {
 
         await updates.updateNow();
         expect(updates.update.value.status, UpdateStatus.required);
-        expect(backend.restarts, 1);
+        expect(installed, ["stage"]);
       },
     );
 

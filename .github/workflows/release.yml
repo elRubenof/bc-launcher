@@ -65,10 +65,12 @@ jobs:
           )
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ needs.version.outputs.version }} installers\windows\bc-launcher.iss
 
+      # Only the installer: the launcher downloads it with desktop_updater and
+      # runs it silently to update itself.
       - name: Create update zip for desktop_updater
         shell: pwsh
         run: |
-          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath "dist\installers\BC-Launcher-windows.zip"
+          Compress-Archive -Path "dist\installers\BC-Launcher-Installer.exe" -DestinationPath "dist\installers\BC-Launcher-windows.zip"
 
       - uses: actions/upload-artifact@v4
         with:

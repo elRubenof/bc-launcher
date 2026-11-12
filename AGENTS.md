@@ -137,9 +137,13 @@ lib/
     instance_settings_store.dart  one instance's game settings (RAM, resolution, fullscreen, auto-connect) in
                                 .bc-launcher/settings.json, written at once; reset deletes it
     update_config.dart          the launcher's update feed (this repo's latest GitHub release), the pinned release
-                                keys, each platform's package ID and the recovery store's file
+                                keys, each platform's package ID, the recovery store's file and how the Windows
+                                installer runs; a local feed and test key (UPDATE_FEED_URL, UPDATE_TEST_KEY) only
+                                to test updates
     update_service.dart         the launcher's own update (UpdateService): checks on start and every 6 h; Windows
-                                downloads quietly and installs on restart, never while playing; macOS and Linux
+                                downloads quietly (a zip with the Inno installer) and on restart, never while
+                                playing, runs it silently and closes (it opens the launcher again; if it can't
+                                start, the notice becomes a download); macOS and Linux
                                 only point to the release's installer (freshInstall); past its supportPolicy (or
                                 asked by an organization, updateNow) the update is required
     update_recovery_store.dart  desktop_updater's pending install marker in <AppSupport>/update/, so the next
@@ -199,13 +203,14 @@ installers/icons/               generate_icons.swift: the app icons, drawn from 
 installers/windows/             bc-launcher.iss: per-user Inno Setup installer (no admin, %LOCALAPPDATA%\Programs),
                                 desktop shortcut (checked), bclauncher:// in HKCU; uninstalling removes the program
                                 folder and asks whether to delete the data too (No by default); its AppId never
-                                changes; output in dist/installers/
+                                changes; the launcher's update runs it with /SILENT … /RELAUNCH=1 (opens it again);
+                                output in dist/installers/
 installers/macos/               build_dmg.sh: creates the drag-and-drop .dmg installer (with Applications symlink
                                 and ad-hoc codesign); output in dist/installers/
 installers/linux/               build_appimage.sh: packages the Linux bundle into an AppImage with desktop
                                 integration, icon and bclauncher:// scheme; output in dist/installers/
 installers/release_feed.dart    generates release.json and app-archive.json for desktop_updater before signing, with
-                                the supportPolicy from support_policy.json
+                                the supportPolicy from support_policy.json; an optional base URL for a local test feed
 installers/support_policy.json  the oldest launcher version still supported (minimumSupportedVersion, null for none)
                                 and from when older ones must update (enforcedAfter, ISO-8601; null: at once); set
                                 it before tagging, the release fails if it is newer than the version released
@@ -272,7 +277,7 @@ Agent docs like this file being committed is fine. The rule is about commits, au
 4. **Deprecation policy.** A `compat.json` published from this repo's releases lists the supported and deprecated API versions with sunset dates. Old API versions are removed only after a long, announced window.
 5. **Launcher self-update via [`desktop_updater`](https://pub.dev/packages/desktop_updater)**, published from this repo's GitHub Releases.
    - Ed25519-signed `app-archive.json` → `release.json` → artifact. The feed is `releases/latest/download/app-archive.json` and the release key is bound to that exact URL (`desktop_updater.yaml`, `UpdateConfig`); GitHub's flat release assets need the release CLI's low-level commands with explicit URLs.
-   - Only **Windows** installs updates itself (zip, per-user Inno install). desktop_updater refuses to install on macOS without Developer ID signing and doesn't support AppImage, so **macOS and Linux** only notify and "Download" opens the release: their `app-archive.json` items carry `freshInstall.downloadUrl` (the `.dmg` or AppImage asset).
+   - Only **Windows** installs updates itself. desktop_updater only checks, downloads and verifies: its own install (`restartApp`) needs an Authenticode-signed launcher, so it is never called. The Windows zip holds just the per-user Inno installer, which the launcher runs silently (`/RELAUNCH=1` opens it again). To test an update locally, build with `UPDATE_FEED_URL` and `UPDATE_TEST_KEY` (a key from `release keygen` with its own `--key-profile`) and sign the local feed with that key; releases never set them. desktop_updater refuses to install on macOS without Developer ID signing and doesn't support AppImage, so **macOS and Linux** only notify and "Download" opens the release: their `app-archive.json` items carry `freshInstall.downloadUrl` (the `.dmg` or AppImage asset).
    - `supportPolicy` sets the minimum version (`installers/support_policy.json`, kept between releases): older launchers must update once its date passes. Items' `mandatory` stays `false`; a required update is always a minimum version.
    - Versions have no `+build` number (it is optional for zip, DMG and Inno).
    - The update feed **never** comes from organization servers.
@@ -309,7 +314,7 @@ The current code relies on static globals (`GlobalSettings`, `Utility`'s `ValueN
 - **Vanilla files from Mojang** (piston-meta, libraries, assets; never redistributed by organization servers). Libraries, natives, the client jar (`LibraryManager`) and assets (`AssetManager`) are done. **Java on demand** from the version JSON's `javaVersion` (done, `JavaManager`).
 - **Microsoft login in the system browser** (done). Credentials in `flutter_secure_storage` (done, `CredentialsStore`; macOS uses the legacy Keychain because the build is ad-hoc signed, Linux needs `libsecret` and a keyring service). The Minecraft token is cached (done, `MinecraftSessionStore`). One Microsoft account at a time.
 - **Launch** (done, `GameProcess`): game output in a log file, crash detection, the launcher hidden while playing unless it stays open.
-- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`), each instance's settings (`InstanceSettings`, `InstanceSettingsStore`, `SystemMemory`'s parsing), XSTS and its codes (`XboxAuth`), the launcher's update (`UpdateService`, against a fake `desktop_updater` controller), the update recovery marker (`UpdateRecoveryFileStore`) and the pinned keys matching the release key profile (`UpdateConfig`), running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`), and the mascot's frames (`MascotAnimation`: loops, tentacles never touching). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
+- **Tests:** unit-test the pure logic first. Done: models, `ApiClient` (against a fake `HttpClientAdapter`, no network), `DeepLinks.parseAdd`, the organization and token stores (mocked `SharedPreferences` and `FlutterSecureStorage`) and `launch_utils` (rules, library paths, `inheritJson`, command line). Sync planning (`SyncPlanner`) and its execution (`SyncEngine`, against a fake server and a temporary folder) are covered, and so are entering an instance (`InstanceInstaller`: steps, `state.json`, `servers.dat`), `ServerList` installing the game files (`GameInstaller`, against a fake Mojang and fake Fabric/Quilt meta; `ForgeInstaller`, with a fake installer and processors), cleaning the shared files (`SharedFiles`), each instance's settings (`InstanceSettings`, `InstanceSettingsStore`, `SystemMemory`'s parsing), XSTS and its codes (`XboxAuth`), the launcher's update (`UpdateService`, against a fake `desktop_updater` controller and installer), the update recovery marker (`UpdateRecoveryFileStore`) and the pinned keys matching the release key profile (`UpdateConfig`), running the game (`GameProcess`, against a fake process), zipping its logs (`LogExport`), the news pages (`NewsCatalog`) and their markdown (`NewsMarkdown`), and the mascot's frames (`MascotAnimation`: loops, tentacles never touching). Tests never hit the network or the real Keychain; UI and `OrganizationAuth` (needs a real Minecraft session) are tested by hand.
 
 Refactor incrementally. Don't rewrite unrelated code in a feature PR.
 
